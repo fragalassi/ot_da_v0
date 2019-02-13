@@ -115,13 +115,11 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
     :param data_file:
     :param model:
     """
+    print(training_modalities)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-
     affine = data_file.root.affine[data_index]
     test_data = np.asarray([data_file.root.data[data_index]])
-    print(data_index)
-    print(test_data.shape)
     for i, modality in enumerate(training_modalities):
         image = nib.Nifti1Image(test_data[0, i], affine)
         print("data_{0}.nii.gz".format(modality))
@@ -147,11 +145,10 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
 def run_validation_cases(validation_keys_file, model_file, training_modalities, labels, hdf5_file,
                          output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False):
     validation_indices = pickle_load(validation_keys_file)
-    print(validation_indices)
     model = load_old_model(model_file)
     data_file = tables.open_file(hdf5_file, "r")
-    print(data_file)
     for index in validation_indices:
+        print("Index: ", index)
         if 'subject_ids' in data_file.root:
             print('subject_ids')
             case_directory = os.path.join(output_dir, data_file.root.subject_ids[index].decode('utf-8'))
