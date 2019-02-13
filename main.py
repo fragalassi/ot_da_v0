@@ -1,5 +1,6 @@
 from training_testing import train_isensee2017, predict, evaluate, create_test
 import config
+import sys
 
 sys.path.append('/udd/aackaouy/OT-DA/')
 
