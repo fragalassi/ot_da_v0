@@ -1,7 +1,7 @@
 from training_testing import train_isensee2017, predict, evaluate, create_test
 import config
 
-conf = config.Config(test=True)
+conf = config.Config(test=False)
 
 train = train_isensee2017.Train_Isensee(conf)
 train.main(overwrite=conf.overwrite)
