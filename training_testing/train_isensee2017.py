@@ -2,7 +2,7 @@ import os
 import glob
 import sys
 
-sys.path.append('/temp_dd/igrida-fs1/aackaouy/3D-Unet/')
+sys.path.append('/udd/aackaouy/OT-DA/')
 
 from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import get_training_and_validation_generators, get_validation_split

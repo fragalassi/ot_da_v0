@@ -2,7 +2,7 @@ import os
 #--------FG S
 import sys 
 # Add the folder path to the sys.path list
-sys.path.append('/temp_dd/igrida-fs1/fgalassi/3DUnetCNN-master/')
+sys.path.append('/udd/aackaouy/OT-DA/')
 #--------FG E
 
 from unet3d.prediction import run_validation_cases
