@@ -49,7 +49,7 @@ class Evalaute:
 
         df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
         print(self.config.data_set)
-        if os.path.exists("./prediction"):
+        if not os.path.exists("./prediction"):
             df.to_csv("./prediction/"+self.config.data_set+"_scores.csv")
         else:
             os.makedirs("./predicion/")
