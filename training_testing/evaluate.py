@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
-class Evalaute:
+class Evaluate:
     def __init__(self, conf):
         self.config = conf
 
@@ -35,7 +35,10 @@ class Evalaute:
         masking_functions = (self.get_whole_tumor_mask)
         rows = list()
         subject_ids = list()
-        for case_folder in glob.glob(os.path.join(os.path.dirname(__file__), "prediction","*")):
+        path_to_prediction = os.path.abspath("prediction_"+self.config.data_set)
+        for case_folder in os.listdir(path_to_prediction):
+            print("Case: ",case_folder)
+            case_folder = os.path.join(path_to_prediction,case_folder)
             if not os.path.isdir(case_folder):
                 continue
             subject_ids.append(os.path.basename(case_folder))
@@ -45,20 +48,22 @@ class Evalaute:
             prediction_file = os.path.join(case_folder, "prediction.nii.gz")
             prediction_image = nib.load(prediction_file)
             prediction = prediction_image.get_data()
-            rows.append([self.dice_coefficient(func(truth), func(prediction))for func in masking_functions])
+
+            rows.append([self.dice_coefficient(masking_functions(truth), masking_functions(prediction))])
 
         df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
-        print(self.config.data_set)
-        if not os.path.exists("../prediction"):
-            os.makedirs("../predicion/")
-            df.to_csv("../prediction/"+self.config.data_set+"_scores.csv")
+        print(df)
+        path = os.path.abspath("prediction")
+        if not os.path.exists(path):
+            os.makedirs(path)
+            df.to_csv(os.path.join(path, self.config.data_set+"_scores.csv"))
         else:
-            df.to_csv("../prediction/" + self.config.data_set + "_scores.csv")
+            df.to_csv(os.path.join(path, self.config.data_set+"_scores.csv"))
 
         scores = dict()
         for index, score in enumerate(df.columns):
             values = df.values.T[index]
-            scores[score] = values[ pd.isnull(values) == False]
+            scores[score] = values[pd.isnull(values) == False]
 
         plt.boxplot(list(scores.values()), labels=list(scores.keys()))
         plt.ylabel("Dice Coefficient")

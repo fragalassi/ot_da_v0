@@ -139,7 +139,7 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
         for i, image in enumerate(prediction_image):
             image.to_filename(os.path.join(output_dir, "prediction_{0}.nii.gz".format(i + 1)))
     else:
-        prediction_image.to_filename(os.path.join(output_dir, "prediction_rev2.nii.gz"))
+        prediction_image.to_filename(os.path.join(output_dir, "prediction.nii.gz"))
 
 
 def run_validation_cases(validation_keys_file, model_file, training_modalities, labels, hdf5_file,

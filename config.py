@@ -11,7 +11,7 @@ class Config:
     def __init__(self, test=False):
         if test == True:
             self.data_set="test"
-            self.epochs=10
+            self.epochs=1
         else:
             self.data_set="miccai16"
             self.epochs=500  # cutoff the training after this many epochs
@@ -33,7 +33,7 @@ class Config:
             self.input_shape = tuple([self.nb_channels] + list(self.image_shape))
 
         self.batch_size = 1
-        self.validation_batch_size = 2
+        self.validation_batch_size = 1
 
         self.patience = 20  # learning rate will be reduced after this many epochs if the validation loss is not improving
         self.early_stop = 100  # training will be stopped after this many epochs without the validation loss improving
