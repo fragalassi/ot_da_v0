@@ -49,11 +49,11 @@ class Evalaute:
 
         df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
         print(self.config.data_set)
-        if not os.path.exists("./prediction"):
-            df.to_csv("./prediction/"+self.config.data_set+"_scores.csv")
+        if not os.path.exists("../prediction"):
+            os.makedirs("../predicion/")
+            df.to_csv("../prediction/"+self.config.data_set+"_scores.csv")
         else:
-            os.makedirs("./predicion/")
-            df.to_csv("./prediction/" + self.config.data_set + "_scores.csv")
+            df.to_csv("../prediction/" + self.config.data_set + "_scores.csv")
 
         scores = dict()
         for index, score in enumerate(df.columns):
