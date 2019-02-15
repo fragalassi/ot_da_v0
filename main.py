@@ -4,7 +4,7 @@ import sys
 
 sys.path.append('/udd/aackaouy/OT-DA/')
 
-conf = config.Config(test=True)
+conf = config.Config(test=False)
 
 train = train_isensee2017.Train_Isensee(conf)
 train.main(overwrite=conf.overwrite)
