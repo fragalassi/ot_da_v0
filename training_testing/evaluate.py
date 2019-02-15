@@ -36,6 +36,7 @@ class Evaluate:
         rows = list()
         subject_ids = list()
         path_to_prediction = os.path.abspath("results/prediction/rev_"+str(self.config.rev)+"/prediction_"+self.config.data_set)
+        print(path_to_prediction)
         if not os.path.exists(path_to_prediction):
             os.makedirs(path_to_prediction)
         for case_folder in os.listdir(path_to_prediction):

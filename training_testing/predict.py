@@ -15,6 +15,8 @@ class Predict:
 
     def main(self):
         prediction_dir = os.path.abspath("results/prediction/rev_"+str(self.config.rev)+"/prediction_"+self.config.data_set)
+        if not os.path.exists(prediction_dir):
+            os.makedirs(prediction_dir)
 
         self.config.model_file = os.path.abspath("Data/generated_data/"+self.config.data_set+"_isensee_2017_model_rev"+str(self.config.rev)+".h5") #  patch (128,128,128) ; n_filters = 16; ski_blank = True; depth = 5
 
