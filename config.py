@@ -11,10 +11,10 @@ class Config:
     def __init__(self, test=False):
         if test == True:
             self.data_set="test"
-            self.epochs=1
+            self.epochs = 1
         else:
             self.data_set="miccai16_preprocessed"
-            self.epochs=500  # cutoff the training after this many epochs
+            self.epochs = 100  # cutoff the training after this many epochs
 
         self.rev = 0
 
