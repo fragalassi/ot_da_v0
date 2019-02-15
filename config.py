@@ -8,13 +8,13 @@ setting test to false in main.py result in using only two examples and a reduce 
 '''
 
 class Config:
-    def __init__(self, test=False):
+    def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss"):
         if test == True:
             self.data_set="test"
             self.epochs = 1
         else:
             self.data_set="miccai16_preprocessed"
-            self.epochs = 100  # cutoff the training after this many epochs
+            self.epochs = 500  # cutoff the training after this many epochs
 
         self.rev = 0
 
@@ -33,12 +33,13 @@ class Config:
         else:
             self.input_shape = tuple([self.nb_channels] + list(self.image_shape))
 
-        self.batch_size = 1
+        self.batch_size = int(batch_size)
         self.validation_batch_size = 1
+        self.loss_function = loss_function
 
         self.patience = 20  # learning rate will be reduced after this many epochs if the validation loss is not improving
         self.early_stop = 100  # training will be stopped after this many epochs without the validation loss improving
-        self.initial_learning_rate = 5e-4
+        self.initial_learning_rate = float(initial_lr)
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
 

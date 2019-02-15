@@ -12,7 +12,7 @@ create_convolution_block = partial(create_convolution_block, activation=LeakyReL
 
 def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5, dropout_rate=0.3,
                       n_segmentation_levels=3, n_labels=1, optimizer=Adam, initial_learning_rate=5e-4,
-                      loss_function=weighted_dice_coefficient_loss, activation_name="sigmoid"):
+                      loss_function="weighted_dice_coefficient_loss", activation_name="sigmoid"):
                           
     """
     This function builds a model proposed by Isensee et al. for the BRATS 2017 competition:
@@ -33,7 +33,14 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     :param activation_name:
     :return:
     """
-    
+
+    loss_function_d = {
+        "weighted_dice_coefficient_loss": weighted_dice_coefficient_loss,
+        "generalized_dice_loss": generalized_dice_loss
+    }
+
+    loss_function = loss_function_d[loss_function]
+
     inputs = Input(input_shape)
 
     current_layer = inputs
@@ -77,7 +84,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     activation_block = Activation(activation_name)(output_layer)
 
     model = Model(inputs=inputs, outputs=activation_block)
-    model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function)
+    model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function, metrics=["acc"])
     print("Optimizer: ", optimizer)
     print("Initial LR: ", initial_learning_rate)
     print("Loss function: ", loss_function)

@@ -65,3 +65,5 @@ class Test:
             skip_blank=self.config.skip_blank,
             augment_flip=self.config.flip,
             augment_distortion_factor=self.config.distort)
+
+        data_file_opened.close()

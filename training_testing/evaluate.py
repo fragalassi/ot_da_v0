@@ -35,7 +35,9 @@ class Evaluate:
         masking_functions = (self.get_whole_tumor_mask)
         rows = list()
         subject_ids = list()
-        path_to_prediction = os.path.abspath("prediction_"+self.config.data_set)
+        path_to_prediction = os.path.abspath("results/prediction/rev_"+str(self.config.rev)+"/prediction_"+self.config.data_set)
+        if not os.path.exists(path_to_prediction):
+            os.makedirs(path_to_prediction)
         for case_folder in os.listdir(path_to_prediction):
             print("Case: ",case_folder)
             case_folder = os.path.join(path_to_prediction,case_folder)
@@ -53,7 +55,7 @@ class Evaluate:
 
         df = pd.DataFrame.from_records(rows, columns=header, index=subject_ids)
         print(df)
-        path = os.path.abspath("prediction")
+        path = os.path.abspath("results/prediction/rev_"+str(self.config.rev))
         if not os.path.exists(path):
             os.makedirs(path)
             df.to_csv(os.path.join(path, self.config.data_set+"_scores.csv"))
@@ -79,5 +81,5 @@ class Evaluate:
             plt.xlabel('Epoch')
             plt.xlim((0, len(training_df.index)))
             plt.legend(loc='upper right')
-            plt.savefig('loss_graph.png')
+            plt.savefig(os.path.join(path,'loss_graph.png'))
 
