@@ -20,8 +20,8 @@ class Train_Isensee:
         for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "../Data/data_"+self.config.data_set, "training", "*")):
             subject_ids.append(os.path.basename(subject_dir))
             subject_files = list()
-            for modality in self.config.training_modalities + ["../ManualSegmentation/Consensus"]:  # Autre solution ?
-                subject_files.append(os.path.join(subject_dir+"/Preprocessed/", modality + ".nii.gz"))
+            for modality in self.config.training_modalities + ["./"+self.config.GT]:  # Autre solution ? "/ManualSegmentation/ pour miccai16"
+                subject_files.append(os.path.join(subject_dir, modality + ".nii.gz")) # + "/Preprocessed/ pour miccai16
             training_data_files.append(tuple(subject_files))
         if return_subject_ids:
             return training_data_files, subject_ids
@@ -35,7 +35,6 @@ class Train_Isensee:
             training_files, subject_ids = self.fetch_training_data_files(return_subject_ids=True)
             write_data_to_file(training_files, self.config.data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids)
-
         data_file_opened = open_data_file(self.config.data_file)
 
         if not overwrite and os.path.exists(self.config.model_file):

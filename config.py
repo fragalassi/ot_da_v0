@@ -13,7 +13,7 @@ class Config:
             self.data_set="test"
             self.epochs=1
         else:
-            self.data_set="miccai16"
+            self.data_set="miccai16_preprocessed"
             self.epochs=500  # cutoff the training after this many epochs
 
         self.rev = 0
@@ -23,7 +23,8 @@ class Config:
 
         self.labels=(1)
         self.n_labels=1
-        self.all_modalities=["FLAIR_preprocessed", "T1_preprocessed"]
+        self.all_modalities=["FLAIR-norm-include", "T1-norm-include"]
+        self.GT = "Consensus-reg-m-include"
         self.training_modalities= self.all_modalities  # change this if you want to only use some of the modalities
         self.nb_channels = len(self.training_modalities)
 

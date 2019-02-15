@@ -22,8 +22,8 @@ class Test:
             subject_ids.append(os.path.basename(subject_dir))
             subject_files = list()
             #        for modality in config["training_modalities"] + ["T2-norm-include"]:
-            for modality in self.config.training_modalities + ["../ManualSegmentation/Consensus"]:
-                subject_files.append(os.path.join(subject_dir+"/Preprocessed/", modality + ".nii.gz"))
+            for modality in self.config.training_modalities + ["./"+self.config.GT]: #"/ManualSegmentation/"
+                subject_files.append(os.path.join(subject_dir+"/", modality + ".nii.gz"))
             testing_data_files.append(tuple(subject_files))
 
         if return_subject_ids:

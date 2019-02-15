@@ -22,7 +22,9 @@ def create_data_file(out_file, n_channels, n_samples, image_shape):
 
 def write_image_data_to_file(image_files, data_storage, truth_storage, image_shape, n_channels, affine_storage,
                              truth_dtype=np.uint8, crop=True):
-    for set_of_files in image_files:
+    for i, set_of_files in enumerate(image_files):
+        advance = "Reading files: " + str(i/len(image_files)*100) + "%"
+        print(advance)
         images = reslice_image_set(set_of_files, image_shape, label_indices=len(set_of_files) - 1, crop=crop)
         subject_data = [image.get_data() for image in images]
         add_data_to_storage(data_storage, truth_storage, affine_storage, subject_data, images[0].affine, n_channels,truth_dtype)
@@ -51,6 +53,8 @@ def write_data_to_file(training_data_files, out_file, image_shape, truth_dtype=n
     n_samples = len(training_data_files)
     n_channels = len(training_data_files[0]) - 1
 
+    print("Number of images: ", n_samples)
+    print("Number of modalities: ", n_channels)
     try:
         hdf5_file, data_storage, truth_storage, affine_storage = create_data_file(out_file,
                                                                                   n_channels=n_channels,
