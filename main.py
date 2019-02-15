@@ -41,7 +41,7 @@ df.to_csv(path_or_buf=file_name, sep=";")
 
 for i in range(df.shape[0]):
 
-    conf = config.Config(test=True, rev=i, batch_size=df["Batch Size"].iloc[i], initial_lr=df["Initial Learning Rate"].iloc[i], loss_function=df["Loss function"].iloc[i])
+    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i], initial_lr=df["Initial Learning Rate"].iloc[i], loss_function=df["Loss function"].iloc[i])
 
     train = train_isensee2017.Train_Isensee(conf)
     train.main(overwrite=conf.overwrite)
