@@ -53,6 +53,8 @@ def write_data_to_file(training_data_files, out_file, image_shape, truth_dtype=n
     n_samples = len(training_data_files)
     n_channels = len(training_data_files[0]) - 1
 
+    print(out_file)
+
     print("Number of images: ", n_samples)
     print("Number of modalities: ", n_channels)
     try:

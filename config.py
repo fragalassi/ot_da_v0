@@ -53,8 +53,9 @@ class Config:
         self.overwrite = True  # If True, will previous files. If False, will use previously written files.
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
-        if not os.path.abspath("Data/generated_data/"):
-            os.makedirs(os.path.abspath("Data/generated_data/"))
+
+        if not os.path.exists(os.path.abspath("Data/generated_data")):
+            os.makedirs(os.path.abspath("Data/generated_data"))
 
         self.n_base_filters = 16
         self.depth = int(depth)
