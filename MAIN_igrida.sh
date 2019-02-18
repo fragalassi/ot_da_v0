@@ -4,7 +4,7 @@
 SCRIPTDIR=/udd/aackaouy/OT-DA
 echo "$SCRIPTDIR"
 
-chmod +x $SCRIPTDIR/bypass.sh
+chmod u+x $SCRIPTDIR/bypass.sh
 
 oarsub -l {"host = 'igrida-abacus4.irisa.fr'"}/nodes=1/gpu_device=1,walltime=1:00:0 "$SCRIPTDIR/bypass.sh"
 

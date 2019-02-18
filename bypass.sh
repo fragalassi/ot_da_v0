@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "Bonjour"
+
 SCRIPTDIR=/udd/aacakouy/OT-DA
 echo "$SCRIPTDIR"
 
