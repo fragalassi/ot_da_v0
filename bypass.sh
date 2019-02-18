@@ -1,12 +1,11 @@
 #!/bin/bash
-
+set -xv
 echo "Bonjour"
 
 SCRIPTDIR=/udd/aacakouy/OT-DA
 echo "$SCRIPTDIR"
 
 . /etc/profile.d/modules.sh
-set -xv
 
 #module load nibabel
 #module load cuDNN/v6.0  
