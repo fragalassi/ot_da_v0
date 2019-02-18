@@ -2,7 +2,7 @@
 
 # SCRIPT dir
 
-oarsub -I -l {"host = 'igrida-abacus4.irisa.fr'"}/nodes=1/gpu_device=1,walltime=1:00:0
+oarsub -I -l {"host = 'igrida-abacus4.irisa.fr'"}/nodes=1/gpu_device=1,walltime=12:00:0
 
 module load cuDNN/v7.0.4
 module load cuda/9.0.176
