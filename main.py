@@ -5,7 +5,7 @@ from Config import create_config
 
 sys.path.append('/udd/aackaouy/OT-DA/')
 
-df = create_config.create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
+df = create_config.create_conf(batch_size_l = [1, 1], initial_lr_l = [1e-4, 1e-7],
                 loss_funcs = ["generalized_dice_loss", "weighted_dice_coefficient_loss"],
                 depth_l = [3, 8], n_exp = 5)
 
