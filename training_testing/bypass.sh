@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPTDIR=/temp_dd/igrida-fs1/fgalassi/3DUnetCNN-master/brats
+SCRIPTDIR=/udd/aacakouy/OT-DA
 echo "$SCRIPTDIR"
 
 . /etc/profile.d/modules.sh
@@ -16,13 +16,7 @@ module load cuDNN/v7.0.4
 module load cuda/9.0.176
 
 # Activate the py virtual environnement
-. /udd/fgalassi/myVE/bin/activate
-PYTHONHASHSEED=0 python3 $SCRIPTDIR/train_isensee2017.py
-#PYTHONHASHSEED=0 python3 $SCRIPTDIR/evaluate.py
-#PYTHONHASHSEED=0 python3 $SCRIPTDIR/predict.py
-#PYTHONHASHSEED=0 python3 $SCRIPTDIR/testing_data_FG.py
+. /udd/aackaouy/myVE/bin/activate
+PYTHONHASHSEED=0 python3 -W ignore $SCRIPTDIR/main.py
 
-## Activate the py virtual environnement
-#source $SCRIPTDIR/my_env/bin/activate
-#python $SCRIPTDIR/train_from_scratch.py
 

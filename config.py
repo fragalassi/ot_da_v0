@@ -8,7 +8,7 @@ setting test to false in main.py result in using only two examples and a reduce 
 '''
 
 class Config:
-    def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss"):
+    def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5):
         if test == True:
             self.data_set="test"
             self.epochs = 1
@@ -16,7 +16,7 @@ class Config:
             self.data_set="miccai16_preprocessed"
             self.epochs = 500  # cutoff the training after this many epochs
 
-        self.rev = 0
+        self.rev = int(rev)
 
         self.image_shape = (128,128,128)  # This determines what shape the images will be cropped/resampled to.
         self.patch_shape = None  # switch to None to train on the whole image
@@ -55,7 +55,7 @@ class Config:
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
 
         self.n_base_filters = 16
-        self.depth = 5
+        self.depth = int(depth)
         self.model_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_2017_model_rev"+str(self.rev)+".h5")
         self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids_rev"+str(self.rev)+".pkl")
         self.validation_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids_rev"+str(self.rev)+".pkl")
