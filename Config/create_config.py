@@ -44,4 +44,9 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
     else:
         df = pd.DataFrame(np.array([batch_size, initial_lr, loss_funcs, depth, n_filter])).T
         df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters"]
+    save_path = os.path.abspath("Config/")
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    file_name = os.path.join(save_path + "/Config.csv")
+    df.to_csv(path_or_buf=file_name, sep=";")
     return df
