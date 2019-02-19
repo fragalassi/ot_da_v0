@@ -77,5 +77,6 @@ class Train_Isensee:
                     learning_rate_drop=self.config.learning_rate_drop,
                     learning_rate_patience=self.config.patience,
                     early_stopping_patience=self.config.early_stop,
-                    n_epochs=self.config.epochs)
+                    n_epochs=self.config.epochs,
+                    niseko=self.config.niseko)
         data_file_opened.close()

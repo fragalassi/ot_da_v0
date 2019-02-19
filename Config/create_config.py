@@ -5,7 +5,7 @@ import numpy as np
 import os
 def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
                 loss_funcs = ["generalized_dice_loss", "weighted_dice_coefficient_loss"],
-                depth_l = [3, 8], n_exp=4):
+                depth_l = [3, 8], n_filters=[8, 32], n_exp=4, n_repeat = 2):
     batch_size = []
     initial_lr = []
     loss_func = []
@@ -35,13 +35,13 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
 
     return df
 
-def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]):
+def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[], n_filter=[]):
     lists = [batch_size, initial_lr, loss_funcs, depth]
     it = iter(lists)
     the_len = len(next(it))
     if not all(len(l) == the_len for l in it):
         raise ValueError('Not all lists have same length')
     else:
-        df = pd.DataFrame(np.array([batch_size, initial_lr, loss_funcs, depth])).T
-        df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth"]
+        df = pd.DataFrame(np.array([batch_size, initial_lr, loss_funcs, depth, n_filter])).T
+        df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters"]
     return df

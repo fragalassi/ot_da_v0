@@ -8,13 +8,16 @@ setting test to false in main.py result in using only two examples and a reduce 
 '''
 
 class Config:
-    def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5):
+    def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
+                 n_filter=16, niseko=True):
         if test == True:
             self.data_set="test"
             self.epochs = 1
         else:
             self.data_set="miccai16_preprocessed"
-            self.epochs = 500  # cutoff the training after this many epochs
+            self.epochs = 1000  # cutoff the training after this many epochs
+
+        self.niseko = niseko
 
         self.rev = int(rev)
 
@@ -57,7 +60,7 @@ class Config:
         if not os.path.exists(os.path.abspath("Data/generated_data")):
             os.makedirs(os.path.abspath("Data/generated_data"))
 
-        self.n_base_filters = 16
+        self.n_base_filters = int(n_filter)
         self.depth = int(depth)
         self.model_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_2017_model_rev"+str(self.rev)+".h5")
         self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids_rev"+str(self.rev)+".pkl")

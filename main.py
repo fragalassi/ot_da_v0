@@ -12,14 +12,15 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 
 # df = create_config.create_conf(batch_size_l = [1, 1], initial_lr_l = [1e-4, 1e-7],
 #                  loss_funcs = ["generalized_dice_loss", "weighted_dice_coefficient_loss"],
-#                  depth_l = [3, 8], n_exp = 3)
+#                  depth_l = [3, 8],  n_exp = 10)
 
-batch_size = [1,1,1]
-initial_lr = [5e-4,5e-4,5e-4]
-loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
-depth = [4,5,6]
+batch_size = [1,1,1,1,1,1,1,1,1]
+initial_lr = [5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4]
+loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss"]
+depth = [5, 5, 5, 5, 5, 5, 5, 5, 5]
+n_filter = [8, 8, 8, 16, 16, 16, 32, 32, 32]
 
-df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth)
+df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
 
 print(df)
 
@@ -28,10 +29,12 @@ for i in range(df.shape[0]):
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=True, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
-                         depth=df["Depth"].iloc[i])
+                         depth=df["Depth"].iloc[i],
+                         n_filter=df["Number of filters"].iloc[i],
+                         niseko=True)
 
     train = train_isensee2017.Train_Isensee(conf)
     train.main(overwrite=conf.overwrite)
