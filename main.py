@@ -1,9 +1,6 @@
 from training_testing import train_isensee2017, predict, evaluate, create_test
 import config
 import sys
-import os
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"]="0" # Enlever pour igrida
 import tensorflow as tf
 import pandas as pd
 import numpy as np
