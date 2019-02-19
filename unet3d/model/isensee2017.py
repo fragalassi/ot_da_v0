@@ -5,7 +5,7 @@ from keras.engine import Model
 from keras.optimizers import Adam
 
 from .unet import create_convolution_block, concatenate
-from ..metrics import weighted_dice_coefficient_loss
+from ..metrics import weighted_dice_coefficient_loss, dice_coef
 from ..generalized_loss import generalized_dice_loss, dice
 #
 create_convolution_block = partial(create_convolution_block, activation=LeakyReLU, instance_normalization=True)
@@ -84,7 +84,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     activation_block = Activation(activation_name)(output_layer)
 
     model = Model(inputs=inputs, outputs=activation_block)
-    model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function, metrics=["acc"])
+    model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function, metrics=[dice_coef])
     print("Optimizer: ", optimizer)
     print("Initial LR: ", initial_learning_rate)
     print("Loss function: ", loss_function)

@@ -34,3 +34,14 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
     df.to_csv(path_or_buf=file_name, sep=";")
 
     return df
+
+def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]):
+    lists = [batch_size, initial_lr, loss_funcs, depth]
+    it = iter(lists)
+    the_len = len(next(it))
+    if not all(len(l) == the_len for l in it):
+        raise ValueError('Not all lists have same length')
+    else:
+        df = pd.DataFrame(np.array([batch_size, initial_lr, loss_funcs, depth])).T
+        df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth"]
+    return df
