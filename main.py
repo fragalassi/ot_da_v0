@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import numpy as np
 import matplotlib
+import tensorflow
 from Config import create_config
 
 sys.path.append('/udd/aackaouy/OT-DA/')
