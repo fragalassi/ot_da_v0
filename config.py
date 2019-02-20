@@ -20,6 +20,7 @@ class Config:
         self.niseko = niseko
 
         self.rev = int(rev)
+        print(self.rev)
 
         self.image_shape = (128,128,128)  # This determines what shape the images will be cropped/resampled to.
         self.patch_shape = None  # switch to None to train on the whole image

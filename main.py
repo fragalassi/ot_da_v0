@@ -5,7 +5,7 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import matplotlib
-import keras
+from keras import backend as K
 from Config import create_config
 
 sys.path.append('/udd/aackaouy/OT-DA/')
@@ -14,11 +14,11 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["generalized_dice_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8],  n_exp = 10)
 
-batch_size = [1,1,1,1,1,1,1,1,1]
-initial_lr = [5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4]
-loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss"]
-depth = [5, 5, 5, 5, 5, 5, 5, 5, 5]
-n_filter = [8, 8, 8, 16, 16, 16, 32, 32, 32]
+batch_size = [1,1,1]
+initial_lr = [5e-4,5e-4,5e-4]
+loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
+depth = [5, 5, 5]
+n_filter = [32, 32, 32]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
 
@@ -29,7 +29,7 @@ for i in range(df.shape[0]):
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=i+6, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
@@ -47,3 +47,5 @@ for i in range(df.shape[0]):
 
     eval = evaluate.Evaluate(conf)
     eval.main()
+
+    K.clear_session()
