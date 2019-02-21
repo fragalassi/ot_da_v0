@@ -14,11 +14,11 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["generalized_dice_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8],  n_exp = 10)
 
-batch_size = [1,1,1]
-initial_lr = [5e-4,5e-4,5e-4]
-loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
-depth = [5, 5, 5]
-n_filter = [32, 32, 32]
+batch_size = [2,2]
+initial_lr = [5e-4,5e-4]
+loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
+depth = [5, 5]
+n_filter = [16, 16]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
 
@@ -29,7 +29,7 @@ for i in range(df.shape[0]):
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=i+6, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=True, rev=i, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
@@ -37,10 +37,10 @@ for i in range(df.shape[0]):
                          niseko=True)
 
     train = train_isensee2017.Train_Isensee(conf)
-    train.main(overwrite=conf.overwrite)
+    train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
     test = create_test.Test(conf)
-    test.main(overwrite=conf.overwrite)
+    test.main(overwrite_data=conf.overwrite_data)
 
     pred = predict.Predict(conf)
     pred.main()

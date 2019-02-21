@@ -32,15 +32,15 @@ class Test:
             return testing_data_files
 
 
-    def main(self, overwrite=True):
+    def main(self, overwrite_data=True):
         self.config.validation_split = 0.0
-        self.config.data_file = os.path.abspath("Data/generated_data/" + self.config.data_set + "_testing_rev_" + str(self.config.rev) + ".h5")
+        self.config.data_file = os.path.abspath("Data/generated_data/" + self.config.data_set + "_testing.h5")
         self.config.training_file = os.path.abspath(
-            "Data/generated_data/" + self.config.data_set + "_testing_rev" + str(self.config.rev) + ".pkl")
+            "Data/generated_data/" + self.config.data_set + "_testing.pkl")
         self.config.validation_file = os.path.abspath(
-            "Data/generated_data/" + self.config.data_set + "_testing_validation_ids_rev" + str(self.config.rev) + ".pkl")
+            "Data/generated_data/" + self.config.data_set + "_testing_validation_ids.pkl")
         # convert input images into an hdf5 file
-        if overwrite or not os.path.exists(self.config.data_file):
+        if overwrite_data or not os.path.exists(self.config.data_file):
             testing_files, subject_ids = self.fetch_testing_data_files(return_subject_ids=True)
             print(testing_files)
             write_data_to_file(testing_files, self.config.data_file, image_shape=self.config.image_shape,
@@ -51,7 +51,7 @@ class Test:
             data_file_opened,
             batch_size=self.config.batch_size,
             data_split=self.config.validation_split,
-            overwrite=overwrite,
+            overwrite_data=overwrite_data,
             validation_keys_file=self.config.validation_file,
             training_keys_file=self.config.training_file,
             n_labels=self.config.n_labels,

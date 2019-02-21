@@ -54,7 +54,8 @@ class Config:
         self.validation_patch_overlap = 0  # if > 0, during training, validation patches will be overlapping
         self.training_patch_start_offset = (16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
-        self.overwrite = True  # If True, will previous files. If False, will use previously written files.
+        self.overwrite_data = False  # If True, will previous files. If False, will use previously written files.
+        self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
 
@@ -64,7 +65,7 @@ class Config:
         self.n_base_filters = int(n_filter)
         self.depth = int(depth)
         self.model_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_2017_model_rev"+str(self.rev)+".h5")
-        self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids_rev"+str(self.rev)+".pkl")
-        self.validation_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids_rev"+str(self.rev)+".pkl")
+        self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids.pkl")
+        self.validation_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids.pkl")
 
 

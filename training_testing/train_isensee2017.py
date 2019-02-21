@@ -29,15 +29,18 @@ class Train_Isensee:
             return training_data_files
 
 
-    def main(self, overwrite=False):
+    def main(self, overwrite_data=True, overwrite_model = True):
         # convert input images into an hdf5 file
-        if overwrite or not os.path.exists(self.config.data_file):
+        if overwrite_data or not os.path.exists(self.config.data_file):
             training_files, subject_ids = self.fetch_training_data_files(return_subject_ids=True)
             write_data_to_file(training_files, self.config.data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids)
+        else:
+            print("Reusing previously written data file. Set overwrite_data to True to overwrite this file.")
+
         data_file_opened = open_data_file(self.config.data_file)
 
-        if not overwrite and os.path.exists(self.config.model_file):
+        if not overwrite_model and os.path.exists(self.config.model_file):
             model = load_old_model(self.config.model_file)
         else:
             # instantiate new model
@@ -51,7 +54,7 @@ class Train_Isensee:
             data_file_opened,
             batch_size=self.config.batch_size,
             data_split=self.config.validation_split,
-            overwrite=overwrite,
+            overwrite_data=overwrite_data,
             validation_keys_file=self.config.validation_file,
             training_keys_file=self.config.training_file,
             n_labels=self.config.n_labels,

@@ -11,7 +11,7 @@ from .augment import augment_data, random_permutation_x_y
 
 
 def get_training_and_validation_generators(data_file, batch_size, n_labels, training_keys_file, validation_keys_file,
-                                           data_split=0.8, overwrite=False, labels=None, augment=False,
+                                           data_split=0.8, overwrite_data=False, labels=None, augment=False,
                                            augment_flip=True, augment_distortion_factor=0.25, patch_shape=None,
                                            validation_patch_overlap=0, training_patch_start_offset=None,
                                            validation_batch_size=None, skip_blank=True, permute=False):
@@ -52,7 +52,7 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
 
     training_list, validation_list = get_validation_split(data_file,
                                                           data_split=data_split,
-                                                          overwrite=overwrite,
+                                                          overwrite_data=overwrite_data,
                                                           training_file=training_keys_file,
                                                           validation_file=validation_keys_file)
 
@@ -101,7 +101,7 @@ def get_number_of_steps(n_samples, batch_size):
         return n_samples//batch_size + 1
 
 
-def get_validation_split(data_file, training_file, validation_file, data_split=0.8, overwrite=False):
+def get_validation_split(data_file, training_file, validation_file, data_split=0.8, overwrite_data=False):
     """
     Splits the data into the training and validation indices list.
     :param data_file: pytables hdf5 data file
@@ -111,7 +111,7 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
     :param overwrite:
     :return:
     """
-    if overwrite or not os.path.exists(training_file):
+    if overwrite_data or not os.path.exists(training_file):
         print("Creating validation split...")
         nb_samples = data_file.root.data.shape[0]
         sample_list = list(range(nb_samples))
