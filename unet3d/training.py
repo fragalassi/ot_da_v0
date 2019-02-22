@@ -77,6 +77,7 @@ def train_model(model, model_file, training_generator, validation_generator, ste
     :param n_epochs: Total number of epochs to train the model.
     :return: 
     """
+    # model.summary()
     if niseko == True:
         model.fit_generator(generator=training_generator,
                             steps_per_epoch=steps_per_epoch,

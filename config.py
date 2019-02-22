@@ -37,7 +37,7 @@ class Config:
         else:
             self.input_shape = tuple([self.nb_channels] + list(self.image_shape))
 
-        self.batch_size = int(batch_size)
+        self.batch_size = int(float(batch_size))
         self.validation_batch_size = 1
         self.loss_function = loss_function
 
@@ -62,8 +62,8 @@ class Config:
         if not os.path.exists(os.path.abspath("Data/generated_data")):
             os.makedirs(os.path.abspath("Data/generated_data"))
 
-        self.n_base_filters = int(n_filter)
-        self.depth = int(depth)
+        self.n_base_filters = int(float(n_filter))
+        self.depth = int(float(depth))
         self.model_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_2017_model_rev"+str(self.rev)+".h5")
         self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids.pkl")
         self.validation_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids.pkl")

@@ -10,21 +10,22 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
     initial_lr = []
     loss_func = []
     depth = []
+    n_filter = []
 
 
-    l = lhs(4, samples=n_exp)
+    l = lhs(5, samples=n_exp)
 
     for exp in l:
-        batch_size += [ceil((batch_size_l[1] - batch_size_l[0]) * exp[0]) + batch_size_l[0]]
+        batch_size += [round((batch_size_l[1] - batch_size_l[0]) * exp[0]) + batch_size_l[0]]
         initial_lr += [(initial_lr_l[0] - initial_lr_l[1]) * exp[1] + initial_lr_l[1]]
         loss_func += [loss_funcs[0] if exp[2]<=0.5 else loss_funcs[1]]
-        depth += [ceil((depth_l[1] - depth_l[0]) * exp[3] + depth_l[0])]
+        depth += [round((depth_l[1] - depth_l[0]) * exp[3] + depth_l[0])]
+        n_filter += [round((n_filters[1] - n_filters[0]) * exp[4] + n_filters[0])]
 
     print("Tested parameters")
     print("===========")
-    df = pd.DataFrame(np.array([batch_size, initial_lr, loss_func, depth])).T
-    df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth"]
-    print(df)
+    df = pd.DataFrame(np.array([batch_size, initial_lr, loss_func, depth, n_filter])).T
+    df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters"]
     print("===========")
 
     save_path = os.path.abspath("Config/")
