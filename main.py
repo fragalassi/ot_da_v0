@@ -10,17 +10,17 @@ from Config import create_config
 
 sys.path.append('/udd/aackaouy/OT-DA/')
 
-df = create_config.create_conf(batch_size_l = [2, 2], initial_lr_l = [1e-4, 1e-7],
-                 loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
-                 depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
+# df = create_config.create_conf(batch_size_l = [2, 2], initial_lr_l = [1e-4, 1e-7],
+#                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
+#                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-# batch_size = [2,2,2,2,2,2,2,2,2]
-# initial_lr = [5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4]
-# loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
-# depth = [3,3,3,4,4,4,6,6,6] # 5 16 on a déjà
-# n_filter = [16, 16, 16, 16, 16, 16, 16, 16, 16]
-#
-# df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
+batch_size = [2,2,2,2,2,2,2,2,2]
+initial_lr = [5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4]
+loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
+depth = [3,3,3,4,4,4,6,6,6] # 5 16 on a déjà
+n_filter = [16, 16, 16, 16, 16, 16, 16, 16, 16]
+
+df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
 
 print(df)
 
@@ -30,7 +30,7 @@ for i in range(df.shape[0]):
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=True, rev=i+9, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=True, rev=i, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
