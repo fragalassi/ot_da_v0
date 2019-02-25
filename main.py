@@ -30,12 +30,12 @@ for i in range(df.shape[0]):
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=True, rev=i+9, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
                          n_filter=df["Number of filters"].iloc[i],
-                         niseko=True)
+                         niseko=False)
 
     train = train_isensee2017.Train_Isensee(conf)
     train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
