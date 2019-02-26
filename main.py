@@ -35,7 +35,7 @@ for i in range(df.shape[0]):
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
                          n_filter=df["Number of filters"].iloc[i],
-                         niseko=True, shortcut=False)
+                         niseko=True, shortcut=True)
 
     train = train_isensee2017.Train_Isensee(conf)
     train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
