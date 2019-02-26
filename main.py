@@ -14,11 +14,11 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [1,1,1]
-initial_lr = [5e-4,5e-4,5e-4]
-loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
-depth = [5,5,5]
-n_filter = [16, 16, 16]
+batch_size = [1,1,1,1,1,1,1,1,1]
+initial_lr = [5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4]
+loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss"]
+depth = [5, 5, 5, 5, 5, 5, 5, 5, 5]
+n_filter = [8, 8, 8, 16, 16, 16, 32, 32, 32]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
 
