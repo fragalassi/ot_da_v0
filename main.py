@@ -18,7 +18,7 @@ batch_size = [1,1,1,1,1,1,1,1,1]
 initial_lr = [5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4,5e-4]
 loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss"]
 depth = [5, 5, 5, 5, 5, 5, 5, 5, 5]
-n_filter = [8, 8, 8, 16, 16, 16, 32, 32,
+n_filter = [8, 8, 8, 16, 16, 16, 32, 32, 32]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
 
