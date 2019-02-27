@@ -70,7 +70,6 @@ class Train_Isensee:
             augment_flip=self.config.flip,
             augment_distortion_factor=self.config.distort)
 
-        data_file_opened.close()
 
         # run training
         train_model(model=model,
@@ -85,3 +84,5 @@ class Train_Isensee:
                     early_stopping_patience=self.config.early_stop,
                     n_epochs=self.config.epochs,
                     niseko=self.config.niseko)
+
+        data_file_opened.close()
