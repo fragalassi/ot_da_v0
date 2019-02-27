@@ -8,7 +8,7 @@ import numpy as np
 from .utils import pickle_dump, pickle_load
 from .utils.patches import compute_patch_indices, get_random_nd_index, get_patch_from_3d_data
 from .augment import augment_data, random_permutation_x_y
-
+from unet3d.data import write_data_to_file, open_data_file
 
 def get_training_and_validation_generators(data_file, batch_size, n_labels, training_keys_file, validation_keys_file,
                                            data_split=0.8, overwrite_data=False, labels=None, augment=False,
@@ -111,18 +111,20 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
     :param overwrite:
     :return:
     """
+    file = open_data_file(data_file)
     if overwrite_data or not os.path.exists(training_file):
         print("Creating validation split...")
-        nb_samples = data_file.root.data.shape[0]
+        nb_samples = file.root.data.shape[0]
         sample_list = list(range(nb_samples))
         training_list, validation_list = split_list(sample_list, split=data_split)
         pickle_dump(training_list, training_file)
         pickle_dump(validation_list, validation_file)
+        file.close()
         return training_list, validation_list
     else:
         print("Loading previous validation split...")
+        file.close()
         return pickle_load(training_file), pickle_load(validation_file)
-
 
 def split_list(input_list, split=0.8, shuffle_list=True):
     if shuffle_list:
@@ -136,13 +138,15 @@ def split_list(input_list, split=0.8, shuffle_list=True):
 def data_generator(data_file, index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
                    augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
                    shuffle_index_list=True, skip_blank=True, permute=False):
+    file = open_data_file(data_file)
     orig_index_list = index_list
     while True:
         x_list = list()
         y_list = list()
         if patch_shape:
-            index_list = create_patch_index_list(orig_index_list, data_file.root.data.shape[-3:], patch_shape,
+            index_list = create_patch_index_list(orig_index_list, file.root.data.shape[-3:], patch_shape,
                                                  patch_overlap, patch_start_offset)
+            file.close()
         else:
             index_list = copy.copy(orig_index_list)
 
@@ -161,18 +165,21 @@ def data_generator(data_file, index_list, batch_size=1, n_labels=1, labels=None,
 
 def get_number_of_patches(data_file, index_list, patch_shape=None, patch_overlap=0, patch_start_offset=None,
                           skip_blank=True):
+    file = open_data_file(data_file)
     if patch_shape:
-        index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape, patch_overlap,
+        index_list = create_patch_index_list(index_list, file.root.data.shape[-3:], patch_shape, patch_overlap,
                                              patch_start_offset)
         count = 0
         for index in index_list:
             x_list = list()
             y_list = list()
-            add_data(x_list, y_list, data_file, index, skip_blank=skip_blank, patch_shape=patch_shape)
+            add_data(x_list, y_list, file, index, skip_blank=skip_blank, patch_shape=patch_shape)
             if len(x_list) > 0:
                 count += 1
+        file.close()
         return count
     else:
+        file.close()
         return len(index_list)
 
 
@@ -207,12 +214,13 @@ def add_data(x_list, y_list, data_file, index, augment=False, augment_flip=False
     :param permute: will randomly permute the data (data must be 3D cube)
     :return:
     """
-    data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape)
+    file = open_data_file(data_file)
+    data, truth = get_data_from_file(file, index, patch_shape=patch_shape)
     if augment:
         if patch_shape is not None:
-            affine = data_file.root.affine[index[0]]
+            affine = file.root.affine[index[0]]
         else:
-            affine = data_file.root.affine[index]
+            affine = file.root.affine[index]
         data, truth = augment_data(data, truth, affine, flip=augment_flip, scale_deviation=augment_distortion_factor)
 
     if permute:
@@ -226,6 +234,8 @@ def add_data(x_list, y_list, data_file, index, augment=False, augment_flip=False
     if not skip_blank or np.any(truth != 0):
         x_list.append(data)
         y_list.append(truth)
+
+    file.close()
 
 
 def get_data_from_file(data_file, index, patch_shape=None):
