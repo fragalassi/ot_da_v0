@@ -22,7 +22,7 @@ class Config:
         self.rev = int(rev)
         print(self.rev)
 
-        self.image_shape = (256,256,256)  # This determines what shape the images will be cropped/resampled to.
+        self.image_shape = (128,128,128)  # This determines what shape the images will be cropped/resampled to.
         self.patch_shape = None  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts

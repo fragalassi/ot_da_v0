@@ -38,7 +38,7 @@ class Train_Isensee:
         else:
             print("Reusing previously written data file. Set overwrite_data to True to overwrite this file.")
 
-        # data_file_opened = open_data_file(self.config.data_file)
+        data_file_opened = open_data_file(self.config.data_file)
 
         if not overwrite_model and os.path.exists(self.config.model_file):
             model = load_old_model(self.config.model_file)
@@ -52,7 +52,7 @@ class Train_Isensee:
 
         # get training and testing generators
         train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
-            self.config.data_file,
+            data_file_opened,
             batch_size=self.config.batch_size,
             data_split=self.config.validation_split,
             overwrite_data=overwrite_data,
@@ -70,7 +70,7 @@ class Train_Isensee:
             augment_flip=self.config.flip,
             augment_distortion_factor=self.config.distort)
 
-        # data_file_opened.close()
+        data_file_opened.close()
 
         # run training
         train_model(model=model,
