@@ -13,7 +13,7 @@ from .augment import augment_data, random_permutation_x_y
 def get_training_and_validation_generators(data_file, batch_size, n_labels, training_keys_file, validation_keys_file,
                                            data_split=0.8, overwrite_data=False, labels=None, augment=False,
                                            augment_flip=True, augment_distortion_factor=0.25, patch_shape=None,
-                                           validation_patch_overlap=0, training_patch_start_offset=None,
+                                           validation_patch_overlap=0, training_patch_overlap = 0, training_patch_start_offset=None,
                                            validation_batch_size=None, skip_blank=True, permute=False):
     """
     Creates the training and validation generators that can be used when training the model.
@@ -67,7 +67,7 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
                                         augment_flip=augment_flip,
                                         augment_distortion_factor=augment_distortion_factor,
                                         patch_shape=patch_shape,
-                                        patch_overlap=0,
+                                        patch_overlap=training_patch_overlap,
                                         patch_start_offset=training_patch_start_offset,
                                         skip_blank=skip_blank,
                                         permute=permute)
@@ -83,7 +83,8 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
     num_training_steps = get_number_of_steps(get_number_of_patches(data_file, training_list, patch_shape,
                                                                    skip_blank=skip_blank,
                                                                    patch_start_offset=training_patch_start_offset,
-                                                                   patch_overlap=0), batch_size)
+                                                                   patch_overlap = validation_patch_overlap,
+                                                                   ), batch_size)
     print("Number of training steps: ", num_training_steps)
 
     num_validation_steps = get_number_of_steps(get_number_of_patches(data_file, validation_list, patch_shape,

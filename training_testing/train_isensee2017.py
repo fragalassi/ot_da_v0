@@ -63,6 +63,7 @@ class Train_Isensee:
             patch_shape=self.config.patch_shape,
             validation_batch_size=self.config.validation_batch_size,
             validation_patch_overlap=self.config.validation_patch_overlap,
+            training_patch_overlap = self.config.training_patch_overlap,
             training_patch_start_offset=self.config.training_patch_start_offset,
             permute=self.config.permute,
             augment=self.config.augment,

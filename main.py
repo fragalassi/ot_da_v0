@@ -15,7 +15,7 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [50, 50, 50]
+batch_size = [100, 100, 100]
 initial_lr = [5e-4, 5e-4, 5e-4]
 loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
 depth = [5, 5, 5]
@@ -32,7 +32,7 @@ for i in range(df.shape[0]):
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=True, rev=i, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
