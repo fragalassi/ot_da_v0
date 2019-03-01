@@ -1,4 +1,5 @@
 from training_testing import train_isensee2017, predict, evaluate, create_test
+from activation_prediction import activation_prediction
 import config
 import sys
 import tensorflow as tf
@@ -14,7 +15,7 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [1,1,1]
+batch_size = [10,10,10]
 initial_lr = [5e-4,5e-4,5e-4]
 loss_funcs = ["weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss"]
 depth = [5, 5, 5]
@@ -35,7 +36,7 @@ for i in range(df.shape[0]):
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
                          n_filter=df["Number of filters"].iloc[i],
-                         niseko=True, shortcut=True)
+                         niseko=False, shortcut=True)
 
     train = train_isensee2017.Train_Isensee(conf)
     train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)

@@ -22,8 +22,8 @@ class Config:
         self.rev = int(rev)
         print(self.rev)
 
-        self.image_shape = (176,176,176)  # This determines what shape the images will be cropped/resampled to.
-        self.patch_shape = None  # switch to None to train on the whole image
+        self.image_shape = (128,128,128)  # This determines what shape the images will be cropped/resampled to.
+        self.patch_shape = (16,16,16)  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
 
@@ -40,7 +40,7 @@ class Config:
             self.input_shape = tuple([self.nb_channels] + list(self.image_shape))
 
         self.batch_size = int(float(batch_size))
-        self.validation_batch_size = 1
+        self.validation_batch_size = self.batch_size
         self.loss_function = loss_function
 
         self.patience = 20  # learning rate will be reduced after this many epochs if the validation loss is not improving
@@ -50,11 +50,11 @@ class Config:
         self.validation_split = 0.8  # portion of the data that will be used for training
 
         self.flip = False  # augments the data by randomly flipping an axis during
-        self.permute = True  # data shape must be a cube. Augments the data by permuting in various directions
+        self.permute = False  # data shape must be a cube. Augments the data by permuting in various directions
         self.distort = None  # switch to None if you want no distortion
         self.augment = self.permute or self.distort
         self.validation_patch_overlap = 0  # if > 0, during training, validation patches will be overlapping
-        self.training_patch_start_offset = (16,16,16)  # randomly offset the first patch index by up to this offset
+        self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
         self.overwrite_data = True  # If True, will previous files. If False, will use previously written files.

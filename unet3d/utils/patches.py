@@ -2,6 +2,9 @@ import numpy as np
 
 
 def compute_patch_indices(image_shape, patch_size, overlap, start=None):
+    print("Image shape :", image_shape)
+    print("Patch size :", patch_size)
+    print("Overlap :", overlap)
     if isinstance(overlap, int):
         overlap = np.asarray([overlap] * len(image_shape))
     if start is None:
@@ -12,6 +15,9 @@ def compute_patch_indices(image_shape, patch_size, overlap, start=None):
         start = np.asarray([start] * len(image_shape))
     stop = image_shape + start
     step = patch_size - overlap
+    print("Start: ", start)
+    print("Stop: ", stop)
+    print("Step: ", step)
     return get_set_of_patch_indices(start, stop, step)
 
 

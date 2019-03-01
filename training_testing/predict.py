@@ -29,4 +29,5 @@ class Predict:
                              labels=self.config.labels,
                              hdf5_file=self.config.data_file,
                              output_label_map=True,
+                             overlap=self.config.validation_patch_overlap,
                              output_dir=prediction_dir)

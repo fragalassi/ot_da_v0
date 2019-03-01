@@ -10,7 +10,7 @@ from .utils.patches import reconstruct_from_patches, get_patch_from_3d_data, com
 from .augment import permute_data, generate_permutation_keys, reverse_permute_data
 
 
-def patch_wise_prediction(model, data, overlap=0, batch_size=1, permute=False):
+def patch_wise_prediction(model, data, overlap=0, batch_size=10, permute=False):
     """
     :param batch_size:
     :param model:
@@ -20,11 +20,15 @@ def patch_wise_prediction(model, data, overlap=0, batch_size=1, permute=False):
     """
     patch_shape = tuple([int(dim) for dim in model.input.shape[-3:]])
     predictions = list()
+    print("Patch_shape :", patch_shape)
+    print("Overlap_ :", overlap)
     indices = compute_patch_indices(data.shape[-3:], patch_size=patch_shape, overlap=overlap)
+    print("Indices :", indices)
     batch = list()
     i = 0
+    print("Prediction batch size :", batch_size)
     while i < len(indices):
-        while len(batch) < batch_size:
+        while len(batch) < batch_size and i < len(indices):
             patch = get_patch_from_3d_data(data[0], patch_shape=patch_shape, patch_index=indices[i])
             batch.append(patch)
             i += 1
