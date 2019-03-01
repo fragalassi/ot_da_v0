@@ -15,13 +15,14 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [10,10,10]
-initial_lr = [5e-4,5e-4,5e-4]
-loss_funcs = ["weighted_dice_coefficient_loss","weighted_dice_coefficient_loss","weighted_dice_coefficient_loss"]
+batch_size = [50, 50, 50]
+initial_lr = [5e-4, 5e-4, 5e-4]
+loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
 depth = [5, 5, 5]
 n_filter = [16, 16, 16]
+patch_shape = [64, 32, 16]
 
-df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter)
+df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, n_repeat=2)
 
 print(df)
 
@@ -36,7 +37,8 @@ for i in range(df.shape[0]):
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
                          n_filter=df["Number of filters"].iloc[i],
-                         niseko=False, shortcut=True)
+                         patch_shape = df["Patch shape"].iloc[i],
+                         niseko=True, shortcut=True)
 
     train = train_isensee2017.Train_Isensee(conf)
     train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)

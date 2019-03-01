@@ -9,7 +9,21 @@ setting test to false in main.py result in using only two examples and a reduce 
 
 class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
-                 n_filter=16, niseko=True, shortcut=True):
+                 n_filter=16, patch_shape = 16, niseko=True, shortcut=True):
+        '''
+
+        :param test: To only use the test data with only two training cases and 3 testing cases
+        :param rev: The number given to the files to test different configurations
+        :param batch_size:
+        :param initial_lr:
+        :param loss_function:
+        :param depth:
+        :param n_filter:
+        :param patch_shape:
+        :param niseko: When working on niseko CPU workers need to be set to 0
+        :param shortcut: To test the 3D-Unet with no shortcuts (spoil it doesn't work well)
+        '''
+
         if test == True:
             self.data_set="test"
             self.epochs = 1
@@ -23,7 +37,7 @@ class Config:
         print(self.rev)
 
         self.image_shape = (128,128,128)  # This determines what shape the images will be cropped/resampled to.
-        self.patch_shape = (16,16,16)  # switch to None to train on the whole image
+        self.patch_shape = (patch_shape,patch_shape,patch_shape)  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
 
