@@ -15,7 +15,7 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [32, 32, 32, 32, 32]
+batch_size = [32, 32, 32, 32, 32, 32]
 initial_lr = [5e-4, 5e-4, 5e-4, 5e-4, 5e-4, 5e-4]
 loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss","weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
 depth = [4, 5, 6, 5, 5, 5]
