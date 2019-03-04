@@ -70,7 +70,7 @@ class Config:
         self.validation_patch_overlap = int(overlap)  # if > 0, during training, validation patches will be overlapping
         self.training_patch_overlap = int(overlap)  # Overlap could be the number of overlapping pixels.
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
-        self.skip_blank = True  # if True, then patches without any target will be skipped
+        self.skip_blank = False  # if True, then patches without any target will be skipped
 
         self.overwrite_data = True  # If True, will previous files. If False, will use previously written files.
         self.overwrite_model = True
