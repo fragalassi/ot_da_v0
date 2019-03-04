@@ -15,14 +15,15 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [100, 100, 100]
-initial_lr = [5e-4, 5e-4, 5e-4]
-loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
-depth = [5, 5, 5]
-n_filter = [16, 16, 16]
-patch_shape = [64, 32, 16]
+batch_size = [32, 32, 32, 32, 32]
+initial_lr = [5e-4, 5e-4, 5e-4, 5e-4, 5e-4, 5e-4]
+loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss","weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"]
+depth = [4, 5, 6, 5, 5, 5]
+n_filter = [16, 16, 16, 16, 16, 16]
+patch_shape = [64, 64, 64, 64, 64, 64]
+overlap = [0, 0, 0, 8, 16, 32]
 
-df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, n_repeat=2)
+df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, n_repeat=1)
 
 print(df)
 
@@ -32,7 +33,7 @@ for i in range(df.shape[0]):
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=True, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],

@@ -36,8 +36,8 @@ class Config:
         self.rev = int(rev)
         print(self.rev)
 
-        self.image_shape = (128,128,128)  # This determines what shape the images will be cropped/resampled to.
-        self.patch_shape = (int(patch_shape),int(patch_shape),int(patch_shape))  # switch to None to train on the whole image
+        self.image_shape = (256,256,128)  # This determines what shape the images will be cropped/resampled to.
+        self.patch_shape = (int(patch_shape),int(patch_shape),int(float(patch_shape)/2))  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
 
@@ -68,7 +68,7 @@ class Config:
         self.distort = None  # switch to None if you want no distortion
         self.augment = self.permute or self.distort
         self.validation_patch_overlap = 0  # if > 0, during training, validation patches will be overlapping
-        self.training_patch_overlap = 0
+        self.training_patch_overlap = 0  # Overlap could be the number of overlapping pixels.
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
