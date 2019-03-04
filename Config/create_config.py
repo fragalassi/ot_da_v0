@@ -49,7 +49,7 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
 
     return df
 
-def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[], n_filter=[], patch_shape = [], n_repeat = 1):
+def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[], n_filter=[], patch_shape = [], overlap = [], n_repeat = 1):
     '''
     Create configuration from the list.
     :param batch_size:
@@ -61,14 +61,15 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
     :param n_repeat: The number of times we want each experience to be repeated
     :return: A data-frame with all the experiences
     '''
-    lists = [batch_size, initial_lr, loss_funcs, depth, patch_shape]
+    lists = [batch_size, initial_lr, loss_funcs, depth, patch_shape, overlap]
     it = iter(lists)
     the_len = len(next(it))
     if not all(len(l) == the_len for l in it):
         raise ValueError('Not all lists have same length')
     else:
-        df = pd.DataFrame(np.array([batch_size*n_repeat, initial_lr*n_repeat, loss_funcs*n_repeat, depth*n_repeat, n_filter*n_repeat, patch_shape*n_repeat])).T
-        df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters", "Patch shape"]
+        df = pd.DataFrame(np.array([batch_size*n_repeat, initial_lr*n_repeat, loss_funcs*n_repeat,
+                                    depth*n_repeat, n_filter*n_repeat, patch_shape*n_repeat, overlap*n_repeat])).T
+        df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters", "Patch shape", "Overlap"]
     save_path = os.path.abspath("Config/")
     if not os.path.exists(save_path):
         os.makedirs(save_path)

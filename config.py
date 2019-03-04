@@ -9,7 +9,7 @@ setting test to false in main.py result in using only two examples and a reduce 
 
 class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
-                 n_filter=16, patch_shape = 16, niseko=True, shortcut=True):
+                 n_filter=16, patch_shape = 16, overlap = 0, niseko=True, shortcut=True):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -67,8 +67,8 @@ class Config:
         self.permute = False  # data shape must be a cube. Augments the data by permuting in various directions
         self.distort = None  # switch to None if you want no distortion
         self.augment = self.permute or self.distort
-        self.validation_patch_overlap = 0  # if > 0, during training, validation patches will be overlapping
-        self.training_patch_overlap = 0  # Overlap could be the number of overlapping pixels.
+        self.validation_patch_overlap = int(overlap)  # if > 0, during training, validation patches will be overlapping
+        self.training_patch_overlap = int(overlap)  # Overlap could be the number of overlapping pixels.
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
 

@@ -23,7 +23,7 @@ n_filter = [16, 16, 16, 16, 16, 16]
 patch_shape = [64, 64, 64, 64, 64, 64]
 overlap = [0, 0, 0, 8, 16, 32]
 
-df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, n_repeat=1)
+df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, overlap, n_repeat=1)
 
 print(df)
 
@@ -39,6 +39,7 @@ for i in range(df.shape[0]):
                          depth=df["Depth"].iloc[i],
                          n_filter=df["Number of filters"].iloc[i],
                          patch_shape = df["Patch shape"].iloc[i],
+                         overlap = df["Overlap"].iloc[i],
                          niseko=True, shortcut=True)
 
     train = train_isensee2017.Train_Isensee(conf)
