@@ -233,6 +233,7 @@ def add_data(x_list, y_list, data_file, index, augment=False, augment_flip=False
 
 
 def get_data_from_file(data_file, index, patch_shape=None):
+    # print("Index:", index)
     if patch_shape:
         index, patch_index = index
         data, truth = get_data_from_file(data_file, index, patch_shape=None)

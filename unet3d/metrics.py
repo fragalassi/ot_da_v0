@@ -55,7 +55,7 @@ def tversky_coefficient_loss(y_true, y_pred):
 
 
 def weighted_dice_coefficient_loss(y_true, y_pred):
-    return -weighted_dice_coefficient(y_true, y_pred)
+    return -(weighted_dice_coefficient(y_true, y_pred))
 
 
 def label_wise_dice_coefficient(y_true, y_pred, label_index):
@@ -66,6 +66,26 @@ def get_label_dice_coefficient_function(label_index):
     f = partial(label_wise_dice_coefficient, label_index=label_index)
     f.__setattr__('__name__', 'label_{0}_dice_coef'.format(label_index))
     return f
+
+
+def jaccard_distance_loss(y_true, y_pred, smooth=100):
+    """
+    Jaccard = (|X & Y|)/ (|X|+ |Y| - |X & Y|)
+            = sum(|A*B|)/(sum(|A|)+sum(|B|)-sum(|A*B|))
+
+    The jaccard distance loss is usefull for unbalanced datasets. This has been
+    shifted so it converges on 0 and is smoothed to avoid exploding or disapearing
+    gradient.
+
+    Ref: https://en.wikipedia.org/wiki/Jaccard_index
+
+    @url: https://gist.github.com/wassname/f1452b748efcbeb4cb9b1d059dce6f96
+    @author: wassname
+    """
+    intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
+    sum_ = K.sum(K.abs(y_true) + K.abs(y_pred), axis=-1)
+    jac = (intersection + smooth) / (sum_ - intersection + smooth)
+    return (1 - jac) * smooth
 
 
 dice_coef = dice_coefficient
