@@ -51,9 +51,10 @@ def read_image_files(image_files, image_shape=None, crop=None, label_indices=Non
 
 
 def read_image(in_file, image_shape=None, interpolation='linear', crop=None):
-    #print("Reading: {0}".format(in_file))
+    print("Reading: {0}".format(in_file))
     image = nib.load(os.path.abspath(in_file))
     image = fix_shape(image)
+    print("Image shape: ", image_shape)
     if crop:
         image = crop_img_to(image, crop, copy=True)
     if image_shape:

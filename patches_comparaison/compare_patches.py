@@ -14,14 +14,28 @@ class Compare_patches:
 
     def main(self):
         index_list, validation_list, data_file = self.get_index_list()
+
         for i in validation_list:
+            list_a = [tup for tup in index_list if tup[0] == i]
+            x_a, y_a = get_data_from_file(data_file, list_a, patch_shape=self.patch_shape)
             for j in validation_list:
                 if i != j:
-                    print("i and j:", i,j)
-                    x, y = self.get_data([i,j], data_file)
+                    list_b = [tup for tup in index_list if tup[0] == j]
+                    x_b, y_b = get_data_from_file(data_file, list_b, patch_shape=self.patch_shape)
+
+                    self.compare_patches(x_a,y_a,x_b,y_b)
+
+
 
 
     def get_index_list(self, overwrite_data=True, patch_overlap=0, patch_start_offset = None):
+        '''
+        Function to get the indexes of all the images and all the patches we want to compare
+        :param overwrite_data: If False it will read previously written files
+        :param patch_overlap:
+        :param patch_start_offset:
+        :return:
+        '''
         self.config.validation_split = 0.0
         self.config.data_file = os.path.abspath("Data/generated_data/" + self.config.data_set + "_testing.h5")
         self.config.training_file = os.path.abspath(
@@ -31,7 +45,6 @@ class Compare_patches:
         # convert input images into an hdf5 file
         if overwrite_data or not os.path.exists(self.config.data_file):
             testing_files, subject_ids = self.fetch_testing_data_files(return_subject_ids=True)
-            print(testing_files)
             write_data_to_file(testing_files, self.config.data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids)
         data_file_opened = open_data_file(self.config.data_file)
@@ -47,15 +60,8 @@ class Compare_patches:
 
         return index_list, validation_list, data_file_opened
 
-    def get_data(self, index_list, data_file):
-        x_list = []
-        y_list = []
+    def compare_patches(self, x_a, y_a, x_b, y_b):
+        print(x_a)
 
-        for i in index_list:
-            x, y = get_data_from_file(data_file, i, patch_shape=self.patch_shape)
-            x_list.append(x)
-            y_list.append(y)
-
-        return x,y
 
 compare = Compare_patches
