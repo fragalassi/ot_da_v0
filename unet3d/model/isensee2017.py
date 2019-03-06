@@ -6,7 +6,7 @@ from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
 
 from .unet import create_convolution_block, concatenate
-from ..metrics import weighted_dice_coefficient_loss, dice_coef, jaccard_distance_loss
+from ..metrics import weighted_dice_coefficient_loss, dice_coef, jaccard_distance_loss, dice_coef_loss
 from ..generalized_loss import generalized_dice_loss, dice
 #
 create_convolution_block = partial(create_convolution_block, activation=LeakyReLU, instance_normalization=True)
@@ -39,7 +39,8 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
         "weighted_dice_coefficient_loss": weighted_dice_coefficient_loss,
         "generalized_dice_loss": generalized_dice_loss,
         "jaccard_distance_loss": jaccard_distance_loss,
-        "categorical_crossentropy": categorical_crossentropy
+        "categorical_crossentropy": categorical_crossentropy,
+        "dice_coefficient_loss": dice_coef_loss
     }
 
     loss_function = loss_function_d[loss_function]

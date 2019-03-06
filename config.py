@@ -29,7 +29,7 @@ class Config:
             self.epochs = 1
         else:
             self.data_set="miccai16_preprocessed"
-            self.epochs = 50  # cutoff the training after this many epochs
+            self.epochs = 100  # cutoff the training after this many epochs
 
         self.niseko = niseko
 
@@ -59,7 +59,7 @@ class Config:
         self.loss_function = loss_function
 
         self.patience = 10  # learning rate will be reduced after this many epochs if the validation loss is not improving
-        self.early_stop = 25  # training will be stopped after this many epochs without the validation loss improving
+        self.early_stop = 50  # training will be stopped after this many epochs without the validation loss improving
         self.initial_learning_rate = float(initial_lr)
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
