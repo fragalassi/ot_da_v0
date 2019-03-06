@@ -29,21 +29,22 @@ class Config:
             self.epochs = 1
         else:
             self.data_set="miccai16_preprocessed"
-            self.epochs = 1000  # cutoff the training after this many epochs
+            self.epochs = 50  # cutoff the training after this many epochs
 
         self.niseko = niseko
 
         self.rev = int(rev)
         print(self.rev)
 
-        self.image_shape = (256,256,128)  # This determines what shape the images will be cropped/resampled to.
-        self.patch_shape = (int(patch_shape),int(patch_shape),int(float(patch_shape)/2))  # switch to None to train on the whole image
+        self.image_shape = (128,128,128)  # This determines what shape the images will be cropped/resampled to.
+        self.patch_shape = (int(patch_shape),int(patch_shape),int(float(patch_shape)))  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
 
         self.labels=(1)
         self.n_labels=1
         self.all_modalities=["FLAIR-norm-include", "T1-norm-include"]
+        # self.all_modalities = ["FLAIR-norm-include"]
         self.GT = "Consensus-reg-m-include"
         self.training_modalities= self.all_modalities  # change this if you want to only use some of the modalities
         self.nb_channels = len(self.training_modalities)
@@ -57,8 +58,8 @@ class Config:
         self.validation_batch_size = self.batch_size
         self.loss_function = loss_function
 
-        self.patience = 20  # learning rate will be reduced after this many epochs if the validation loss is not improving
-        self.early_stop = 100  # training will be stopped after this many epochs without the validation loss improving
+        self.patience = 10  # learning rate will be reduced after this many epochs if the validation loss is not improving
+        self.early_stop = 25  # training will be stopped after this many epochs without the validation loss improving
         self.initial_learning_rate = float(initial_lr)
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
