@@ -27,7 +27,7 @@ training_center = [["01"], ["07"], ["08"]]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, overlap, training_center, n_repeat=3)
 
-print(df)
+print(df["Training centers"].iloc[0])
 
 for i in range(df.shape[0]): #df.shape[0]
     print("Experience number:", i+1)

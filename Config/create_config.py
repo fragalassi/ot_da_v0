@@ -69,7 +69,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
         raise ValueError('Not all lists have same length')
     else:
         df = pd.DataFrame(np.array([batch_size*n_repeat, initial_lr*n_repeat, loss_funcs*n_repeat,
-                                    depth*n_repeat, n_filter*n_repeat, patch_shape*n_repeat, overlap*n_repeat, training_center*n_repeat])).T
+                                    depth*n_repeat, n_filter*n_repeat, patch_shape*n_repeat, overlap*n_repeat, training_center*n_repeat], dtype=object)).T
         df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters", "Patch shape", "Overlap", "Training centers"]
     save_path = os.path.abspath("Config/")
     if not os.path.exists(save_path):
