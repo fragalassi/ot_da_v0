@@ -14,7 +14,7 @@ class Train_Isensee:
         self.config = conf
 
         
-    def fetch_training_data_files(self, return_subject_ids=False, all_centers = False):
+    def fetch_training_data_files(self, return_subject_ids=False, all_centers = True):
         training_data_files = list()
         subject_ids = list()
         for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "../Data/data_"+self.config.data_set, "training", "*")):
