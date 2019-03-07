@@ -16,17 +16,17 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [64, 64]
-initial_lr = [5e-3, 5e-3]
-loss_funcs = ["weighted_dice_coefficient_loss", "dice_coefficient_loss"]
-depth = [5, 5]
-n_filter = [16, 16]
-patch_shape = [64, 64]
-overlap = [8, 8]
+batch_size = [64, 64, 64]
+initial_lr = [5e-3, 5e-3, 5e-3]
+loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss"]
+depth = [5, 5, 5]
+n_filter = [16, 16, 16]
+patch_shape = [64, 64, 64]
+overlap = [8, 8, 8]
+training_center = [["01"], ["07"], ["08"]]
 
-df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, overlap, n_repeat=1)
+df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, overlap, training_center, n_repeat=3)
 
-print(df)
 
 for i in range(df.shape[0]): #df.shape[0]
     print("Experience number:", i+1)
@@ -41,6 +41,7 @@ for i in range(df.shape[0]): #df.shape[0]
                          n_filter=df["Number of filters"].iloc[i],
                          patch_shape = df["Patch shape"].iloc[i],
                          overlap = df["Overlap"].iloc[i],
+                         training_centers = df["Training centers"].iloc[i],
                          niseko=True, shortcut=True)
 
     # patch_comparaison = compare_patches.Compare_patches(conf)

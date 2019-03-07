@@ -9,7 +9,7 @@ setting test to false in main.py result in using only two examples and a reduce 
 
 class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
-                 n_filter=16, patch_shape = 16, overlap = 0, niseko=True, shortcut=True):
+                 n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"], niseko=True, shortcut=True):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -27,9 +27,11 @@ class Config:
         if test == True:
             self.data_set="test"
             self.epochs = 1
+            self.all_modalities = ["FLAIR-norm-include", "T1-norm-include"]
         else:
-            self.data_set="miccai16_preprocessed"
-            self.epochs = 100  # cutoff the training after this many epochs
+            self.data_set="miccai16_no_norm"
+            self.epochs = 200  # cutoff the training after this many epochs
+            self.all_modalities = ["FLAIR-include", "T1-include"]
 
         self.niseko = niseko
 
@@ -41,9 +43,11 @@ class Config:
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
 
+        self.training_centers = training_centers
+
         self.labels=(1)
         self.n_labels=1
-        self.all_modalities=["FLAIR-norm-include", "T1-norm-include"]
+
         # self.all_modalities = ["FLAIR-norm-include"]
         self.GT = "Consensus-reg-m-include"
         self.training_modalities= self.all_modalities  # change this if you want to only use some of the modalities
@@ -58,8 +62,8 @@ class Config:
         self.validation_batch_size = self.batch_size
         self.loss_function = loss_function
 
-        self.patience = 10  # learning rate will be reduced after this many epochs if the validation loss is not improving
-        self.early_stop = 50  # training will be stopped after this many epochs without the validation loss improving
+        self.patience = 15  # learning rate will be reduced after this many epochs if the validation loss is not improving
+        self.early_stop = 70  # training will be stopped after this many epochs without the validation loss improving
         self.initial_learning_rate = float(initial_lr)
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training

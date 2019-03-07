@@ -14,12 +14,12 @@ class Train_Isensee:
         self.config = conf
 
         
-    def fetch_training_data_files(self, return_subject_ids=False, all_centers = True):
+    def fetch_training_data_files(self, return_subject_ids=False):
         training_data_files = list()
         subject_ids = list()
         for subject_dir in glob.glob(os.path.join(os.path.dirname(__file__), "../Data/data_"+self.config.data_set, "training", "*")):
             subject_center = subject_dir[-9:-7] # Retrieve for the MICCAI16 data-set the center of the patient
-            if subject_center in ["07", "01"] or all_centers == True:
+            if subject_center in self.config.training_centers or self.config.training_centers == ["All"]:
                 subject_ids.append(os.path.basename(subject_dir))
                 subject_files = list()
                 for modality in self.config.training_modalities + ["./"+self.config.GT]:  # Autre solution ? "/ManualSegmentation/ pour miccai16"
