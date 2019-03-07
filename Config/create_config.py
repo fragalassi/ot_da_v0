@@ -64,6 +64,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
     lists = [batch_size, initial_lr, loss_funcs, depth, patch_shape, overlap, training_center]
     it = iter(lists)
     the_len = len(next(it))
+    print(training_center*n_repeat)
     if not all(len(l) == the_len for l in it):
         raise ValueError('Not all lists have same length')
     else:
