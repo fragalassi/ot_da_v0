@@ -17,7 +17,7 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
 batch_size = [64, 64, 64]
-initial_lr = [5e-4, 5e-4, 5e-3]
+initial_lr = [5e-3, 5e-3, 5e-3]
 loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss", "dice_coefficient_loss"]
 depth = [5, 5, 5]
 n_filter = [16, 16, 16]
