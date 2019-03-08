@@ -5,7 +5,7 @@ import numpy as np
 import os
 def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
                 loss_funcs = ["generalized_dice_loss", "weighted_dice_coefficient_loss"],
-                depth_l = [3, 8], n_filters=[8, 32], patch_shape_l=[8, 32], overlap_l=[0, 0.5], n_exp=4, n_repeat = 2):
+                depth_l = [3, 8], n_filters=[8, 32], patch_shape_l=[8, 16, 32], overlap_l=[0, 0.5], n_exp=4, n_repeat = 2):
     '''
     A function to create following the Latin Hypersquare experience plan configurations to train the network.
     :param batch_size_l:
@@ -33,8 +33,20 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
         initial_lr += [(initial_lr_l[0] - initial_lr_l[1]) * exp[1] + initial_lr_l[1]]
         loss_func += [loss_funcs[0] if exp[2]<=0.5 else loss_funcs[1]]
         depth += [round((depth_l[1] - depth_l[0]) * exp[3] + depth_l[0])]
-        n_filter += [round((n_filters[1] - n_filters[0]) * exp[4] + n_filters[0])]
-        patch_shape += [round((patch_shape_l[1] - patch_shape_l[0]) * exp[5] + patch_shape_l[0])]
+
+        if exp[4] <= 1/3:
+            n_filter += [n_filters[0]]
+        elif exp[4] <= 2/3:
+            n_filter += [n_filters[1]]
+        else:
+            n_filter += [n_filters[2]]
+
+        if exp[5] <= 1/3:
+            patch_shape += [patch_shape_l[0]]
+        elif exp[5] <= 2/3:
+            patch_shape += [patch_shape_l[1]]
+        else:
+            patch_shape += [patch_shape_l[2]]
         overlap += [(overlap_l[0] - overlap_l[1]) * exp[6] + overlap_l[1]]
 
 
@@ -53,6 +65,8 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
     df.to_csv(path_or_buf=file_name, sep=";")
 
     return df
+
+
 
 def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[],
                        n_filter=[], patch_shape = [], overlap = [], training_center = [],
