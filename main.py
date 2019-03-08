@@ -19,7 +19,7 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 
 df = create_config.create_conf(batch_size_l = [32, 64], initial_lr_l = [5e-2, 5e-4],
                  loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"],
-                 depth_l = [3, 8], n_filters=[8, 16, 32], patch_shape_l=[8, 16, 32], overlap_l=[0, 0.5],  n_exp = 30)
+                 depth_l = [5, 8], n_filters=[8, 16, 32], patch_shape_l=[16, 32], overlap_l=[0, 0.5],  n_exp = 30)
 
 # batch_size = [64, 64, 64, 64, 64, 64, 64, 32, 64, 64]
 # initial_lr = [5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3]

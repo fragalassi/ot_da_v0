@@ -32,7 +32,6 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
         batch_size += [round((batch_size_l[1] - batch_size_l[0]) * exp[0]) + batch_size_l[0]]
         initial_lr += [(initial_lr_l[0] - initial_lr_l[1]) * exp[1] + initial_lr_l[1]]
         loss_func += [loss_funcs[0] if exp[2]<=0.5 else loss_funcs[1]]
-        depth += [round((depth_l[1] - depth_l[0]) * exp[3] + depth_l[0])]
 
         if exp[4] <= 1/3:
             n_filter += [n_filters[0]]
@@ -41,12 +40,15 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
         else:
             n_filter += [n_filters[2]]
 
-        if exp[5] <= 1/3:
+        if exp[5] <= 1/2:
             patch_shape += [patch_shape_l[0]]
-        elif exp[5] <= 2/3:
-            patch_shape += [patch_shape_l[1]]
         else:
-            patch_shape += [patch_shape_l[2]]
+            patch_shape += [patch_shape_l[1]]
+        if patch_shape[-1] < 16:
+            depth += [3]
+        else:
+            depth += [round((depth_l[1] - depth_l[0]) * exp[3] + depth_l[0])]
+
         overlap += [(overlap_l[0] - overlap_l[1]) * exp[6] + overlap_l[1]]
 
 
