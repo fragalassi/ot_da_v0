@@ -5,6 +5,7 @@ from scipy.spatial import minkowski_distance
 from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import  get_data_from_file, get_validation_split, create_patch_index_list, add_data
 from unet3d.utils.patches import get_patch_from_3d_data
+from unet3d.metrics import dice_coef_loss
 import numpy as np
 import pandas as pd
 import random
@@ -17,7 +18,7 @@ class Compare_patches:
         self.config = conf
         create = create_test.Test(self.config)
         self.fetch_testing_data_files = create.fetch_testing_data_files
-        self.patch_shape = (64, 64, 32)
+        self.patch_shape = (32, 32, 16)
 
 
     def main(self, one_patch = True):
@@ -52,7 +53,7 @@ class Compare_patches:
     def get_index_list(self, overwrite_data=False, patch_overlap=0, patch_start_offset = None):
         '''
         Function to get the indexes of all the images and all the patches in the testing set.
-        :param overwrite_data: If False it will read previously written files
+        :param overwrite_data: If False it will read  previously written files
         :param patch_overlap:
         :param patch_start_offset:
         :return:
@@ -137,10 +138,11 @@ class Compare_patches:
 
 
     def compare_patches(self, x_a, y_a, x_b, y_b):
-        c = 1-dice(x_a.ravel(), x_b.ravel())
+        c = 1-dice_coef_loss(x_a, x_b)
+        print(c)
         if np.mean(y_a) != 0 and np.mean(y_b) != 0:
             cos = cosine(y_a.ravel(), y_b.ravel())
-            di = dice(y_a.ravel(), y_b.ravel())
+            di = dice_coef_loss(y_a, y_b)
             euc = euclidean(y_a.ravel(), y_b.ravel())
             jac = jaccard(y_a.ravel(), y_b.ravel())
             BC = braycurtis(y_a.ravel(), y_b.ravel())

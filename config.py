@@ -9,7 +9,8 @@ setting test to false in main.py result in using only two examples and a reduce 
 
 class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
-                 n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"], niseko=True, shortcut=True):
+                 n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
+                 image_shape = (128,128,128) , niseko=True, shortcut=True):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -30,7 +31,7 @@ class Config:
             self.all_modalities = ["FLAIR-norm-include", "T1-norm-include"]
         else:
             self.data_set="miccai16_no_norm"
-            self.epochs = 200  # cutoff the training after this many epochs
+            self.epochs = 1000  # cutoff the training after this many epochs
             self.all_modalities = ["FLAIR-include", "T1-include"]
 
         self.niseko = niseko
@@ -38,8 +39,8 @@ class Config:
         self.rev = int(rev)
         print(self.rev)
 
-        self.image_shape = (256,256,128)  # This determines what shape the images will be cropped/resampled to.
-        self.patch_shape = (int(patch_shape),int(patch_shape),int(float(patch_shape)/2))  # switch to None to train on the whole image
+        self.image_shape = image_shape# This determines what shape the images will be cropped/resampled to.
+        self.patch_shape = (int(patch_shape),int(patch_shape),int(float(patch_shape)))  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
 
@@ -63,7 +64,7 @@ class Config:
         self.loss_function = loss_function
 
         self.patience = 15  # learning rate will be reduced after this many epochs if the validation loss is not improving
-        self.early_stop = 70  # training will be stopped after this many epochs without the validation loss improving
+        self.early_stop = 100  # training will be stopped after this many epochs without the validation loss improving
         self.initial_learning_rate = float(initial_lr)
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
@@ -72,12 +73,12 @@ class Config:
         self.permute = False  # data shape must be a cube. Augments the data by permuting in various directions
         self.distort = None  # switch to None if you want no distortion
         self.augment = self.permute or self.distort
-        self.validation_patch_overlap = int(overlap)  # if > 0, during training, validation patches will be overlapping
-        self.training_patch_overlap = int(overlap)  # Overlap could be the number of overlapping pixels.
+        self.validation_patch_overlap = int(overlap*patch_shape)  # if > 0, during training, validation patches will be overlapping
+        self.training_patch_overlap = int(overlap*patch_shape)  # Overlap could be the number of overlapping pixels.
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = False  # if True, then patches without any target will be skipped
 
-        self.overwrite_data = True  # If True, will previous files. If False, will use previously written files.
+        self.overwrite_data = False  # If True, will previous files. If False, will use previously written files.
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")

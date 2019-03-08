@@ -16,18 +16,21 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["weighted_dice_coefficient_loss", "weighted_dice_coefficient_loss"],
 #                  depth_l = [3, 8], n_filters=[8, 32],  n_exp = 30)
 
-batch_size = [64, 64, 64]
-initial_lr = [5e-3, 5e-3, 5e-3]
-loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss"]
-depth = [5, 5, 5]
-n_filter = [16, 16, 16]
-patch_shape = [64, 64, 64]
-overlap = [8, 8, 8]
-training_center = [["01"], ["07"], ["08"]]
-
-df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs, depth, n_filter, patch_shape, overlap, training_center, n_repeat=3)
-
-print(df["Training centers"].iloc[0])
+batch_size = [64, 64, 64, 64, 64, 64, 64, 32, 64, 64]
+initial_lr = [5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3, 5e-3]
+loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss", "dice_coefficient_loss"]
+depth = [5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+n_filter = [16, 16, 16, 8, 16, 16, 16, 16, 16, 16]
+patch_shape = [32, 32, 32, 32, 8, 16, 32, 32, 32, 32]
+overlap = [1/2, 1/4, 1/10, 1/4, 1/4, 1/4, 1/4, 1/4, 1/4, 0]
+image_shape = [(128,128,128), (128,128,128), (128,128,128), (128,128,128), (128,128,128), (128,128,128), (128,128,128), (176,176,176), (256,256,176), (128,128,128)]
+training_center = [["All"], ["All"], ["All"], ["All"], ["All"], ["All"], ["All"], ["All"], ["All"], ["All"]]
+df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
+                                      depth, n_filter, patch_shape, overlap, training_center,
+                                      image_shape,
+                                      n_repeat=1)
+with pd.option_context("display.max_rows", None, "display.max_columns", None):
+    print(df)
 
 for i in range(df.shape[0]): #df.shape[0]
     print("Experience number:", i+1)
@@ -43,6 +46,7 @@ for i in range(df.shape[0]): #df.shape[0]
                          patch_shape = df["Patch shape"].iloc[i],
                          overlap = df["Overlap"].iloc[i],
                          training_centers = df["Training centers"].iloc[i],
+                         image_shape = df["Image shape"].iloc[i],
                          niseko=True, shortcut=True)
 
     # patch_comparaison = compare_patches.Compare_patches(conf)
