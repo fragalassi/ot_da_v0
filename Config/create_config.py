@@ -5,7 +5,7 @@ import numpy as np
 import os
 def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
                 loss_funcs = ["generalized_dice_loss", "weighted_dice_coefficient_loss"],
-                depth_l = [3, 8], n_filters=[8, 32], n_exp=4, n_repeat = 2):
+                depth_l = [3, 8], n_filters=[8, 32], patch_shape_l=[8, 32], overlap_l=[0, 0.5], n_exp=4, n_repeat = 2):
     '''
     A function to create following the Latin Hypersquare experience plan configurations to train the network.
     :param batch_size_l:
@@ -22,9 +22,11 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
     loss_func = []
     depth = []
     n_filter = []
+    patch_shape = []
+    overlap = []
 
 
-    l = lhs(5, samples=n_exp) # Create an array of experiences giving pseudo random number (latin hypersquare) number between 0 and 1.
+    l = lhs(7, samples=n_exp) # Create an array of experiences giving pseudo random number (latin hypersquare) number between 0 and 1.
 
     for exp in l:
         batch_size += [round((batch_size_l[1] - batch_size_l[0]) * exp[0]) + batch_size_l[0]]
@@ -32,13 +34,16 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
         loss_func += [loss_funcs[0] if exp[2]<=0.5 else loss_funcs[1]]
         depth += [round((depth_l[1] - depth_l[0]) * exp[3] + depth_l[0])]
         n_filter += [round((n_filters[1] - n_filters[0]) * exp[4] + n_filters[0])]
+        patch_shape += [round((patch_shape_l[1] - patch_shape_l[0]) * exp[5] + patch_shape_l[0])]
+        overlap += [(overlap_l[0] - overlap_l[1]) * exp[6] + overlap_l[1]]
+
 
     #Creating all the different configurations from the
 
     print("Tested parameters")
     print("===========")
-    df = pd.DataFrame(np.array([batch_size, initial_lr, loss_func, depth, n_filter])).T
-    df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters"]
+    df = pd.DataFrame(np.array([batch_size, initial_lr, loss_func, depth, n_filter, patch_shape, overlap])).T
+    df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth", "Number of filters", "Patch shape", "Overlap"]
     print("===========")
 
     save_path = os.path.abspath("Config/")
