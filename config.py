@@ -1,5 +1,5 @@
 import os
-
+from keras.optimizers import Adam
 '''
 Config class definition, here are grouped all the parameters.
 
@@ -28,7 +28,7 @@ class Config:
         if test == True:
             self.data_set="test"
             self.epochs = 1
-            self.all_modalities = ["FLAIR-norm-include", "T1-norm-include"]
+            self.all_modalities = ["FLAIR-include", "T1-include"]
         else:
             self.data_set="miccai16_no_norm"
             self.epochs = 1000  # cutoff the training after this many epochs
@@ -43,8 +43,9 @@ class Config:
         self.patch_shape = (int(float(patch_shape)),int(float(patch_shape)),int(float(patch_shape)))  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
-
         self.training_centers = training_centers
+        self.source_center = ["01"]
+        self.target_center = ["08"]
 
         self.labels=(1)
         self.n_labels=1
@@ -62,6 +63,7 @@ class Config:
         self.batch_size = int(float(batch_size))
         self.validation_batch_size = self.batch_size
         self.loss_function = loss_function
+        self.optimizer = Adam
 
         self.patience = 15  # learning rate will be reduced after this many epochs if the validation loss is not improving
         self.early_stop = 100  # training will be stopped after this many epochs without the validation loss improving
@@ -82,6 +84,8 @@ class Config:
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
+        self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_source.h5")
+        self.target_data_file = os.path.abspath("Data/generated_data/" + self.data_set + "_data_target.h5")
 
         if not os.path.exists(os.path.abspath("Data/generated_data")):
             os.makedirs(os.path.abspath("Data/generated_data"))

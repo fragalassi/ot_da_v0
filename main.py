@@ -3,6 +3,7 @@
 # os.environ["CUDA_VISIBLE_DEVICES"]="1";
 
 from training_testing import train_isensee2017, predict, evaluate, create_test
+from patches_comparaison import train_jdot
 from activation_prediction import activation_prediction
 import config
 import sys
@@ -21,14 +22,14 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"],
 #                  depth_l = [5, 8], n_filters=[8, 16, 32], patch_shape_l=[16, 32], overlap_l=[0, 0.5],  n_exp = 30)
 
-batch_size = [64, 64]
+batch_size = [128, 64]
 initial_lr = [5e-3, 5e-3]
 loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"]
-depth = [ 5, 5]
+depth = [5, 5]
 n_filter = [16, 16]
-patch_shape = [32, 32]
-overlap = [1/4, 0]
-image_shape = [(256,256,176), (128,128,128)]
+patch_shape = [16, 32]
+overlap = [1/4, 1/4]
+image_shape = [(128,128,128), (128,128,128)]
 training_center = [["All"], ["All"]]
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
@@ -43,7 +44,7 @@ for i in range(df.shape[0]): #df.shape[0]
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=i+10, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
@@ -57,14 +58,12 @@ for i in range(df.shape[0]): #df.shape[0]
     # patch_comparaison = compare_patches.Compare_patches(conf)
     # patch_comparaison.main()
 
-    train = train_isensee2017.Train_Isensee(conf)
-    train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+    train_jd = train_jdot.Train_JDOT(conf)
+    train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    test = create_test.Test(conf)
-    test.main(overwrite_data=conf.overwrite_data)
+    # train = train_isensee2017.Train_Isensee(conf)
+    # train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    pred = predict.Predict(conf)
-    pred.main()
 
     eval = evaluate.Evaluate(conf)
     eval.main()

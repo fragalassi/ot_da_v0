@@ -4,10 +4,10 @@ import nibabel as nib
 import numpy as np
 import tables
 
-from .training import load_old_model
-from .utils import pickle_load
-from .utils.patches import reconstruct_from_patches, get_patch_from_3d_data, compute_patch_indices
-from .augment import permute_data, generate_permutation_keys, reverse_permute_data
+from unet3d.training import load_old_model
+from unet3d.utils import pickle_load
+from unet3d.utils.patches import reconstruct_from_patches, get_patch_from_3d_data, compute_patch_indices
+from unet3d.augment import permute_data, generate_permutation_keys, reverse_permute_data
 
 
 def patch_wise_prediction(model, data, overlap=0, batch_size=10, permute=False):

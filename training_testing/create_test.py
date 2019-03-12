@@ -47,23 +47,23 @@ class Test:
                                subject_ids=subject_ids)
         data_file_opened = open_data_file(self.config.data_file)
         # get training and testing generators
-        train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
-            data_file_opened,
-            batch_size=self.config.batch_size,
-            data_split=self.config.validation_split,
-            overwrite_data=overwrite_data,
-            validation_keys_file=self.config.validation_file,
-            training_keys_file=self.config.training_file,
-            n_labels=self.config.n_labels,
-            labels=self.config.labels,
-            patch_shape=self.config.patch_shape,
-            validation_batch_size=self.config.validation_batch_size,
-            validation_patch_overlap=self.config.validation_patch_overlap,
-            training_patch_start_offset=self.config.training_patch_start_offset,
-            permute=self.config.permute,
-            augment=self.config.augment,
-            skip_blank=self.config.skip_blank,
-            augment_flip=self.config.flip,
-            augment_distortion_factor=self.config.distort)
+        # train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
+        #     data_file_opened,
+        #     batch_size=self.config.batch_size,
+        #     data_split=self.config.validation_split,
+        #     overwrite_data=overwrite_data,
+        #     validation_keys_file=self.config.validation_file,
+        #     training_keys_file=self.config.training_file,
+        #     n_labels=self.config.n_labels,
+        #     labels=self.config.labels,
+        #     patch_shape=self.config.patch_shape,
+        #     validation_batch_size=self.config.validation_batch_size,
+        #     validation_patch_overlap=self.config.validation_patch_overlap,
+        #     training_patch_start_offset=self.config.training_patch_start_offset,
+        #     permute=self.config.permute,
+        #     augment=self.config.augment,
+        #     skip_blank=self.config.skip_blank,
+        #     augment_flip=self.config.flip,
+        #     augment_distortion_factor=self.config.distort)
 
         data_file_opened.close()
