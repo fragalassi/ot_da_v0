@@ -13,7 +13,7 @@ create_convolution_block = partial(create_convolution_block, activation=LeakyReL
 
 def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5, dropout_rate=0.3,
                       n_segmentation_levels=3, n_labels=1, optimizer=Adam, initial_learning_rate=5e-4,
-                      loss_function="weighted_dice_coefficient_loss", activation_name="sigmoid", shortcut=True, compile = False):
+                      loss_function="weighted_dice_coefficient_loss", activation_name="sigmoid", shortcut=True, compile = True):
                           
     """
     This function builds a model proposed by Isensee et al. for the BRATS 2017 competition:
