@@ -22,7 +22,7 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"],
 #                  depth_l = [5, 8], n_filters=[8, 16, 32], patch_shape_l=[16, 32], overlap_l=[0, 0.5],  n_exp = 30)
 
-batch_size = [64, 128]
+batch_size = [2, 128]
 initial_lr = [5e-3, 5e-3]
 loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"]
 depth = [5, 5]
@@ -44,7 +44,7 @@ for i in range(df.shape[0]): #df.shape[0]
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=True, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
@@ -58,17 +58,17 @@ for i in range(df.shape[0]): #df.shape[0]
     # patch_comparaison = compare_patches.Compare_patches(conf)
     # patch_comparaison.main()
 
-    # train_jd = train_jdot.Train_JDOT(conf)
-    # train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+    train_jd = train_jdot.Train_JDOT(conf)
+    train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    train = train_isensee2017.Train_Isensee(conf)
-    train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+    # train = train_isensee2017.Train_Isensee(conf)
+    # train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    test = create_test.Test(conf)
-    test.main(overwrite_data=conf.overwrite_data)
+    # test = create_test.Test(conf)
+    # test.main(overwrite_data=conf.overwrite_data)
 
-    pred = predict.Predict(conf)
-    pred.main()
+    # pred = predict.Predict(conf)
+    # pred.main()
 
     eval = evaluate.Evaluate(conf)
     eval.main()

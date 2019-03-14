@@ -69,6 +69,7 @@ class JDOT():
             intersection = K.sum(y_true_f * y_pred_f)
             return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
         self.dice_coefficient = dice_coefficient
+
         def dice_coefficient_loss(y_true, y_pred):
             return -dice_coefficient(y_true, y_pred)
 
@@ -176,7 +177,8 @@ class JDOT():
 
 
     def train_model(self, n_iteration):
-
+        hist_l = np.empty((0,2))
+        val_l = np.empty((0, 2))
         for i in range(n_iteration):
             print("Epoch:", i, "/", n_iteration)
             self.train_batch, self.validation_batch = self.get_batch()
@@ -188,20 +190,25 @@ class JDOT():
             K.set_value(self.gamma, self.compute_gamma(pred))
 
             hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
-            print("Loss:", hist[0], " Dice Score: ", hist[1])
+
+            hist_l = np.vstack((hist_l, hist))
+            ponderation = [1/2, 1/4, 1/8, 1/16, 1/16]
+            average = np.average(hist_l[-10:], axis=0)
+
+            print("Loss:", hist[0], " Dice Score: ", hist[1],"| Loss mean: ", average[0], "Dice Score mean:", average[1], "\n")
+
+            if i % 10 == 0:
+                val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
+                val_l = np.vstack((val_l, val))
+                print("======")
+                print("Validation Loss: ", val[0], "Dice Score :", val[1])
+                print("======", "\n")
+
+        np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
+        np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
 
         self.model.save(self.config.model_file)
-        prediction_dir = os.path.abspath(
-            "results/prediction/rev_" + str(self.config.rev) + "/prediction_" + self.config.data_set)
-        test = create_test.Test(self.config)
-        test.main(overwrite_data=self.config.overwrite_data)
-        self.run_validation_cases(validation_keys_file=self.config.validation_file,
-                             training_modalities=self.config.training_modalities,
-                             labels=self.config.labels,
-                             hdf5_file=self.config.data_file,
-                             output_label_map=True,
-                             overlap=self.config.validation_patch_overlap,
-                             output_dir=prediction_dir)
+
 
     def compute_gamma(self, pred):
         '''
@@ -227,8 +234,8 @@ class JDOT():
                                       (self.batch_size, self.config.patch_shape[0]*self.config.patch_shape[1]*self.config.patch_shape[2]))
 
         # Compute the distance between samples and between the source_truth and the target prediction.
-        C0 = cdist(train_vec_source, train_vec_target, metric="euclidean")
-        C1 = cdist(truth_vec_source, pred_vec_target, metric="euclidean")
+        C0 = cdist(train_vec_source, train_vec_target, metric="cosine")
+        C1 = cdist(truth_vec_source, pred_vec_target, metric="cosine")
 
         # Resulting cost metric
         C = self.jdot_alpha*C0+K.eval(self.tloss)*C1
@@ -238,6 +245,22 @@ class JDOT():
         gamma = ot.emd(ot.unif(self.batch_size), ot.unif(self.batch_size), C)
 
         return gamma
+
+    def evaluate_model(self):
+        """
+        Function to evaluate the trained model.
+        :return:
+        """
+        test = create_test.Test(self.config)
+        test.main(overwrite_data=self.config.overwrite_data)
+
+        self.run_validation_cases(validation_keys_file=self.config.validation_file,
+                                  training_modalities=self.config.training_modalities,
+                                  labels=self.config.labels,
+                                  hdf5_file=self.config.data_file,
+                                  output_label_map=True,
+                                  overlap=self.config.validation_patch_overlap,
+                                  output_dir=self.config.prediction_dir)
 
     def run_validation_cases(self, validation_keys_file, training_modalities, labels, hdf5_file,
                              output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False):

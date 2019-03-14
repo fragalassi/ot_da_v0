@@ -79,7 +79,8 @@ class Train_JDOT:
 
         jd = JDOT(model, self.config, source_data, target_data)
         jd.compile_model()
-        jd.train_model(20000)
+        jd.train_model(21)
+        jd.evaluate_model()
 
 
         # run training

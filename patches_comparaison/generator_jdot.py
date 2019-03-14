@@ -76,6 +76,7 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                         patch_start_offset=training_patch_start_offset,
                                         skip_blank=skip_blank,
                                         permute=permute)
+
     validation_batch = data_generator_jdot(source_data_file, target_data_file, source_validation_list,  target_validation_list,
                                           batch_size=validation_batch_size,
                                           n_labels=n_labels,
@@ -84,39 +85,7 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                           patch_overlap=validation_patch_overlap,
                                           skip_blank=skip_blank)
 
-    # Set the number of training and testing samples per epoch correctly
-    # total_number_of_patches = get_number_of_patches(source_data_file, source_training_list, patch_shape,
-    #                                                                skip_blank=skip_blank,
-    #                                                                patch_start_offset=training_patch_start_offset,
-    #                                                                patch_overlap = validation_patch_overlap,
-    #                                                                )
-    # total_number_of_patches += get_number_of_patches(target_data_file, target_training_list, patch_shape,
-    #                                                                skip_blank=skip_blank,
-    #                                                                patch_start_offset=training_patch_start_offset,
-    #                                                                patch_overlap = validation_patch_overlap,
-    #                                                                )
-    #
-    # num_training_steps = get_number_of_steps(total_number_of_patches, batch_size)
-    #
-    # print("Number of training steps: ", num_training_steps)
-    #
-    # validation_number_of_patches = get_number_of_patches(source_data_file, source_validation_list, patch_shape,
-    #                                                                skip_blank=skip_blank,
-    #                                                                patch_start_offset=training_patch_start_offset,
-    #                                                                patch_overlap = validation_patch_overlap,
-    #                                                                )
-    # validation_number_of_patches += get_number_of_patches(target_data_file, target_validation_list, patch_shape,
-    #                                                      skip_blank=skip_blank,
-    #                                                      patch_start_offset=training_patch_start_offset,
-    #                                                      patch_overlap=validation_patch_overlap,
-    #                                                      )
-    #
-    # num_validation_steps = get_number_of_steps(validation_number_of_patches,
-    #                                            validation_batch_size)
-    #
-    # print("Number of validation steps: ", num_validation_steps)
-
-    return training_batch, validation_batch #, num_training_steps, num_validation_steps
+    return training_batch, validation_batch
 
 
 def get_number_of_steps(n_samples, batch_size):

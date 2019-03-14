@@ -71,8 +71,8 @@ class Config:
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
 
-        self.flip = False  # augments the data by randomly flipping an axis during
-        self.permute = False  # data shape must be a cube. Augments the data by permuting in various directions
+        self.flip = True  # augments the data by randomly flipping an axis during
+        self.permute = True  # data shape must be a cube. Augments the data by permuting in various directions
         self.distort = None  # switch to None if you want no distortion
         self.augment = self.permute or self.distort
         self.validation_patch_overlap = int(float(overlap)*float(patch_shape))  # if > 0, during training, validation patches will be overlapping
@@ -80,7 +80,7 @@ class Config:
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = False  # if True, then patches without any target will be skipped
 
-        self.overwrite_data = True  # If True, will previous files. If False, will use previously written files.
+        self.overwrite_data = False  # If True, will previous files. If False, will use previously written files.
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
@@ -95,5 +95,8 @@ class Config:
         self.model_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_2017_model_rev"+str(self.rev)+".h5")
         self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids.pkl")
         self.validation_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids.pkl")
+
+        self.save_dir =  os.path.abspath("results/prediction/rev_" + str(self.rev))
+        self.prediction_dir = os.path.abspath("results/prediction/rev_" + str(self.rev) + "/prediction_" + self.data_set)
 
 
