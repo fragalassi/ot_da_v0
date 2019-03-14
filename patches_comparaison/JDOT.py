@@ -8,6 +8,7 @@ import os
 import numpy as np
 import ot
 from training_testing import create_test
+import time
 
 class JDOT():
 
@@ -181,7 +182,10 @@ class JDOT():
         val_l = np.empty((0, 2))
         for i in range(n_iteration):
             print("Epoch:", i, "/", n_iteration)
+            start = time.time()
             self.train_batch, self.validation_batch = self.get_batch()
+            end = time.time()
+            print("Time for loading: ",start - end)
             K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
             K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
 
