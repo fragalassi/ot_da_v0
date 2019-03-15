@@ -11,7 +11,7 @@ import pandas as pd
 import random
 import nibabel as nib
 import itertools
-f
+
 class Compare_patches:
 
     def __init__(self, conf):
