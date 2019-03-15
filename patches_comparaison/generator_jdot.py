@@ -250,7 +250,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
 
     return x_list, y_list
 
-def data_generator_jdot_multi_proc(source_data_file, target_data_file, source_index_list, target_index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
+def data_generator_jdot(source_data_file, target_data_file, source_index_list, target_index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
                    augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
                    shuffle_index_list=True, skip_blank=True, permute=False):
     '''
