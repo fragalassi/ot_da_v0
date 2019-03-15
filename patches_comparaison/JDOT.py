@@ -172,7 +172,8 @@ class JDOT():
             augment=self.config.augment,
             skip_blank=self.config.skip_blank,
             augment_flip=self.config.flip,
-            augment_distortion_factor=self.config.distort)
+            augment_distortion_factor=self.config.distort,
+            number_of_threads= self.config.number_of_threads)
 
         return train_batch, validation_batch
 

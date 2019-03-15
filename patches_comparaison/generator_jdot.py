@@ -17,7 +17,7 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                            data_split=0.8, overwrite_data=False, labels=None, augment=False,
                                            augment_flip=True, augment_distortion_factor=0.25, patch_shape=None,
                                            validation_patch_overlap=0, training_patch_overlap = 0, training_patch_start_offset=None,
-                                           validation_batch_size=None, skip_blank=True, permute=False):
+                                           validation_batch_size=None, skip_blank=True, permute=False, number_of_threads = 64):
     """
     Creates the training and validation generators that can be used when training the model.
     :param skip_blank: If True, any blank (all-zero) label images/patches will be skipped by the data generator.
@@ -57,7 +57,7 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                                           data_split=data_split,
                                                           overwrite_data=overwrite_data,
                                                           training_file=training_keys_file,
-                                                          validation_file=validation_keys_file)
+                                                          validation_file=validation_keys_file,)
 
     target_training_list, target_validation_list = get_validation_split(target_data_file,
                                                           data_split=data_split,
@@ -77,7 +77,8 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                         patch_start_offset=training_patch_start_offset,
                                         skip_blank=skip_blank,
                                         shuffle_index_list=True,
-                                        permute=permute)
+                                        permute=permute,
+                                        number_of_threads = number_of_threads)
 
     validation_batch = data_generator_jdot_multi_proc(source_data_file, target_data_file, source_validation_list,  target_validation_list,
                                           batch_size=validation_batch_size,
@@ -85,8 +86,9 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                           labels=labels,
                                           patch_shape=patch_shape,
                                           patch_overlap=validation_patch_overlap,
-                                           shuffle_index_list=True,
-                                          skip_blank=skip_blank)
+                                          shuffle_index_list=True,
+                                          skip_blank=skip_blank,
+                                          number_of_threads = number_of_threads)
 
     return training_batch, validation_batch
 
@@ -156,11 +158,10 @@ def data_generator_jdot_multi_proc(source_data_file, target_data_file, source_in
     '''
     source_orig_index_list = source_index_list
     target_orig_index_list = target_index_list
-
+    print(number_of_threads)
     while True:
         x_list = list()
         y_list = list()
-        number_of_threads = number_of_threads
         if patch_shape:
             source_index_list = create_patch_index_list(source_orig_index_list, source_data_file.root.data.shape[-3:], patch_shape,
                                                  patch_overlap, patch_start_offset)

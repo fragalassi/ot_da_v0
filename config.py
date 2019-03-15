@@ -47,6 +47,8 @@ class Config:
         self.source_center = ["01"]
         self.target_center = ["08"]
 
+        self.number_of_threads = 2
+
         self.labels=(1)
         self.n_labels=1
 
