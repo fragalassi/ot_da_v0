@@ -14,6 +14,8 @@ import matplotlib
 from patches_comparaison import compare_patches
 from keras import backend as K
 from Config import create_config
+from multiprocessing.pool import ThreadPool
+import os
 
 
 sys.path.append('/udd/aackaouy/OT-DA/')
@@ -22,7 +24,7 @@ sys.path.append('/udd/aackaouy/OT-DA/')
 #                  loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"],
 #                  depth_l = [5, 8], n_filters=[8, 16, 32], patch_shape_l=[16, 32], overlap_l=[0, 0.5],  n_exp = 30)
 
-batch_size = [2, 128]
+batch_size = [64, 128]
 initial_lr = [5e-3, 5e-3]
 loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"]
 depth = [5, 5]

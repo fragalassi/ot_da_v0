@@ -185,7 +185,7 @@ class JDOT():
             start = time.time()
             self.train_batch, self.validation_batch = self.get_batch()
             end = time.time()
-            print("Time for loading: ",start - end)
+            print("Time for loading: ",end - start)
             K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
             K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
 

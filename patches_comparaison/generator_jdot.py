@@ -8,7 +8,8 @@ import numpy as np
 from unet3d.utils import pickle_dump, pickle_load
 from unet3d.utils.patches import compute_patch_indices, get_random_nd_index, get_patch_from_3d_data
 from unet3d.augment import augment_data, random_permutation_x_y
-
+from multiprocessing.pool import Pool
+from time import time
 
 
 
@@ -64,7 +65,7 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                                           training_file=training_keys_file,
                                                           validation_file=validation_keys_file)
 
-    training_batch = data_generator_jdot(source_data_file, target_data_file, source_training_list, target_training_list,
+    training_batch = data_generator_jdot_multi_proc(source_data_file, target_data_file, source_training_list, target_training_list,
                                         batch_size=batch_size,
                                         n_labels=n_labels,
                                         labels=labels,
@@ -75,14 +76,16 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                         patch_overlap=training_patch_overlap,
                                         patch_start_offset=training_patch_start_offset,
                                         skip_blank=skip_blank,
+                                        shuffle_index_list=True,
                                         permute=permute)
 
-    validation_batch = data_generator_jdot(source_data_file, target_data_file, source_validation_list,  target_validation_list,
+    validation_batch = data_generator_jdot_multi_proc(source_data_file, target_data_file, source_validation_list,  target_validation_list,
                                           batch_size=validation_batch_size,
                                           n_labels=n_labels,
                                           labels=labels,
                                           patch_shape=patch_shape,
                                           patch_overlap=validation_patch_overlap,
+                                           shuffle_index_list=True,
                                           skip_blank=skip_blank)
 
     return training_batch, validation_batch
@@ -126,7 +129,128 @@ def split_list(input_list, split=0.8, shuffle_list=True):
     testing = input_list[n_training:]
     return training, testing
 
-def data_generator_jdot(source_data_file, target_data_file, source_index_list, target_index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
+def data_generator_jdot_multi_proc(source_data_file, target_data_file, source_index_list, target_index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
+                   augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
+                   shuffle_index_list=True, skip_blank=True, permute=False, number_of_threads = 64):
+    '''
+    Create a batch for jdot:
+    source data: x_list[:batch_size]
+    target data: y_list[batch_size:]
+
+    :param data_file:
+    :param index_list:
+    :param batch_size:
+    :param n_labels:
+    :param labels:
+    :param augment:
+    :param augment_flip:
+    :param augment_distortion_factor:
+    :param patch_shape:
+    :param patch_overlap:
+    :param patch_start_offset:
+    :param shuffle_index_list:
+    :param skip_blank:
+    :param permute:
+    :param number_of_threads: Parameter to set the max number of threads used for the loading
+    :return:
+    '''
+    source_orig_index_list = source_index_list
+    target_orig_index_list = target_index_list
+
+    while True:
+        x_list = list()
+        y_list = list()
+        number_of_threads = number_of_threads
+        if patch_shape:
+            source_index_list = create_patch_index_list(source_orig_index_list, source_data_file.root.data.shape[-3:], patch_shape,
+                                                 patch_overlap, patch_start_offset)
+
+            target_index_list = create_patch_index_list(target_orig_index_list, source_data_file.root.data.shape[-3:],
+                                                        patch_shape,
+                                                        patch_overlap, patch_start_offset)
+        else:
+            source_index_list = copy.copy(source_orig_index_list)
+            target_index_list = copy.copy(target_orig_index_list)
+
+        if shuffle_index_list:
+            shuffle(source_index_list)
+
+        x_list, y_list = multi_proc_loop(source_index_list, source_data_file, x_list, y_list, batch_size = batch_size,
+                                         stopping_criterion= batch_size, number_of_threads = number_of_threads,
+                                         patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
+                                         augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
+                                         permute=permute)
+
+        if shuffle_index_list:
+            shuffle(target_index_list)
+
+        x_list, y_list = multi_proc_loop(target_index_list, target_data_file, x_list, y_list, batch_size = batch_size,
+                                         stopping_criterion= batch_size*2, number_of_threads = number_of_threads,
+                                         patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
+                                         augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
+                                         permute=permute)
+        return convert_data(x_list, y_list, n_labels=n_labels, labels=labels)
+
+def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stopping_criterion = 64,
+                    number_of_threads = 64, patch_shape = 16, augment = False, augment_flip = False,
+                    augment_distortion_factor = None, skip_blank = False, permute = False):
+    '''
+    The loop for loading data with multiprocess.
+    :param index_list:
+    :param data_file:
+    :param x_list:
+    :param y_list:
+    :param batch_size:
+    :param stopping_criterion:
+    :param number_of_threads:
+    :param patch_shape:
+    :param augment:
+    :param augment_flip:
+    :param augment_distortion_factor:
+    :param skip_blank:
+    :param permute:
+    :return:
+    '''
+    remaining_batch = batch_size
+    while len(index_list) > 0:
+        # Two verifications for the remaining samples to put in the batch.
+        # We want set the number_of_threads to the number of samples remaining
+        if remaining_batch < number_of_threads:
+            n = remaining_batch
+        elif len(index_list) > number_of_threads:
+            n = number_of_threads
+        else:
+            n = len(index_list)
+        pool = Pool(number_of_threads)
+        results = []
+        start = time()
+        for i in range(n):
+            index = index_list.pop()
+            data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape)
+            if patch_shape is not None:
+                affine = data_file.root.affine[index[0]]
+            else:
+                affine = data_file.root.affine[index]
+
+            results.append(pool.apply_async(add_data_mp, args=(data, truth, affine, index, augment, augment_flip,
+                                                               augment_distortion_factor, patch_shape, skip_blank,
+                                                               permute)))
+        pool.close()
+        pool.join()
+        results = [r.get() for r in results]
+
+        for i in range(len(results)):
+            x_list.append(results[i][0][0])
+            y_list.append(results[i][1][0])
+        end = time()
+        remaining_batch = remaining_batch - n
+
+        if len(x_list) == stopping_criterion or (len(index_list) == 0 and len(x_list) > 0):
+            break
+
+    return x_list, y_list
+
+def data_generator_jdot_multi_proc(source_data_file, target_data_file, source_index_list, target_index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
                    augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
                    shuffle_index_list=True, skip_blank=True, permute=False):
     '''
@@ -184,6 +308,7 @@ def data_generator_jdot(source_data_file, target_data_file, source_index_list, t
                     augment_distortion_factor=augment_distortion_factor, patch_shape=patch_shape,
                     skip_blank=skip_blank, permute=permute)
             if len(x_list) == 2*batch_size or (len(target_index_list) == 0 and len(x_list) > 0):
+
                 return convert_data(x_list, y_list, n_labels=n_labels, labels=labels)
 
 
@@ -254,6 +379,46 @@ def add_data(x_list, y_list, data_file, index, augment=False, augment_flip=False
     if not skip_blank or np.any(truth != 0):
         x_list.append(data)
         y_list.append(truth)
+
+
+def add_data_mp(data, truth, affine, index, augment=False, augment_flip=False, augment_distortion_factor=0.25,
+             patch_shape=False, skip_blank=True, permute=False):
+    """
+    Adds data from the data file to the given lists of feature and target data
+    :param skip_blank: Data will not be added if the truth vector is all zeros (default is True).
+    :param patch_shape: Shape of the patch to add to the data lists. If None, the whole image will be added.
+    :param x_list: list of data to which data from the data_file will be appended.
+    :param y_list: list of data to which the target data from the data_file will be appended.
+    :param data_file: hdf5 data file.
+    :param index: index of the data file from which to extract the data.
+    :param augment: if True, data will be augmented according to the other augmentation parameters (augment_flip and
+    augment_distortion_factor)
+    :param augment_flip: if True and augment is True, then the data will be randomly flipped along the x, y and z axis
+    :param augment_distortion_factor: if augment is True, this determines the standard deviation from the original
+    that the data will be distorted (in a stretching or shrinking fashion). Set to None, False, or 0 to prevent the
+    augmentation from distorting the data in this way.
+    :param permute: will randomly permute the data (data must be 3D cube)
+    :return:
+    """
+    x_list = []
+    y_list = []
+    # print(os.getpid())
+    if augment:
+        data, truth = augment_data(data, truth, affine, flip=augment_flip, scale_deviation=augment_distortion_factor)
+
+    if permute:
+        if data.shape[-3] != data.shape[-2] or data.shape[-2] != data.shape[-1]:
+            raise ValueError("To utilize permutations, data array must be in 3D cube shape with all dimensions having "
+                             "the same length.")
+        data, truth = random_permutation_x_y(data, truth[np.newaxis])
+    else:
+        truth = truth[np.newaxis]
+
+    if not skip_blank or np.any(truth != 0):
+        x_list.append(data)
+        y_list.append(truth)
+
+    return (x_list, y_list)
 
 
 def get_data_from_file(data_file, index, patch_shape=None):
