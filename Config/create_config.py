@@ -72,7 +72,7 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
 
 def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[],
                        n_filter=[], patch_shape = [], overlap = [], training_center = [],
-                       image_shape = [],
+                       image_shape = [], augmentation = [],
                        n_repeat = 1):
     '''
     Create configuration from the list.
@@ -85,7 +85,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
     :param n_repeat: The number of times we want each experience to be repeated
     :return: A data-frame with all the experiences
     '''
-    lists = [batch_size, initial_lr, loss_funcs, depth, patch_shape, overlap, training_center, image_shape]
+    lists = [batch_size, initial_lr, loss_funcs, depth, patch_shape, overlap, training_center, image_shape, augmentation]
     it = iter(lists)
     the_len = len(next(it))
     print(training_center*n_repeat)
@@ -94,10 +94,10 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
     else:
         df = pd.DataFrame(np.array([batch_size*n_repeat, initial_lr*n_repeat, loss_funcs*n_repeat,
                                     depth*n_repeat, n_filter*n_repeat, patch_shape*n_repeat,
-                                    overlap*n_repeat, training_center*n_repeat, image_shape*n_repeat], dtype=object)).T
+                                    overlap*n_repeat, training_center*n_repeat, image_shape*n_repeat, augmentation*n_repeat], dtype=object)).T
         df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth",
                       "Number of filters", "Patch shape", "Overlap", "Training centers",
-                      "Image shape"]
+                      "Image shape", "Augmentation"]
     save_path = os.path.abspath("Config/")
     if not os.path.exists(save_path):
         os.makedirs(save_path)

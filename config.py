@@ -10,7 +10,7 @@ setting test to false in main.py result in using only two examples and a reduce 
 class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
-                 image_shape = (128,128,128) , niseko=True, shortcut=True):
+                 image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -73,8 +73,12 @@ class Config:
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
 
-        self.flip = True  # augments the data by randomly flipping an axis during
-        self.permute = True  # data shape must be a cube. Augments the data by permuting in various directions
+
+        '''
+        If augmentation is set to true, both flip and permutation transforms are taken into account.
+        '''
+        self.flip = augmentation  # augments the data by randomly flipping an axis during
+        self.permute = augmentation  # data shape must be a cube. Augments the data by permuting in various directions
         self.distort = None  # switch to None if you want no distortion
         self.augment = self.permute or self.distort
         self.validation_patch_overlap = int(float(overlap)*float(patch_shape))  # if > 0, during training, validation patches will be overlapping

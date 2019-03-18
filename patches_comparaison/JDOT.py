@@ -50,13 +50,27 @@ class JDOT():
 
 
         def jdot_loss(y_true, y_pred):
+            '''
+            Custom jdot_loss function.
+            :param y_true:
+            :param y_pred:
+            :return: A sum of the source_loss and the OT loss.
+            '''
 
             truth_source = y_true[:self.batch_size, :]  # source true labels
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
 
+            '''
+            Compute the loss function of the source samples.
+            '''
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
 
+            '''
+            Compute the cosine distance between each of the source samples and each of the target samples.
+            It returns a matrix (batch_size, batch_size).
+            This cosine distance is computed both in the image space and in the truth/prediction space.
+            '''
             cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
 
@@ -76,74 +90,31 @@ class JDOT():
 
         def cos_distance(x,y):
             """
-            Function to compute the cosine distance between two vectors.
+            Function to compute the cosine distance between two tensors.
             :param x:
             :param y:
             :return:
             """
             x = K.l2_normalize(x, axis=-1)
             y = K.l2_normalize(y, axis=-1)
-            return 1-K.sum(x*y, axis=-1)
+            return 1 - K.dot(x,K.transpose(y))
 
-        # x = np.array([[2, 5, 10], [64, 47, 10]])
-        # y = np.array([[1, 5,4], [4, 22, 156]])
+        '''
+        Uncomment to check if cos_distance is computing the right values.
+        '''
+        # x = np.array([[2, 5, 10], [64, 47, 10], [45, 35, 47]])
+        # y = np.array([[2, 5,10], [4, 22, 156], [547, 48, 7]])
         # print(cosine(x[0],y[0]))
-        # print(cosine(x[1],y[1]))
+        # print(cosine(x[0], y[1]))
+        # print(cosine(x[1],y[0]))
         # print("Evaluation: ", K.eval(cos_distance(K.constant(x), K.constant(y))))
-
-        def classifier_cat_loss(y_true, y_pred):
-            '''
-            classifier loss based on categorical cross entropy in the target domain
-            1:batch_size - is source samples
-            batch_size:end - is target samples
-            self.gamma - is the optimal transport plan
-            '''
-            # source cross entropy loss
-            ys = y_true[:self.batch_size, :]  # source true labels
-            ypred_t = y_pred[self.batch_size:, :]  # target prediction
-            source_ypred = y_pred[:self.batch_size, :]  # source prediction
-            source_loss = K.mean(K.categorical_crossentropy(ys, source_ypred))
-
-            # categorical cross entropy loss
-            ypred_t = K.log(ypred_t)
-            # loss calculation based on double sum (sum_ij (ys^i, ypred_t^j))
-            loss = -K.dot(K.batch_flatten(ys), K.transpose(K.batch_flatten(ypred_t)))
-            # returns source loss + target loss
-            return self.train_cl * (self.tloss * K.sum(self.gamma * loss) + self.sloss * source_loss)
-
-        self.classifier_cat_loss = classifier_cat_loss
-
-        def L2_dist(x, y):
-            '''
-            compute the squared L2 distance between two matrices
-            '''
-            dist = K.reshape(K.sum(K.square(x), 1), (-1, 1))
-            dist += K.reshape(K.sum(K.square(y), 1), (1, -1))
-            dist -= 2.0 * K.dot(x, K.transpose(y))
-            return dist
-
-            # feature allignment loss
-
-        def align_loss(y_true, y_pred):
-            '''
-            source and target alignment loss in the intermediate layers of the target model
-            allignment is performed in the target model (both source and target features are from target model)
-            y-true - is dummy value( that is full of zeros)
-            y-pred - is the value of intermediate layers in the target model
-            1:batch_size - is source samples
-            batch_size:end - is target samples
-            '''
-            # source domain features
-            gs = y_pred[:self.batch_size, :]
-            # target domain features
-            gt = y_pred[self.batch_size:, :]
-            gdist = L2_dist(gs, gt)
-            return self.jdot_alpha * K.sum(self.gamma * (gdist))
-
-        self.align_loss = align_loss
 
 
     def compile_model(self):
+        '''
+        Compilation with the custom loss function and the metrics.
+        :return:
+        '''
         self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient])
 
 
@@ -179,6 +150,13 @@ class JDOT():
 
 
     def train_model(self, n_iteration):
+        '''
+        For every iteration we first load a batch and compute a prediction on this batch.
+        From this prediction we compute the OT gamma.
+        We then train the newtork given the OT and the batch.
+        :param n_iteration:
+        :return:
+        '''
         hist_l = np.empty((0,2))
         val_l = np.empty((0, 2))
         for i in range(n_iteration):
@@ -266,6 +244,7 @@ class JDOT():
                                   output_label_map=True,
                                   overlap=self.config.validation_patch_overlap,
                                   output_dir=self.config.prediction_dir)
+
 
     def run_validation_cases(self, validation_keys_file, training_modalities, labels, hdf5_file,
                              output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False):

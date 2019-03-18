@@ -53,6 +53,9 @@ class Train_JDOT:
     def main(self, overwrite_data=True, overwrite_model=True):
         # convert input images into an hdf5 file
         if overwrite_data or not os.path.exists(self.config.data_file):
+            '''
+            We write two files, one with source samples and one with target samples.
+            '''
             source_data_files, target_data_files, subject_ids_source, subject_ids_target = self.fetch_training_data_files(return_subject_ids=True)
             write_data_to_file(source_data_files, self.config.source_data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids_source)
@@ -67,7 +70,7 @@ class Train_JDOT:
         if not overwrite_model and os.path.exists(self.config.model_file):
             model = load_old_model(self.config.model_file)
         else:
-            # instantiate new model
+            # instantiate new model, compile = False because the compilation is made in JDOT.py
 
             model = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
                                       initial_learning_rate=self.config.initial_learning_rate,
