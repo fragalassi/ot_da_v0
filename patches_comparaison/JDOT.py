@@ -74,7 +74,7 @@ class JDOT():
             cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
 
-            return source_loss + K.sum(self.gamma*(cos_distance_samples + cos_distance_pred))
+            return source_loss + K.sum(self.gamma*(0.001*cos_distance_samples + 0.0001*cos_distance_pred))
 
         self.jdot_loss = jdot_loss
 
