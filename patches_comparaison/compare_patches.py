@@ -18,7 +18,7 @@ class Compare_patches:
         self.config = conf
         create = create_test.Test(self.config)
         self.fetch_testing_data_files = create.fetch_testing_data_files
-        self.patch_shape = (32, 32, 16)
+        self.patch_shape = (16, 16, 16)
 
 
     def main(self, one_patch = True):
@@ -138,23 +138,8 @@ class Compare_patches:
 
 
     def compare_patches(self, x_a, y_a, x_b, y_b):
-        c = 1-dice_coef_loss(x_a, x_b)
-        print(c)
-        if np.mean(y_a) != 0 and np.mean(y_b) != 0:
-            cos = cosine(y_a.ravel(), y_b.ravel())
-            di = dice_coef_loss(y_a, y_b)
-            euc = euclidean(y_a.ravel(), y_b.ravel())
-            jac = jaccard(y_a.ravel(), y_b.ravel())
-            BC = braycurtis(y_a.ravel(), y_b.ravel())
-            vol_a = np.count_nonzero(y_a)
-            vol_b = np.count_nonzero(y_b)
-            d_vol = (vol_a - vol_b)/y_a.size
-            d = 1-di
-        elif np.mean(y_a) == 0 and np.mean(y_b) == 0:
-            d= 0.5
-        else:
-            d = 0
-
+        c = 1-euclidean(x_a.ravel(), x_b.ravel())
+        d = 1-euclidean(y_a.ravel(), y_b.ravel())
         return c, d
 
     def select_patches(self, results_df, data_file):

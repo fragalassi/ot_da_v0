@@ -66,6 +66,11 @@ for i in range(df.shape[0]): #df.shape[0]
                          niseko=True, shortcut=True)
 
     '''
+    To compare patches
+    '''
+    # comp = compare_patches.Compare_patches(conf)
+    # comp.main()
+    '''
     For JDOT, uncomment this part
     '''
     train_jd = train_jdot.Train_JDOT(conf)
@@ -78,8 +83,6 @@ for i in range(df.shape[0]): #df.shape[0]
     For normal training uncomment this part
     '''
 
-    # train = train_isensee2017.Train_Isensee(conf)
-    # train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
     #
     # test = create_test.Test(conf)
     # test.main(overwrite_data=conf.overwrite_data)

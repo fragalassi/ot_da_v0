@@ -1,6 +1,6 @@
 from keras import backend as K
 from patches_comparaison.generator_jdot import get_training_and_validation_batch_jdot
-from scipy.spatial.distance import cdist, cosine
+from scipy.spatial.distance import cdist, cosine, euclidean
 from unet3d.utils import pickle_load
 import tables
 from unet3d.prediction import run_validation_case
@@ -67,14 +67,18 @@ class JDOT():
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
 
             '''
-            Compute the cosine distance between each of the source samples and each of the target samples.
+            Compute the euclidean distance between each of the source samples and each of the target samples.
             It returns a matrix (batch_size, batch_size).
-            This cosine distance is computed both in the image space and in the truth/prediction space.
+            This euclidean distance is computed both in the image space and in the truth/prediction space.
             '''
-            cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
-            cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+            # cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
+            # cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
 
-            return source_loss + K.sum(self.gamma*(K.abs(cos_distance_samples - cos_distance_pred)))
+            euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
+            euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+
+
+            return source_loss + K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
@@ -99,15 +103,35 @@ class JDOT():
             y = K.l2_normalize(y, axis=-1)
             return 1 - K.dot(x,K.transpose(y))
 
+        def euclidean_dist(x,y):
+            """
+            The euclidean distance between x and y is the length of the displacement vector x - y:
+            ||x-y||² = <x-y,x-y> (in the demonstration we take the square of the euclidean distance).
+            <x-y,x-y> = <x,x> - <x,y> - <y,x> + <y,y>
+            As both x and y lie in R, the dot product <.,.> is symmetric. Therefore: <x,y> = <y,x>.
+            We can write:
+            <x-y,x-y> = <x,x> - 2*<x,y> + <y,y>
+            <x-y,x-y> = x'x - 2x'y + y'y
+            :param x:
+            :param y:
+            :return:
+            """
+            dist = K.reshape(K.sum(K.square(x),1), (-1,1))
+            dist += K.reshape(K.sum(K.square(y),1), (1,-1))
+            dist -= 2.0*K.dot(x, K.transpose(y))
+
+            return K.sqrt(dist)
+
+
         '''
-        Uncomment to check if cos_distance is computing the right values.
+        Uncomment to check if cos_distance/euclidean_dist is computing the right values.
         '''
-        # x = np.array([[2, 5, 10], [64, 47, 10], [45, 35, 47]])
-        # y = np.array([[2, 5,10], [4, 22, 156], [547, 48, 7]])
-        # print(cosine(x[0],y[0]))
-        # print(cosine(x[0], y[1]))
-        # print(cosine(x[1],y[0]))
-        # print("Evaluation: ", K.eval(cos_distance(K.constant(x), K.constant(y))))
+        # x = np.array([[0, 0, 0], [64, 47, 10], [45, 35, 47]])
+        # y = np.array([[0, 0, 0], [4, 22, 156], [547, 48, 7]])
+        # print(euclidean(x[0],y[0]))
+        # print(euclidean(x[0], y[1]))
+        # print(euclidean(x[2],y[2]))
+        # print("Evaluation: \n", K.eval(euclidean_dist(K.constant(x), K.constant(y))))
 
 
     def compile_model(self):
