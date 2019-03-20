@@ -78,7 +78,7 @@ class JDOT():
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
 
 
-            return source_loss + K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+            return source_loss + K.sum(self.gamma*(K.abs(0.001*euc_distance_samples - 0.001*euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
