@@ -141,13 +141,13 @@ class JDOT():
         Compilation with the custom loss function and the metrics.
         :return:
         '''
-        if self.config.jdot:
+        if self.config.train_jdot:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient])
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
 
 
-    def get_batch(self):
+    def get_batch(self, target = True, validation=False):
         """
         Function to get a random batch of source and target images
         :return: Two tuples (image samples,ground_truth). From 0 to the batch_size the image samples belong to the
@@ -173,11 +173,13 @@ class JDOT():
             skip_blank=self.config.skip_blank,
             augment_flip=self.config.flip,
             augment_distortion_factor=self.config.distort,
-            number_of_threads= self.config.number_of_threads)
+            number_of_threads= self.config.number_of_threads,
+            target=target,
+            validation = validation)
 
         return train_batch, validation_batch
 
-    def train_model_jdot(self, n_iteration):
+    def train_model(self, n_iteration):
         '''
         For every iteration we first load a batch and compute a prediction on this batch.
         From this prediction we compute the OT gamma.
@@ -190,8 +192,13 @@ class JDOT():
         val_l = np.empty((0, 2))
         for i in range(n_iteration):
             print("Epoch:", i, "/", n_iteration)
+            if i % 10 == 0:
+                validation = True
+            else:
+                validation = False
+
             start = time.time()
-            self.train_batch, self.validation_batch = self.get_batch()
+            self.train_batch, self.validation_batch = self.get_batch(target=True, validation=validation)
             end = time.time()
             print("Time for loading: ",end - start)
             K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
@@ -204,12 +211,11 @@ class JDOT():
             hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
 
             hist_l = np.vstack((hist_l, hist))
-            ponderation = [1/2, 1/4, 1/8, 1/16, 1/16]
             average = np.average(hist_l[-10:], axis=0)
 
             print("Loss:", hist[0], " Dice Score: ", hist[1],"| Loss mean: ", average[0], "Dice Score mean:", average[1], "\n")
 
-            if i % 10 == 0:
+            if validation:
                 val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
                 val_l = np.vstack((val_l, val))
                 print("======")
@@ -221,15 +227,39 @@ class JDOT():
 
         self.model.save(self.config.model_file)
 
-    def train_model(self, n_iteration):
+    def train_model_on_source(self, n_iteration):
         hist_l = np.empty((0,2))
         val_l = np.empty((0, 2))
         for i in range(n_iteration):
-            print("Epoch:", i, "/", n_iteration)
-            start = time.time()
-            self.train_batch, self.validation_batch = self.get_batch()
-            end = time.time()
 
+            print("Epoch:", i, "/", n_iteration)
+            if i % 10 == 0:
+                validation = True
+            else:
+                validation = False
+            start = time.time()
+            self.train_batch, self.validation_batch = self.get_batch(target=False, validation=validation)
+            end = time.time()
+            print("Time for loading: ",end - start)
+            hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
+
+            hist_l = np.vstack((hist_l, hist))
+            average = np.average(hist_l[-10:], axis=0)
+
+            print("Loss:", hist[0], " Dice Score: ", hist[1], "| Loss mean: ", average[0], "Dice Score mean:",
+                  average[1], "\n")
+
+            if validation:
+                val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
+                val_l = np.vstack((val_l, val))
+                print("======")
+                print("Validation Loss: ", val[0], "Dice Score :", val[1])
+                print("======", "\n")
+
+        np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
+        np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
+
+        self.model.save(self.config.model_file)
 
     def compute_gamma(self, pred):
         '''

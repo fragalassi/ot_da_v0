@@ -17,7 +17,8 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                            data_split=0.8, overwrite_data=False, labels=None, augment=False,
                                            augment_flip=True, augment_distortion_factor=0.25, patch_shape=None,
                                            validation_patch_overlap=0, training_patch_overlap = 0, training_patch_start_offset=None,
-                                           validation_batch_size=None, skip_blank=True, permute=False, number_of_threads = 64):
+                                           validation_batch_size=None, skip_blank=True, permute=False, number_of_threads = 64,
+                                           target = True, validation = False):
     """
     Creates the training and validation generators that can be used when training the model.
     :param skip_blank: If True, any blank (all-zero) label images/patches will be skipped by the data generator.
@@ -63,11 +64,11 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                                           overwrite_data=overwrite_data,
                                                           training_file=training_keys_file,
                                                           validation_file=validation_keys_file)
-    start = time()
 
 
-
-    training_batch = data_generator_jdot_multi_proc(source_data_file, target_data_file, source_training_list, target_training_list,
+    source_training_x, source_training_y, source_validation_x, source_validation_y = data_generator_jdot_multi_proc(source_data_file,
+                                        source_training_list,source_validation_list,
+                                        validation=validation,
                                         batch_size=batch_size,
                                         n_labels=n_labels,
                                         labels=labels,
@@ -80,24 +81,38 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                         skip_blank=skip_blank,
                                         shuffle_index_list=True,
                                         permute=permute,
-                                        number_of_threads = number_of_threads)
-    end = time()
-    print("Training batch", end - start)
+                                        number_of_threads = number_of_threads,
+                                        )
+    if target:
+        target_training_x, target_training_y, target_validation_x, target_validation_y = data_generator_jdot_multi_proc(target_data_file,
+                                            target_training_list,target_validation_list,
+                                            validation=validation,
+                                            batch_size=batch_size,
+                                            n_labels=n_labels,
+                                            labels=labels,
+                                            augment=augment,
+                                            augment_flip=augment_flip,
+                                            augment_distortion_factor=augment_distortion_factor,
+                                            patch_shape=patch_shape,
+                                            patch_overlap=training_patch_overlap,
+                                            patch_start_offset=training_patch_start_offset,
+                                            skip_blank=skip_blank,
+                                            shuffle_index_list=True,
+                                            permute=permute,
+                                            number_of_threads = number_of_threads,
+                                            )
 
+        x = np.vstack((source_training_x, target_training_x))
+        y = np.vstack((source_training_y, target_training_y))
+        training_batch = (x,y)
 
-    start = time()
-    validation_batch = data_generator_jdot_multi_proc(source_data_file, target_data_file, source_validation_list,  target_validation_list,
-                                          batch_size=validation_batch_size,
-                                          n_labels=n_labels,
-                                          labels=labels,
-                                          patch_shape=patch_shape,
-                                          patch_overlap=validation_patch_overlap,
-                                          shuffle_index_list=True,
-                                          skip_blank=skip_blank,
-                                          number_of_threads = number_of_threads)
+        x = np.vstack((source_validation_x, target_validation_x))
+        y = np.vstack((source_validation_y, target_validation_y))
+        validation_batch = (x,y)
 
-    end = time()
-    print("Validation batch", end - start)
+    else:
+        training_batch = (source_training_x, source_training_y)
+        validation_batch = (source_validation_x, source_validation_y)
 
     return training_batch, validation_batch
 
@@ -139,7 +154,7 @@ def split_list(input_list, split=0.8, shuffle_list=True):
     testing = input_list[n_training:]
     return training, testing
 
-def data_generator_jdot_multi_proc(source_data_file, target_data_file, source_index_list, target_index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
+def data_generator_jdot_multi_proc(data_file, training_index_list, validation_index_list, validation = True, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
                    augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
                    shuffle_index_list=True, skip_blank=True, permute=False, number_of_threads = 64):
     '''
@@ -164,41 +179,52 @@ def data_generator_jdot_multi_proc(source_data_file, target_data_file, source_in
     :param number_of_threads: Parameter to set the max number of threads used for the loading
     :return:
     '''
-    source_orig_index_list = source_index_list
-    target_orig_index_list = target_index_list
-    print(number_of_threads)
+    training_orig_index_list = training_index_list
+    validation_orig_index_list = validation_index_list
+
+    training_x_list = list()
+    training_y_list = list()
+
+    validation_x_list = list()
+    validation_y_list = list()
+
     while True:
-        x_list = list()
-        y_list = list()
+
         if patch_shape:
-            source_index_list = create_patch_index_list(source_orig_index_list, source_data_file.root.data.shape[-3:], patch_shape,
+            training_index_list = create_patch_index_list(training_orig_index_list, data_file.root.data.shape[-3:], patch_shape,
                                                  patch_overlap, patch_start_offset)
 
-            target_index_list = create_patch_index_list(target_orig_index_list, source_data_file.root.data.shape[-3:],
+            validation_index_list = create_patch_index_list(validation_orig_index_list, data_file.root.data.shape[-3:],
                                                         patch_shape,
                                                         patch_overlap, patch_start_offset)
         else:
-            source_index_list = copy.copy(source_orig_index_list)
-            target_index_list = copy.copy(target_orig_index_list)
+            training_orig_index_list = copy.copy(training_index_list)
+            validation_orig_index_list = copy.copy(validation_index_list)
 
         if shuffle_index_list:
-            shuffle(source_index_list)
-
-        x_list, y_list = multi_proc_loop(source_index_list, source_data_file, x_list, y_list, batch_size = batch_size,
+            shuffle(training_index_list)
+        training_x_list, training_y_list = multi_proc_loop(training_index_list, data_file, training_x_list, training_y_list, batch_size = batch_size,
                                          stopping_criterion= batch_size, number_of_threads = number_of_threads,
                                          patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
                                          augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
                                          permute=permute)
 
-        if shuffle_index_list:
-            shuffle(target_index_list)
+        training_x_list, training_y_list = convert_data(training_x_list, training_y_list, n_labels=n_labels, labels=labels)
+        if validation:
+            if shuffle_index_list:
+                shuffle(validation_index_list)
 
-        x_list, y_list = multi_proc_loop(target_index_list, target_data_file, x_list, y_list, batch_size = batch_size,
-                                         stopping_criterion= batch_size*2, number_of_threads = number_of_threads,
-                                         patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
-                                         augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
-                                         permute=permute)
-        return convert_data(x_list, y_list, n_labels=n_labels, labels=labels)
+            validation_x_list, validation_y_list = multi_proc_loop(validation_index_list, data_file, validation_x_list, validation_y_list, batch_size = batch_size,
+                                             stopping_criterion= batch_size, number_of_threads = number_of_threads,
+                                             patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
+                                             augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
+                                             permute=permute)
+
+            validation_x_list, validation_y_list = convert_data(validation_x_list, validation_y_list, n_labels=n_labels,
+                                                            labels=labels)
+        
+        
+        return training_x_list, training_y_list, validation_x_list, validation_y_list
 
 def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stopping_criterion = 64,
                     number_of_threads = 64, patch_shape = 16, augment = False, augment_flip = False,
@@ -258,67 +284,6 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
             break
 
     return x_list, y_list
-
-def data_generator_jdot(source_data_file, target_data_file, source_index_list, target_index_list, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
-                   augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
-                   shuffle_index_list=True, skip_blank=True, permute=False):
-    '''
-    Create the generator to fetch the source and target samples in the following shape
-    source: x_list[:batch_size]
-    target : x_list[batch_size:]
-    :param data_file:
-    :param index_list:
-    :param batch_size:
-    :param n_labels:
-    :param labels:
-    :param augment:
-    :param augment_flip:
-    :param augment_distortion_factor:
-    :param patch_shape:
-    :param patch_overlap:
-    :param patch_start_offset:
-    :param shuffle_index_list:
-    :param skip_blank:
-    :param permute:
-    :return:
-    '''
-    source_orig_index_list = source_index_list
-    target_orig_index_list = target_index_list
-    while True:
-        x_list = list()
-        y_list = list()
-        if patch_shape:
-            source_index_list = create_patch_index_list(source_orig_index_list, source_data_file.root.data.shape[-3:], patch_shape,
-                                                 patch_overlap, patch_start_offset)
-
-            target_index_list = create_patch_index_list(target_orig_index_list, source_data_file.root.data.shape[-3:],
-                                                        patch_shape,
-                                                        patch_overlap, patch_start_offset)
-        else:
-            source_index_list = copy.copy(source_orig_index_list)
-            target_index_list = copy.copy(target_orig_index_list)
-
-        if shuffle_index_list:
-            shuffle(source_index_list)
-        while len(source_index_list) > 0:
-            index = source_index_list.pop()
-            add_data(x_list, y_list, source_data_file, index, augment=augment, augment_flip=augment_flip,
-                     augment_distortion_factor=augment_distortion_factor, patch_shape=patch_shape,
-                     skip_blank=skip_blank, permute=permute)
-            if len(x_list) == batch_size or (len(source_index_list) == 0 and len(x_list) > 0):
-                break
-
-        if shuffle_index_list:
-            shuffle(target_index_list)
-
-        while len(target_index_list) > 0:
-            index = source_index_list.pop()
-            add_data(x_list, y_list, target_data_file, index, augment=augment, augment_flip=augment_flip,
-                    augment_distortion_factor=augment_distortion_factor, patch_shape=patch_shape,
-                    skip_blank=skip_blank, permute=permute)
-            if len(x_list) == 2*batch_size or (len(target_index_list) == 0 and len(x_list) > 0):
-
-                return convert_data(x_list, y_list, n_labels=n_labels, labels=labels)
 
 
 def get_number_of_patches(data_file, index_list, patch_shape=None, patch_overlap=0, patch_start_offset=None,

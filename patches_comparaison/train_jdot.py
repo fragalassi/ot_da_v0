@@ -82,7 +82,10 @@ class Train_JDOT:
 
         jd = JDOT(model, self.config, source_data, target_data)
         jd.compile_model()
-        jd.train_model(self.config.epochs)
+        if self.config.train_jdot:
+            jd.train_model(self.config.epochs)
+        else:
+            jd.train_model_on_source(self.config.epochs)
         jd.evaluate_model()
 
 
