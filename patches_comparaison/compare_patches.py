@@ -21,7 +21,7 @@ class Compare_patches:
         self.patch_shape = (16, 16, 16)
 
 
-    def main(self, one_patch = True):
+    def main(self, one_patch = False):
         results = np.empty((0, 4))
         index_list, validation_list, data_file = self.get_index_list()
 
@@ -46,7 +46,9 @@ class Compare_patches:
         results_df = pd.DataFrame(results, columns=["Patch Sim", "Truth Sim", "Patch A", "Patch B"])
         results_df["Patch Sim"] = pd.to_numeric(results_df["Patch Sim"])
         results_df["Truth Sim"] = pd.to_numeric(results_df["Truth Sim"])
-        self.select_patches(results_df, data_file)
+        outputdir = os.path.abspath("results/sim_patches/results.csv")
+        results_df.to_csv(outputdir)
+        # self.select_patches(results_df, data_file)
 
 
 
@@ -91,7 +93,7 @@ class Compare_patches:
         :return: A combination list between the selected patch and the others.
         '''
         combination_list = []
-        subsample_val = random.sample(validation_list, k = 30)
+        subsample_val = random.sample(validation_list, k = 37)
 
         selected_patch = random.choice(validation_list)
         patch_A = random.choice([tup for tup in index_list if tup[0] == selected_patch])
@@ -118,17 +120,15 @@ class Compare_patches:
     def create_combination_list(self, index_list, validation_list):
 
         combination_list = []
-        subsample_val = random.choices(validation_list, k=5)
-        print(subsample_val)
+        subsample_val = random.choices(validation_list, k=37)
         for ind, i in enumerate(subsample_val):
             print("Creating combination list: ", ind/len(subsample_val)*100)
             list_a = [tup for tup in index_list if tup[0] == i]
-            list_a = random.sample(list_a, k=16)
-            print(list_a)
+            list_a = random.sample(list_a, k=30)
             for j in subsample_val:
                 if i != j:
                     list_b = [tup for tup in index_list if tup[0] == j]
-                    list_b = random.sample(list_b, k = 16)
+                    list_b = random.sample(list_b, k = 30)
                     for h in list_a:
                         for x in list_b:
                             combination_list.append((h, x))
@@ -138,7 +138,12 @@ class Compare_patches:
 
 
     def compare_patches(self, x_a, y_a, x_b, y_b):
-        c = 1-euclidean(x_a.ravel(), x_b.ravel())
+        gradient_a = np.gradient(x_a)
+        gradient_b = np.gradient(x_b)
+        euc_grad = []
+        for i in range(len(gradient_a)):
+            euc_grad += [euclidean(gradient_a[i].ravel(), gradient_b[i].ravel())]
+        c = 1-np.mean(euc_grad)
         d = 1-euclidean(y_a.ravel(), y_b.ravel())
         return c, d
 

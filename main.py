@@ -29,7 +29,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [128]
+batch_size = [2]
 initial_lr = [5e-4]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
@@ -68,8 +68,8 @@ for i in range(df.shape[0]): #df.shape[0]
     '''
     To compare patches
     '''
-    # comp = compare_patches.Compare_patches(conf)
-    # comp.main()
+    comp = compare_patches.Compare_patches(conf)
+    comp.main()
     '''
     For JDOT, uncomment this part
     '''

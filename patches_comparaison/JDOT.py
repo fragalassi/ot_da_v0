@@ -1,5 +1,6 @@
 from keras import backend as K
-from patches_comparaison.generator_jdot import get_training_and_validation_batch_jdot
+from keras.callbacks import LambdaCallback
+from patches_comparaison.generator_jdot import get_training_and_validation_batch_jdot, get_validation_split, create_patch_index_list, get_data_from_file, add_data_mp
 from scipy.spatial.distance import cdist, cosine, euclidean
 from unet3d.utils import pickle_load
 import tables
@@ -9,6 +10,7 @@ import numpy as np
 import ot
 from training_testing import create_test
 import time
+from multiprocessing import Pool
 
 class JDOT():
 
@@ -77,7 +79,6 @@ class JDOT():
             euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
 
-
             return source_loss + K.sum(self.gamma*(K.abs(0.001*euc_distance_samples - 0.001*euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
@@ -91,6 +92,7 @@ class JDOT():
 
         def dice_coefficient_loss(y_true, y_pred):
             return -dice_coefficient(y_true, y_pred)
+        self.dice_loss = dice_coefficient_loss
 
         def cos_distance(x,y):
             """
@@ -139,7 +141,10 @@ class JDOT():
         Compilation with the custom loss function and the metrics.
         :return:
         '''
-        self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient])
+        if self.config.jdot:
+            self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient])
+        else:
+            self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
 
 
     def get_batch(self):
@@ -172,8 +177,7 @@ class JDOT():
 
         return train_batch, validation_batch
 
-
-    def train_model(self, n_iteration):
+    def train_model_jdot(self, n_iteration):
         '''
         For every iteration we first load a batch and compute a prediction on this batch.
         From this prediction we compute the OT gamma.
@@ -181,6 +185,7 @@ class JDOT():
         :param n_iteration:
         :return:
         '''
+
         hist_l = np.empty((0,2))
         val_l = np.empty((0, 2))
         for i in range(n_iteration):
@@ -216,6 +221,15 @@ class JDOT():
 
         self.model.save(self.config.model_file)
 
+    def train_model(self, n_iteration):
+        hist_l = np.empty((0,2))
+        val_l = np.empty((0, 2))
+        for i in range(n_iteration):
+            print("Epoch:", i, "/", n_iteration)
+            start = time.time()
+            self.train_batch, self.validation_batch = self.get_batch()
+            end = time.time()
+
 
     def compute_gamma(self, pred):
         '''
@@ -224,7 +238,6 @@ class JDOT():
         '''
         # Reshaping the samples into vectors of dimensions number of modalities * patch_dimension.
         # train_vecs are of shape (batch_size, d)
-
         train_vec_source = np.reshape(self.train_batch[0][:self.batch_size],
                                       (self.batch_size, len(self.config.training_modalities)*self.config.patch_shape[0]*self.config.patch_shape[1]*self.config.patch_shape[2]))
         train_vec_target = np.reshape(self.train_batch[0][self.batch_size:],

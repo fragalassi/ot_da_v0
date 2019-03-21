@@ -52,7 +52,6 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
     """
     if not validation_batch_size:
         validation_batch_size = batch_size
-
     source_training_list, source_validation_list = get_validation_split(source_data_file,
                                                           data_split=data_split,
                                                           overwrite_data=overwrite_data,
@@ -64,6 +63,9 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                                           overwrite_data=overwrite_data,
                                                           training_file=training_keys_file,
                                                           validation_file=validation_keys_file)
+    start = time()
+
+
 
     training_batch = data_generator_jdot_multi_proc(source_data_file, target_data_file, source_training_list, target_training_list,
                                         batch_size=batch_size,
@@ -79,7 +81,11 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                         shuffle_index_list=True,
                                         permute=permute,
                                         number_of_threads = number_of_threads)
+    end = time()
+    print("Training batch", end - start)
 
+
+    start = time()
     validation_batch = data_generator_jdot_multi_proc(source_data_file, target_data_file, source_validation_list,  target_validation_list,
                                           batch_size=validation_batch_size,
                                           n_labels=n_labels,
@@ -89,6 +95,9 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                           shuffle_index_list=True,
                                           skip_blank=skip_blank,
                                           number_of_threads = number_of_threads)
+
+    end = time()
+    print("Validation batch", end - start)
 
     return training_batch, validation_batch
 
@@ -100,7 +109,6 @@ def get_number_of_steps(n_samples, batch_size):
         return n_samples//batch_size
     else:
         return n_samples//batch_size + 1
-
 
 def get_validation_split(data_file, training_file, validation_file, data_split=0.8, overwrite_data=False):
     """
@@ -403,7 +411,6 @@ def add_data_mp(data, truth, affine, index, augment=False, augment_flip=False, a
     """
     x_list = []
     y_list = []
-    # print(os.getpid())
     if augment:
         data, truth = augment_data(data, truth, affine, flip=augment_flip, scale_deviation=augment_distortion_factor)
 
