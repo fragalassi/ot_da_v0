@@ -79,7 +79,7 @@ class JDOT():
             euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
 
-            return source_loss + K.sum(self.gamma*(K.abs(0.001*euc_distance_samples - 0.001*euc_distance_pred)))
+            return source_loss + 0.001*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
@@ -284,11 +284,12 @@ class JDOT():
                                       (self.batch_size, self.config.patch_shape[0]*self.config.patch_shape[1]*self.config.patch_shape[2]))
 
         # Compute the distance between samples and between the source_truth and the target prediction.
-        C0 = cdist(train_vec_source, train_vec_target, metric="cosine")
-        C1 = cdist(truth_vec_source, pred_vec_target, metric="cosine")
+        C0 = cdist(train_vec_source, train_vec_target, metric="euclidean")
+        C1 = cdist(truth_vec_source, pred_vec_target, metric="euclidean")
 
         # Resulting cost metric
-        C = self.jdot_alpha*C0+K.eval(self.tloss)*C1
+        C = abs(C0-C1)
+        print(C)
 
         # Computing gamma using the OT library
 

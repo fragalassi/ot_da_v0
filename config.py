@@ -73,7 +73,7 @@ class Config:
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
 
-        self.train_jdot = False
+        self.train_jdot = True
 
         '''
         If augmentation is set to true, both flip and permutation transforms are taken into account.
