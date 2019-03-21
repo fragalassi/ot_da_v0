@@ -289,7 +289,6 @@ class JDOT():
 
         # Resulting cost metric
         C = abs(C0-C1)
-        print(C)
 
         # Computing gamma using the OT library
 
