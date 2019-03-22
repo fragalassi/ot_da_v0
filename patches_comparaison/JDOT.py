@@ -78,7 +78,7 @@ class JDOT():
 
             euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-            return source_loss + 0.01*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+            return source_loss + self.config.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
@@ -88,6 +88,21 @@ class JDOT():
             intersection = K.sum(y_true_f * y_pred_f)
             return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
         self.dice_coefficient = dice_coefficient
+
+        def dice_coefficient_source(y_true, y_pred, smooth=1.):
+            y_true_f = K.flatten(y_true[self.batch_size:, :])
+            y_pred_f = K.flatten(y_pred[self.batch_size:, :])
+            intersection = K.sum(y_true_f * y_pred_f)
+            return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+        self.dice_coefficient_source = dice_coefficient_source
+
+        def dice_coefficient_target(y_true, y_pred, smooth=1.):
+            y_true_f = K.flatten(y_true[:self.batch_size, :])
+            y_pred_f = K.flatten(y_pred[:self.batch_size, :])
+            intersection = K.sum(y_true_f * y_pred_f)
+            return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+        self.dice_coefficient_target = dice_coefficient_target
+
 
         def dice_coefficient_loss(y_true, y_pred):
             return 1-dice_coefficient(y_true, y_pred)
@@ -152,7 +167,7 @@ class JDOT():
         :return:
         '''
         if self.config.train_jdot:
-            self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient])
+            self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
 
@@ -198,8 +213,8 @@ class JDOT():
         :return:
         '''
 
-        hist_l = np.empty((0,2))
-        val_l = np.empty((0, 2))
+        hist_l = np.empty((0,4))
+        val_l = np.empty((0, 4))
         for i in range(n_iteration):
             print("Batch:", i, "/", n_iteration)
             if i % 10 == 0:
@@ -223,13 +238,13 @@ class JDOT():
             hist_l = np.vstack((hist_l, hist))
             average = np.average(hist_l[-10:], axis=0)
 
-            print("Loss:", hist[0], " Dice Score: ", hist[1],"| Loss mean: ", average[0], "Dice Score mean:", average[1], "\n")
+            print("Loss:", hist[0], " Dice Score: ", hist[1], "Dice Score Source: ", hist[2], "Dice Score Target: ", hist[3], "\n")
 
             if validation:
                 val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
                 val_l = np.vstack((val_l, val))
                 print("======")
-                print("Validation Loss: ", val[0], "Dice Score :", val[1])
+                print("Validation Loss: ", val[0], "Dice Score :", val[1], "Dice Score Source: ", val[2], "Dice Score Target: ", val[3],)
                 print("======", "\n")
 
         np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")

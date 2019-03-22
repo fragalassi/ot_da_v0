@@ -29,19 +29,22 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [128]
-initial_lr = [5e-4]
-loss_funcs = ["dice_coefficient_loss"]
-depth = [5]
-n_filter = [16]
-patch_shape = [16]
-overlap = [1/2]
-image_shape = [(128,128,128)]
-training_center = [["All"]]
-augmentation = [True]
+batch_size = [128]*7
+initial_lr = [5e-4]*7
+loss_funcs = ["dice_coefficient_loss"]*7
+depth = [5]*7
+n_filter = [16]*7
+patch_shape = [16]*7
+overlap = [1/2]*7
+image_shape = [(128,128,128)]*7
+training_center = [["All"]]*7
+augmentation = [True]*7
+jdot_alpha = [0.001, 0.002, 0.003, 0.005, 0.007, 0.01, 0.05]
+source_center = ["01"]*7
+target_center = ["07"]*7
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
-                                      image_shape, augmentation,
+                                      image_shape, augmentation, jdot_alpha, source_center, target_center,
                                       n_repeat=1)
 
 with pd.option_context("display.max_rows", None, "display.max_columns", None):
@@ -61,6 +64,9 @@ for i in range(df.shape[0]): #df.shape[0]
                          patch_shape = df["Patch shape"].iloc[i],
                          overlap = df["Overlap"].iloc[i],
                          augmentation = df["Augmentation"].iloc[i],
+                         jdot_alpha=df["JDOT Alpha"].iloc[i],
+                         source_center=df["Source center"].iloc[i],
+                         target_center=df["Target center"].iloc[i],
                          # training_centers = df["Training centers"].iloc[i],
                          # image_shape = df["Image shape"].iloc[i],
                          niseko=True, shortcut=True)

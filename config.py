@@ -10,7 +10,8 @@ setting test to false in main.py result in using only two examples and a reduce 
 class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
-                 image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False):
+                 image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
+                 jdot_alpha = 0.001, source_center = ["01"], target_center = ["07"]):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -31,8 +32,8 @@ class Config:
             self.all_modalities = ["FLAIR-include"]
         else:
             self.data_set="miccai16_no_norm"
-            self.epochs = 600  # cutoff the training after this many epochs
-            self.all_modalities = ["FLAIR-include"] #["FLAIR-include", "T1-include"]
+            self.epochs = 1000  # cutoff the training after this many epochs
+            self.all_modalities = ["FLAIR-include", "T1-include"]
 
         self.niseko = niseko
 
@@ -44,8 +45,8 @@ class Config:
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
         self.training_centers = training_centers
-        self.source_center = ["01"]
-        self.target_center = ["07"]
+        self.source_center = source_center
+        self.target_center = target_center
 
         self.number_of_threads = 64
 
@@ -74,6 +75,7 @@ class Config:
         self.validation_split = 0.8  # portion of the data that will be used for training
 
         self.train_jdot = True
+        self.jdot_alpha = jdot_alpha
 
         '''
         If augmentation is set to true, both flip and permutation transforms are taken into account.
@@ -87,7 +89,7 @@ class Config:
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = False  # if True, then patches without any target will be skipped
 
-        self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
+        self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
