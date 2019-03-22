@@ -1,7 +1,7 @@
 from keras import backend as K
 from keras.callbacks import LambdaCallback
 from patches_comparaison.generator_jdot import get_training_and_validation_batch_jdot, get_validation_split, create_patch_index_list, get_data_from_file, add_data_mp
-from scipy.spatial.distance import cdist, cosine, euclidean
+from scipy.spatial.distance import cdist, cosine, euclidean, dice
 from unet3d.utils import pickle_load
 import tables
 from unet3d.prediction import run_validation_case
@@ -78,8 +78,7 @@ class JDOT():
 
             euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-
-            return source_loss + 0.001*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+            return source_loss + 0.01*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
@@ -91,9 +90,20 @@ class JDOT():
         self.dice_coefficient = dice_coefficient
 
         def dice_coefficient_loss(y_true, y_pred):
-            return -dice_coefficient(y_true, y_pred)
+            return 1-dice_coefficient(y_true, y_pred)
         self.dice_loss = dice_coefficient_loss
-
+        '''
+        Uncomment to check if cos_distance/euclidean_dist is computing the right values.
+        '''
+        # x = np.array([[0, 1, 0], [1, 0, 1], [1, 1, 0]])
+        # y = np.array([[0, 1, 0], [0, 0, 1], [0, 1, 1]])
+        # z = np.array([[2, 2, 2], [2, 2, 2], [2, 2, 2]])
+        # print(K.eval(K.constant(x)-K.constant(y)))
+        # print(K.eval(K.constant(z)*(K.constant(x) - K.constant(y))))
+        # print(dice(x[0],y[0]))
+        # print(dice(x[1], y[1]))
+        # print(dice(x[2],y[2]))
+        # print("Evaluation: \n", K.eval(dice_coefficient_loss(K.constant(x), K.constant(y))))
         def cos_distance(x,y):
             """
             Function to compute the cosine distance between two tensors.
@@ -191,7 +201,7 @@ class JDOT():
         hist_l = np.empty((0,2))
         val_l = np.empty((0, 2))
         for i in range(n_iteration):
-            print("Epoch:", i, "/", n_iteration)
+            print("Batch:", i, "/", n_iteration)
             if i % 10 == 0:
                 validation = True
             else:
@@ -293,7 +303,6 @@ class JDOT():
         # Computing gamma using the OT library
 
         gamma = ot.emd(ot.unif(self.batch_size), ot.unif(self.batch_size), C)
-
         return gamma
 
     def evaluate_model(self):
