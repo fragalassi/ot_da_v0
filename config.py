@@ -45,7 +45,7 @@ class Config:
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
         self.training_centers = training_centers
         self.source_center = ["01"]
-        self.target_center = ["08"]
+        self.target_center = ["07"]
 
         self.number_of_threads = 64
 
