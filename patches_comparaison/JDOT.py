@@ -27,6 +27,7 @@ class JDOT():
 
         self.batch_size = self.config.batch_size
         self.optimizer = self.config.optimizer
+        self.jdot_alpha = self.config.jdot_alpha
         # initialize the gamma (coupling in OT) with zeros
         self.gamma = K.zeros(shape=(self.batch_size, self.batch_size))
         self.batch_source = K.zeros(shape=(self.batch_size,
@@ -45,7 +46,6 @@ class JDOT():
         self.lr_decay = lr_decay
         #
         self.ot_method = ot_method
-        self.jdot_alpha = jdot_alpha  # weight for the alpha term
 
         self.train_batch = ()
         self.validation_batch = ()
@@ -78,7 +78,7 @@ class JDOT():
 
             euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-            return source_loss + self.config.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+            return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
@@ -222,6 +222,12 @@ class JDOT():
             else:
                 validation = False
 
+            if i%1 == 100 and i != 0:
+                '''
+                Increasing the weights of jdot every 100 epochs
+                '''
+                self.jdot_alpha *= 2
+                print(self.jdot_alpha)
             start = time.time()
             self.train_batch, self.validation_batch = self.get_batch(target=True, validation=validation)
             end = time.time()
