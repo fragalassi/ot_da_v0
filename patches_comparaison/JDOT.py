@@ -89,19 +89,19 @@ class JDOT():
             return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
         self.dice_coefficient = dice_coefficient
 
-        def dice_coefficient_source(y_true, y_pred, smooth=1.):
+        def dice_coefficient_target(y_true, y_pred, smooth=1.):
             y_true_f = K.flatten(y_true[self.batch_size:, :])
             y_pred_f = K.flatten(y_pred[self.batch_size:, :])
             intersection = K.sum(y_true_f * y_pred_f)
             return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-        self.dice_coefficient_source = dice_coefficient_source
+        self.dice_coefficient_target = dice_coefficient_target
 
-        def dice_coefficient_target(y_true, y_pred, smooth=1.):
+        def dice_coefficient_source(y_true, y_pred, smooth=1.):
             y_true_f = K.flatten(y_true[:self.batch_size, :])
             y_pred_f = K.flatten(y_pred[:self.batch_size, :])
             intersection = K.sum(y_true_f * y_pred_f)
             return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-        self.dice_coefficient_target = dice_coefficient_target
+        self.dice_coefficient_source = dice_coefficient_source
 
 
         def dice_coefficient_loss(y_true, y_pred):
