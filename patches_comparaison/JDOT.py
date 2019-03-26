@@ -222,7 +222,7 @@ class JDOT():
             else:
                 validation = False
 
-            if i%1 == 100 and i != 0:
+            if i%100 == 0 and i != 0:
                 '''
                 Increasing the weights of jdot every 100 epochs
                 '''
