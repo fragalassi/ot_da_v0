@@ -227,7 +227,7 @@ class JDOT():
                 Increasing the weights of jdot every 100 epochs
                 '''
                 self.jdot_alpha *= 2
-                print(self.jdot_alpha)
+                print("Increasing JDOT alpha: ", self.jdot_alpha)
             start = time.time()
             self.train_batch, self.validation_batch = self.get_batch(target=True, validation=validation)
             end = time.time()
