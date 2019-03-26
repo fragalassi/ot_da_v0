@@ -253,6 +253,9 @@ class JDOT():
                 print("Validation Loss: ", val[0], "Dice Score :", val[1], "Dice Score Source: ", val[2], "Dice Score Target: ", val[3],)
                 print("======", "\n")
 
+        if not os.path.exists(self.config.save_dir):
+            print("Hey")
+            os.makedirs(self.config.save_dir)
         np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
         np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
 
@@ -287,6 +290,10 @@ class JDOT():
                 print("Validation Loss: ", val[0], "Dice Score :", val[1])
                 print("======", "\n")
 
+
+        if not os.path.exists(self.config.save_dir):
+            print("Hey")
+            os.makedirs(self.config.save_dir)
         np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
         np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
 
