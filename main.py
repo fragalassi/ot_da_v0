@@ -74,16 +74,16 @@ for i in range(df.shape[0]): #df.shape[0]
     '''
     To compare patches
     '''
-    # comp = compare_patches.Compare_patches(conf)
-    # comp.main()
+    comp = compare_patches.Compare_patches(conf)
+    comp.main()
     '''
     For JDOT, uncomment this part
     '''
-    train_jd = train_jdot.Train_JDOT(conf)
-    train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
-
-    eval = evaluate.Evaluate(conf)
-    eval.main()
+    # train_jd = train_jdot.Train_JDOT(conf)
+    # train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+    #
+    # eval = evaluate.Evaluate(conf)
+    # eval.main()
 
     '''
     For normal training uncomment this part

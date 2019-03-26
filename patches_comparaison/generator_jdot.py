@@ -273,12 +273,12 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
         pool.close()
         pool.join()
         results = [r.get() for r in results]
-
-        for i in range(len(results)):
-            x_list.append(results[i][0][0])
-            y_list.append(results[i][1][0])
+        if len(results) != 0:
+            for i in range(len(results)):
+                x_list.append(results[i][0][0])
+                y_list.append(results[i][1][0])
         end = time()
-        remaining_batch = remaining_batch - n
+        remaining_batch = remaining_batch - len(results)
 
         if len(x_list) == stopping_criterion or (len(index_list) == 0 and len(x_list) > 0):
             break

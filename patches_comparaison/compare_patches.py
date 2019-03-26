@@ -11,6 +11,7 @@ import pandas as pd
 import random
 import nibabel as nib
 import itertools
+import pickle
 
 class Compare_patches:
 
@@ -21,23 +22,37 @@ class Compare_patches:
         self.patch_shape = (16, 16, 16)
 
 
-    def main(self, one_patch = False):
+    def main(self, mode = "combination", overwrite_validation = True):
+
+        combination_path = os.path.abspath("Data/generated_data/combination.pkl")
+
         results = np.empty((0, 4))
         index_list, validation_list, data_file = self.get_index_list()
+        if overwrite_validation or not os.path.exists(combination_path):
+            print("Creating new combination list")
+            if mode == "one patch":
+                combination_list = self.create_combination_one_patch(index_list, validation_list, data_file)
+                x_a, y_a = get_data_from_file(data_file, combination_list[0][0], self.patch_shape)
+            elif mode == "combination":
+                combination_list = self.create_combination_list(index_list, validation_list)
+            elif mode == "random":
+                combination_list = self.create_combination_list_random(index_list, n_exp=50000)
 
-        if one_patch == True:
-            combination_list = self.create_combination_one_patch(index_list, validation_list, data_file)
-            x_a, y_a = get_data_from_file(data_file, combination_list[0][0], self.patch_shape)
+            with open(combination_path, 'wb') as f:
+                pickle.dump(combination_list, f)
         else:
-            combination_list = self.create_combination_list(index_list, validation_list)
+            print("Loading found combination list")
+            with open(combination_path, 'rb') as f:
+                combination_list = pickle.load(f)
+
 
         for j, l in enumerate(combination_list):
             print(j/len(combination_list)*100, "%")
-            if one_patch == False:
+            if mode != "one patch":
                 x_a, y_a = get_data_from_file(data_file, l[0], self.patch_shape)
 
             x_b, y_b = get_data_from_file(data_file, l[1], self.patch_shape)
-            if np.mean(x_a) < -1 or np.mean(x_b) < -1:
+            if np.mean(x_a) < -10 or np.mean(x_b) < -10:
                 print("Mean is too low")
             else:
                 c,d = self.compare_patches(x_a, y_a, x_b, y_b)
@@ -136,15 +151,24 @@ class Compare_patches:
             subsample_val.pop(0)
         return combination_list
 
+    def create_combination_list_random(self, index_list, n_exp = 2000):
+        combination_list = []
+        while len(combination_list) < n_exp:
+            a = random.choice(index_list)
+            b = random.choice(index_list)
+            if a[0] != b[0] and (a[1] != b[1]).all():
+                combination_list.append((a,b))
+        return combination_list
+
 
     def compare_patches(self, x_a, y_a, x_b, y_b):
-        gradient_a = np.gradient(x_a)
-        gradient_b = np.gradient(x_b)
-        euc_grad = []
-        for i in range(len(gradient_a)):
-            euc_grad += [euclidean(gradient_a[i].ravel(), gradient_b[i].ravel())]
-        c = 1-np.mean(euc_grad)
-        d = 1-euclidean(y_a.ravel(), y_b.ravel())
+        cov_x_a = np.cov(np.ravel(x_a))
+        cov_x_b = np.cov(np.ravel(x_b))
+        c = np.linalg.norm(cov_x_a-cov_x_b) #Frobenius norm
+
+        cov_y_a = np.cov(np.ravel(y_a))
+        cov_y_b = np.cov(np.ravel(y_b))
+        d = np.linalg.norm(cov_y_a-cov_y_b)
         return c, d
 
     def select_patches(self, results_df, data_file):
