@@ -250,15 +250,12 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
     while len(index_list) > 0:
         # Two verifications for the remaining samples to put in the batch.
         # We want set the number_of_threads to the number of samples remaining
-        if remaining_batch < number_of_threads:
-            n = remaining_batch
-        elif len(index_list) > number_of_threads:
+        if len(index_list) > number_of_threads:
             n = number_of_threads
         else:
             n = len(index_list)
         pool = Pool(number_of_threads)
         results = []
-        start = time()
         for i in range(n):
             index = index_list.pop()
             data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape)
@@ -266,20 +263,22 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
                 affine = data_file.root.affine[index[0]]
             else:
                 affine = data_file.root.affine[index]
-
+            start = time()
             results.append(pool.apply_async(add_data_mp, args=(data, truth, affine, index, augment, augment_flip,
                                                                augment_distortion_factor, patch_shape, skip_blank,
                                                                permute)))
         pool.close()
         pool.join()
         results = [r.get() for r in results]
-        if len(results) != 0:
-            for i in range(len(results)):
+
+
+        for i in range(len(results)):
+            if len(results[i][0]) != 0 and remaining_batch != 0:
+                remaining_batch -= 1
                 x_list.append(results[i][0][0])
                 y_list.append(results[i][1][0])
         end = time()
-        remaining_batch = remaining_batch - len(results)
-
+        print(len(x_list))
         if len(x_list) == stopping_criterion or (len(index_list) == 0 and len(x_list) > 0):
             break
 
