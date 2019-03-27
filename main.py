@@ -29,7 +29,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [10]*1
+batch_size = [1]*1
 initial_lr = [5e-4]*1
 loss_funcs = ["dice_coefficient_loss"]*1
 depth = [5]*1
@@ -74,16 +74,16 @@ for i in range(df.shape[0]): #df.shape[0]
     '''
     To compare patches
     '''
-    # comp = compare_patches.Compare_patches(conf)
-    # comp.main()
+    comp = compare_patches.Compare_patches(conf)
+    comp.main()
     '''
     For JDOT, uncomment this part
     '''
-    train_jd = train_jdot.Train_JDOT(conf)
-    train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
-
-    eval = evaluate.Evaluate(conf)
-    eval.main()
+    # train_jd = train_jdot.Train_JDOT(conf)
+    # train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+    #
+    # eval = evaluate.Evaluate(conf)
+    # eval.main()
 
     '''
     For normal training uncomment this part

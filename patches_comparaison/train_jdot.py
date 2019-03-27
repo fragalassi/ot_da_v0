@@ -45,6 +45,7 @@ class Train_JDOT:
                     subject_files.append(
                         os.path.join(subject_dir, modality + ".nii.gz"))  # + "/Preprocessed/ pour miccai16
                 target_data_files.append(tuple(subject_files))
+
         if return_subject_ids:
             return source_data_files, target_data_files, subject_ids_source, subject_ids_target
         else:

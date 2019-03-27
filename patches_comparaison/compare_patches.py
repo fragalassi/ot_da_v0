@@ -12,6 +12,7 @@ import random
 import nibabel as nib
 import itertools
 import pickle
+import sys
 
 class Compare_patches:
 
@@ -22,7 +23,7 @@ class Compare_patches:
         self.patch_shape = (16, 16, 16)
 
 
-    def main(self, mode = "combination", overwrite_validation = True):
+    def main(self, mode = "random", overwrite_validation = True):
 
         combination_path = os.path.abspath("Data/generated_data/combination.pkl")
 
@@ -36,7 +37,7 @@ class Compare_patches:
             elif mode == "combination":
                 combination_list = self.create_combination_list(index_list, validation_list)
             elif mode == "random":
-                combination_list = self.create_combination_list_random(index_list, n_exp=50000)
+                combination_list = self.create_combination_list_random(index_list, n_exp=100000)
 
             with open(combination_path, 'wb') as f:
                 pickle.dump(combination_list, f)
@@ -47,14 +48,14 @@ class Compare_patches:
 
 
         for j, l in enumerate(combination_list):
-            print(j/len(combination_list)*100, "%")
+            advance = "\rComputing similarity: " + str(j/len(combination_list)*100) + "%"
+            sys.stdout.write(advance)
+            sys.stdout.flush()
             if mode != "one patch":
                 x_a, y_a = get_data_from_file(data_file, l[0], self.patch_shape)
 
             x_b, y_b = get_data_from_file(data_file, l[1], self.patch_shape)
-            if np.mean(x_a) < -10 or np.mean(x_b) < -10:
-                print("Mean is too low")
-            else:
+            if np.mean(y_a) != 0 and np.mean(y_b)  != 0:
                 c,d = self.compare_patches(x_a, y_a, x_b, y_b)
                 results = np.vstack((results,np.asarray([float(c),float(d), l[0], l[1]])))
 
@@ -162,13 +163,10 @@ class Compare_patches:
 
 
     def compare_patches(self, x_a, y_a, x_b, y_b):
-        cov_x_a = np.cov(np.ravel(x_a))
-        cov_x_b = np.cov(np.ravel(x_b))
-        c = np.linalg.norm(cov_x_a-cov_x_b) #Frobenius norm
 
-        cov_y_a = np.cov(np.ravel(y_a))
-        cov_y_b = np.cov(np.ravel(y_b))
-        d = np.linalg.norm(cov_y_a-cov_y_b)
+        c = euclidean(np.ravel(x_a), np.ravel(x_b))
+        d = euclidean(np.ravel(y_a), np.ravel(y_b))
+
         return c, d
 
     def select_patches(self, results_df, data_file):

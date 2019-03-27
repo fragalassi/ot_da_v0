@@ -200,7 +200,9 @@ class JDOT():
             augment_distortion_factor=self.config.distort,
             number_of_threads= self.config.number_of_threads,
             target=target,
-            validation = validation)
+            validation = validation,
+            source_center = self.config.source_center,
+            target_center = self.config.target_center)
 
         return train_batch, validation_batch
 
