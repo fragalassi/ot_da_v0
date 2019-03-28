@@ -1,6 +1,5 @@
 #!/bin/bash
 set -xv
-echo "Bonjour"
 
 SCRIPTDIR=/udd/aacakouy/OT-DA
 echo "$SCRIPTDIR"
@@ -18,6 +17,7 @@ module load cuda/9.0.176
 
 # Activate the py virtual environnement
 . /udd/aackaouy/myVE/bin/activate
+
 PYTHONHASHSEED=0 python3 -W ignore $SCRIPTDIR/main.py
 
 

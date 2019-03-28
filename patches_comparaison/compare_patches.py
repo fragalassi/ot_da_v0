@@ -5,6 +5,7 @@ from scipy.spatial import minkowski_distance
 from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import  get_data_from_file, get_validation_split, create_patch_index_list, add_data
 from unet3d.utils.patches import get_patch_from_3d_data
+from unet3d.utils.utils import pickle_load
 from unet3d.metrics import dice_coef_loss
 import numpy as np
 import pandas as pd
@@ -23,12 +24,13 @@ class Compare_patches:
         self.patch_shape = (16, 16, 16)
 
 
-    def main(self, mode = "random", overwrite_validation = True):
+    def main(self, mode = "batch", overwrite_validation = True, skip_blank = False):
 
         combination_path = os.path.abspath("Data/generated_data/combination.pkl")
 
         results = np.empty((0, 4))
         index_list, validation_list, data_file = self.get_index_list()
+        index_list, data_file = self.get_index_list_GT()
         if overwrite_validation or not os.path.exists(combination_path):
             print("Creating new combination list")
             if mode == "one patch":
@@ -38,6 +40,8 @@ class Compare_patches:
                 combination_list = self.create_combination_list(index_list, validation_list)
             elif mode == "random":
                 combination_list = self.create_combination_list_random(index_list, n_exp=100000)
+            elif mode == "batch":
+                combination_list = self.create_combination_list_batch(index_list)
 
             with open(combination_path, 'wb') as f:
                 pickle.dump(combination_list, f)
@@ -55,7 +59,7 @@ class Compare_patches:
                 x_a, y_a = get_data_from_file(data_file, l[0], self.patch_shape)
 
             x_b, y_b = get_data_from_file(data_file, l[1], self.patch_shape)
-            if np.mean(y_a) != 0 and np.mean(y_b)  != 0:
+            if (np.mean(y_a) != 0 and np.mean(y_b)  != 0) or skip_blank == False:
                 c,d = self.compare_patches(x_a, y_a, x_b, y_b, l[0], l[1])
                 results = np.vstack((results,np.asarray([float(c),float(d), l[0], l[1]])))
 
@@ -66,7 +70,11 @@ class Compare_patches:
         results_df.to_csv(outputdir)
         # self.select_patches(results_df, data_file)
 
-
+    def get_index_list_GT(self):
+        self.config.data_file = os.path.abspath("Data/generated_data/" + self.config.data_set + "_data_source.h5")
+        data_file_opened = open_data_file(self.config.data_file)
+        index = pickle_load("Data/generated_data/training_list_gt_01")
+        return index, data_file_opened
 
     def get_index_list(self, overwrite_data=False, patch_overlap=0, patch_start_offset = None):
         '''
@@ -152,6 +160,16 @@ class Compare_patches:
             subsample_val.pop(0)
         return combination_list
 
+    def create_combination_list_batch(self, index_list):
+        combination_list=[]
+        batch_a = random.choices(index_list, k = 128)
+        batch_b = random.choices(index_list, k= 128)
+        for i in batch_a:
+            for j in batch_b:
+                combination_list.append((i,j))
+
+        return combination_list
+
     def create_combination_list_random(self, index_list, n_exp = 2000):
         combination_list = []
         while len(combination_list) < n_exp:
@@ -163,11 +181,15 @@ class Compare_patches:
 
 
     def compare_patches(self, x_a, y_a, x_b, y_b, index_a, index_b):
-        euc = euclidean(index_a[1], index_b[1])
-        cov_a = np.cov(np.ravel(x_a))
-        cov_b = np.cov(np.ravel(x_b))
-        c = euc/100 + np.linalg.norm(cov_a-cov_b)
-        d = np.abs(np.mean(np.ravel(y_a)) - np.mean(np.ravel(y_b)))
+        # euc = euclidean(index_a[1], index_b[1])
+        # cov_a = np.cov(np.ravel(x_a))
+        # cov_b = np.cov(np.ravel(x_b))
+        # c = euc**2/1000 + np.linalg.norm(cov_a-cov_b)
+        # d = np.abs(np.mean(np.ravel(y_a)) - np.mean(np.ravel(y_b)))
+        if np.mean(y_a) == 0 or np.mean(y_b) == 0:
+            print("Found")
+        c = euclidean(np.ravel(x_a), np.ravel(x_b))
+        d = euclidean(np.ravel(y_a), np.ravel(y_b))
         return c, d
 
     def select_patches(self, results_df, data_file):
