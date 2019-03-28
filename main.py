@@ -5,6 +5,7 @@
 from training_testing import train_isensee2017, predict, evaluate, create_test
 from patches_comparaison import train_jdot
 from activation_prediction import activation_prediction
+from unet3d.data import write_data_to_file, open_data_file
 import config
 import sys
 import tensorflow as tf
@@ -29,19 +30,19 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [1]*1
-initial_lr = [5e-4]*1
-loss_funcs = ["dice_coefficient_loss"]*1
-depth = [5]*1
-n_filter = [16]*1
-patch_shape = [16]*1
-overlap = [1/2]*1
-image_shape = [(128,128,128)]*1
-training_center = [["All"]]
-augmentation = [True]*1
-jdot_alpha = [0.001]*1
-source_center = ["01"]*1
-target_center = ["07"]*1
+batch_size = [128]*4
+initial_lr = [5e-4]*4
+loss_funcs = ["dice_coefficient_loss"]*4
+depth = [5]*4
+n_filter = [16]*4
+patch_shape = [16]*4
+overlap = [1/2]*4
+image_shape = [(128,128,128)]*4
+training_center = [["All"], ["01"], ["07"], ["08"]]
+augmentation = [True]*4
+jdot_alpha = [0.001]*4
+source_center = ["01"]*4
+target_center = ["07"]*4
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
@@ -74,8 +75,12 @@ for i in range(df.shape[0]): #df.shape[0]
     '''
     To compare patches
     '''
-    comp = compare_patches.Compare_patches(conf)
-    comp.main()
+    # comp = compare_patches.Compare_patches(conf)
+    # comp.main()
+    # conf.all_modalities = ["FLAIR-include"]
+    # data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_testing.h5"))
+    # comp.save_patch(20, np.array([48,64,80]), "A", data_file_opened, 0)
+    # comp.save_patch(19, np.array([96,80,16]), "B", data_file_opened, 0)
     '''
     For JDOT, uncomment this part
     '''
@@ -89,16 +94,16 @@ for i in range(df.shape[0]): #df.shape[0]
     For normal training uncomment this part
     '''
 
-    # train = train_isensee2017.Train_Isensee(conf)
-    # train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
-    #
-    # test = create_test.Test(conf)
-    # test.main(overwrite_data=conf.overwrite_data)
-    #
-    # pred = predict.Predict(conf)
-    # pred.main()
-    #
-    # eval = evaluate.Evaluate(conf)
-    # eval.main()
-    #
+    train = train_isensee2017.Train_Isensee(conf)
+    train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+
+    test = create_test.Test(conf)
+    test.main(overwrite_data=conf.overwrite_data)
+
+    pred = predict.Predict(conf)
+    pred.main()
+
+    eval = evaluate.Evaluate(conf)
+    eval.main()
+
     K.clear_session()

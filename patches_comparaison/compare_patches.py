@@ -56,7 +56,7 @@ class Compare_patches:
 
             x_b, y_b = get_data_from_file(data_file, l[1], self.patch_shape)
             if np.mean(y_a) != 0 and np.mean(y_b)  != 0:
-                c,d = self.compare_patches(x_a, y_a, x_b, y_b)
+                c,d = self.compare_patches(x_a, y_a, x_b, y_b, l[0], l[1])
                 results = np.vstack((results,np.asarray([float(c),float(d), l[0], l[1]])))
 
         results_df = pd.DataFrame(results, columns=["Patch Sim", "Truth Sim", "Patch A", "Patch B"])
@@ -162,11 +162,12 @@ class Compare_patches:
         return combination_list
 
 
-    def compare_patches(self, x_a, y_a, x_b, y_b):
-
-        c = euclidean(np.ravel(x_a), np.ravel(x_b))
-        d = euclidean(np.ravel(y_a), np.ravel(y_b))
-
+    def compare_patches(self, x_a, y_a, x_b, y_b, index_a, index_b):
+        euc = euclidean(index_a[1], index_b[1])
+        cov_a = np.cov(np.ravel(x_a))
+        cov_b = np.cov(np.ravel(x_b))
+        c = euc/100 + np.linalg.norm(cov_a-cov_b)
+        d = np.abs(np.mean(np.ravel(y_a)) - np.mean(np.ravel(y_b)))
         return c, d
 
     def select_patches(self, results_df, data_file):
@@ -194,10 +195,10 @@ class Compare_patches:
 
         y = get_patch_from_3d_data(truth, self.patch_shape, patch_position)
         x = get_patch_from_3d_data(data, self.patch_shape, patch_position)
-        x = np.reshape(x, (self.patch_shape))
+        x = np.reshape(x, (2, self.patch_shape[0], self.patch_shape[1],self.patch_shape[0]))
 
         affine = data_file.root.affine[index]
-        image = nib.Nifti1Image(x, affine)
+        image = nib.Nifti1Image(x[0], affine)
         image.to_filename(os.path.join(outputdir, "patch_"+str(name)+"_" + str(i) + ".nii.gz"))
         image = nib.Nifti1Image(y, affine)
         image.to_filename(os.path.join(outputdir, "truth_"+str(name)+"_" + str(i) + ".nii.gz"))
