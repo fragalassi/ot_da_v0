@@ -62,7 +62,7 @@ class JDOT():
             :param y_pred:
             :return: A sum of the source_loss and the OT loss.
             '''
-
+            print(y_true)
             truth_source = y_true[:self.batch_size, :]  # source true labels
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
@@ -82,7 +82,7 @@ class JDOT():
 
             euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-            return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+            return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - 0.001*euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
@@ -390,6 +390,10 @@ class JDOT():
         Function to evaluate the trained model.
         :return:
         """
+        self.load_old_model(self.config.model_file)
+        self.context_output_name = None
+
+
         test = create_test.Test(self.config)
         test.main(overwrite_data=self.config.overwrite_data)
 

@@ -188,7 +188,6 @@ class Compare_patches:
 
     def create_combination_list_batch(self, index_list):
         combination_list=[]
-        print(index_list)
         batch_a = random.choices(index_list, k = 128)
         batch_b = random.choices(index_list, k= 128)
         for i in batch_a:
@@ -216,7 +215,7 @@ class Compare_patches:
         if np.mean(y_a) == 0 or np.mean(y_b) == 0:
             print("Found")
         c = euclidean(np.ravel(x_a), np.ravel(x_b))
-        d = abs(np.mean(y_a) - np.mean(y_b))
+        d = dice(np.ravel(y_a), np.ravel(y_b))
         return c, d
 
     def select_patches(self, results_df, data_file):
