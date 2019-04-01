@@ -32,7 +32,7 @@ class Config:
             self.all_modalities = ["FLAIR-include"]
         else:
             self.data_set="miccai16_no_norm"
-            self.epochs = 0  # cutoff the training after this many epochs
+            self.epochs = 1000  # cutoff the training after this many epochs
             self.all_modalities = ["FLAIR-include", "T1-include"]
 
         self.niseko = niseko
@@ -90,7 +90,7 @@ class Config:
         self.skip_blank = False  # if True, then patches without any target will be skipped
 
         self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
-        self.overwrite_model = False
+        self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
         self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_source.h5")

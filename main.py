@@ -30,7 +30,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [32]*1
+batch_size = [1]*1
 initial_lr = [5e-4]*1
 loss_funcs = ["dice_coefficient_loss"]*1
 depth = [5]*1
@@ -57,7 +57,7 @@ for i in range(df.shape[0]): #df.shape[0]
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=10, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
@@ -75,12 +75,12 @@ for i in range(df.shape[0]): #df.shape[0]
     '''
     To compare patches
     '''
-    # comp = compare_patches.Compare_patches(conf)
-    # # comp.main()
-    # conf.all_modalities = ["FLAIR-include"]
-    # data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
-    # comp.save_patch(4, np.array([84,28,36]), "A", data_file_opened, 0)
-    # comp.save_patch(1, np.array([68,52,92]), "B", data_file_opened, 0)
+    comp = compare_patches.Compare_patches(conf)
+    comp.main()
+    conf.all_modalities = ["FLAIR-include"]
+    data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
+    comp.save_patch(2, np.array([28, 52, 36]), "A", data_file_opened, 0)
+    comp.save_patch(2, np.array([28, 44, 68]), "B", data_file_opened, 0)
     '''
     For JDOT, uncomment this part
     '''

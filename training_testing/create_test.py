@@ -41,12 +41,13 @@ class Test:
         self.config.validation_file = os.path.abspath(
             "Data/generated_data/" + self.config.data_set + "_testing_validation_ids.pkl")
         # convert input images into an hdf5 file
-        if overwrite_data or not os.path.exists(self.config.data_file) or not os.path.exists(self.config.validation_file):
+        if overwrite_data or not os.path.exists(self.config.data_file):
             testing_files, subject_ids = self.fetch_testing_data_files(return_subject_ids=True)
-            pickle_dump(self.config.validation_file)
             write_data_to_file(testing_files, self.config.data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids)
         data_file_opened = open_data_file(self.config.data_file)
+        testing_split, _ = get_validation_split(data_file_opened, data_split=0, overwrite_data=self.config.overwrite_data,
+                                                 training_file=self.config.training_file, validation_file=self.config.validation_file)
         # get training and testing generators
         # train_generator, validation_generator, n_train_steps, n_validation_steps = get_training_and_validation_generators(
         #     data_file_opened,

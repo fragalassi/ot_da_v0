@@ -16,7 +16,7 @@ from multiprocessing import Pool
 
 class JDOT():
 
-    def __init__(self, model, config, source_data, target_data, context_output_name, allign_loss=1.0, tar_cl_loss=1.0,
+    def __init__(self, model, config = None, source_data = None , target_data = None, context_output_name = None, allign_loss=1.0, tar_cl_loss=1.0,
                  sloss=0.0, tloss=1.0, int_lr=0.01, ot_method='emd',
                  jdot_alpha=0.01, lr_decay=True, verbose=1):
 
@@ -123,6 +123,7 @@ class JDOT():
         # print(dice(x[1], y[1]))
         # print(dice(x[2],y[2]))
         # print("Evaluation: \n", K.eval(dice_coefficient_loss(K.constant(x), K.constant(y))))
+
         def cos_distance(x,y):
             """
             Function to compute the cosine distance between two tensors.
@@ -178,7 +179,6 @@ class JDOT():
                 outputs += [self.model.layers[-1].output]
                 self.model = Model(inputs=self.model.input,
                                                  outputs=outputs)
-                print(self.model.summary())
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
@@ -246,21 +246,20 @@ class JDOT():
         output_list = []
         for name in self.context_output_name: #Creating a bunch of false outputs
             output_list += [np.zeros((self.train_batch[0].shape[0],) + self.model.get_layer(name).output_shape[1:])]
-        output_list += [self.train_batch[1]]
-        print(len(output_list))
-        hist = self.model.train_on_batch(self.train_batch[0], output_list)
-        print(hist)
+        training_output_list = output_list + [self.train_batch[1]]
+        hist = self.model.train_on_batch(self.train_batch[0], training_output_list)
         hist_l = np.vstack((hist_l, hist))
 
-        print("Loss:", hist[0], " Dice Score: ", hist[1], "Dice Score Source: ", hist[2], "Dice Score Target: ",
-              hist[3], "\n")
+        print("Loss:", hist[0], " Dice Score: ", hist[-3], "Dice Score Source: ", hist[-2], "Dice Score Target: ",
+              hist[-1], "\n")
 
         if validation:
-            val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
+            validation_output_list = output_list + [self.validation_batch[1]]
+            val = self.model.test_on_batch(self.validation_batch[0], validation_output_list)
             val_l = np.vstack((val_l, val))
             print("======")
-            print("Validation Loss: ", val[0], "Dice Score :", val[1], "Dice Score Source: ", val[2],
-                  "Dice Score Target: ", val[3], )
+            print("Validation Loss: ", val[0], "Dice Score :", val[-3], "Dice Score Source: ", val[-2],
+                  "Dice Score Target: ", val[-1], )
             print("======", "\n")
 
         self.save_hist_and_model(hist_l, val_l)
@@ -284,8 +283,9 @@ class JDOT():
         :return:
         '''
 
-        hist_l = np.empty((0,4))
-        val_l = np.empty((0, 4))
+        len_history = len(self.model.metrics_names) # Print self.model.metric_names to know the correspondance
+        hist_l = np.empty((0,len_history))
+        val_l = np.empty((0, len_history))
 
         for i in range(n_iteration):
             print("Batch:", i, "/", n_iteration)

@@ -14,6 +14,9 @@ import nibabel as nib
 import itertools
 import pickle
 import sys
+from unet3d.model import isensee2017_model
+from patches_comparaison.JDOT import JDOT
+
 
 class Compare_patches:
 
@@ -22,12 +25,13 @@ class Compare_patches:
         create = create_test.Test(self.config)
         self.fetch_testing_data_files = create.fetch_testing_data_files
         self.patch_shape = (16, 16, 16)
+        self.jd = None
 
 
-    def main(self, mode = "batch", overwrite_validation = True, skip_blank = False):
+    def main(self, mode = "batch", overwrite_validation = True, skip_blank = True, on_activation = True):
 
         combination_path = os.path.abspath("Data/generated_data/combination.pkl")
-
+        self.load_model()
         results = np.empty((0, 4))
         index_list, validation_list, data_file = self.get_index_list()
         index_list, data_file = self.get_index_list_GT()
@@ -60,6 +64,8 @@ class Compare_patches:
 
             x_b, y_b = get_data_from_file(data_file, l[1], self.patch_shape)
             if (np.mean(y_a) != 0 and np.mean(y_b)  != 0) or skip_blank == False:
+                if on_activation:
+                    x_a, x_b = self.compute_activation(x_a, x_b)
                 c,d = self.compare_patches(x_a, y_a, x_b, y_b, l[0], l[1])
                 results = np.vstack((results,np.asarray([float(c),float(d), l[0], l[1]])))
 
@@ -69,6 +75,26 @@ class Compare_patches:
         outputdir = os.path.abspath("results/sim_patches/results.csv")
         results_df.to_csv(outputdir)
         # self.select_patches(results_df, data_file)
+
+    def load_model(self):
+        model, context_output_name = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
+                                      initial_learning_rate=self.config.initial_learning_rate,
+                                      n_base_filters=self.config.n_base_filters,
+                                      loss_function=self.config.loss_function,
+                                      shortcut=self.config.shortcut,
+                                      compile=False)
+
+        jd = JDOT(model, config=self.config, context_output_name=context_output_name)
+        jd.load_old_model(self.config.model_file)
+        jd.compile_model()
+        self.jd = jd
+
+    def compute_activation(self, x_a, x_b):
+        x_a = np.expand_dims(x_a, axis=0)
+        x_b = np.expand_dims(x_b, axis=0)
+        x_a = self.jd.model.predict(x_a)
+        x_b = self.jd.model.predict(x_b)
+        return x_a[-2][0], x_b[-2][0]
 
     def get_index_list_GT(self):
         self.config.data_file = os.path.abspath("Data/generated_data/" + self.config.data_set + "_data_source.h5")
@@ -162,6 +188,7 @@ class Compare_patches:
 
     def create_combination_list_batch(self, index_list):
         combination_list=[]
+        print(index_list)
         batch_a = random.choices(index_list, k = 128)
         batch_b = random.choices(index_list, k= 128)
         for i in batch_a:
@@ -189,7 +216,7 @@ class Compare_patches:
         if np.mean(y_a) == 0 or np.mean(y_b) == 0:
             print("Found")
         c = euclidean(np.ravel(x_a), np.ravel(x_b))
-        d = euclidean(np.ravel(y_a), np.ravel(y_b))
+        d = abs(np.mean(y_a) - np.mean(y_b))
         return c, d
 
     def select_patches(self, results_df, data_file):

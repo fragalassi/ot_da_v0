@@ -78,8 +78,7 @@ class Train_JDOT:
                                       shortcut=self.config.shortcut,
                                       compile=False)
         # get training and testing generators
-
-        jd = JDOT(model, self.config, source_data, target_data, context_output_name)
+        jd = JDOT(model, config=self.config, source_data=source_data, target_data=target_data, context_output_name=context_output_name)
         # m = jd.load_old_model(self.config.model_file)
         # print(m)
         if not self.config.overwrite_model:
