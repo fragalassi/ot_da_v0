@@ -1,4 +1,5 @@
 from keras import backend as K
+from keras import Model
 from keras.callbacks import LambdaCallback
 from patches_comparaison.generator_jdot import get_training_and_validation_batch_jdot, get_validation_split, create_patch_index_list, get_data_from_file, add_data_mp
 from scipy.spatial.distance import cdist, cosine, euclidean, dice
@@ -9,19 +10,20 @@ import os
 import numpy as np
 import ot
 from training_testing import create_test
+from keras.models import load_model
 import time
 from multiprocessing import Pool
 
 class JDOT():
 
-    def __init__(self, model, config, source_data, target_data, allign_loss=1.0, tar_cl_loss=1.0,
+    def __init__(self, model, config, source_data, target_data, context_output_name, allign_loss=1.0, tar_cl_loss=1.0,
                  sloss=0.0, tloss=1.0, int_lr=0.01, ot_method='emd',
                  jdot_alpha=0.01, lr_decay=True, verbose=1):
 
 
         self.config = config
         self.model = model  # target model
-
+        self.context_output_name = context_output_name
         self.source_data = source_data
         self.target_data = target_data
 
@@ -35,6 +37,8 @@ class JDOT():
         self.batch_target = K.zeros(shape=(self.batch_size,
                                     len(self.config.training_modalities),self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
 
+        self.image_representation_source = []
+        self.image_representation_target = []
         # whether to minimize with classification loss
         self.train_cl = K.variable(tar_cl_loss)
         # whether to minimize with the allignment loss
@@ -133,7 +137,7 @@ class JDOT():
         def euclidean_dist(x,y):
             """
             The euclidean distance between x and y is the length of the displacement vector x - y:
-            ||x-y||² = <x-y,x-y> (in the demonstration we take the square of the euclidean distance).
+            ||x-y||² = <x-y,x-y> (we take the square of the euclidean distance).
             <x-y,x-y> = <x,x> - <x,y> - <y,x> + <y,y>
             As both x and y lie in R, the dot product <.,.> is symmetric. Therefore: <x,y> = <y,x>.
             We can write:
@@ -167,7 +171,15 @@ class JDOT():
         :return:
         '''
         if self.config.train_jdot:
-            self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
+            if self.config.depth_jdot == None:
+                self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
+            else:
+                outputs = [self.model.get_layer(name).output for name in self.context_output_name]
+                outputs += [self.model.layers[-1].output]
+                self.model = Model(inputs=self.model.input,
+                                                 outputs=outputs)
+                print(self.model.summary())
+                self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
 
@@ -203,8 +215,64 @@ class JDOT():
             validation = validation,
             source_center = self.config.source_center,
             target_center = self.config.target_center)
-
         return train_batch, validation_batch
+
+    def load_batch(self, validation):
+        start = time.time()
+        self.train_batch, self.validation_batch = self.get_batch(target=True, validation=validation)
+        end = time.time()
+        print("Time for loading: ", end - start)
+        K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
+        K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
+
+    def get_prediction(self):
+
+        outputs = [self.model.get_layer(name).output for name in self.context_output_name]
+        outputs += [self.model.layers[-1].output]
+        intermediate_layer_model = Model(inputs=self.model.input,
+                                         outputs=outputs)
+        intermediate_output = intermediate_layer_model.predict(self.train_batch[0])
+
+        if self.config.depth_jdot == None:
+            self.image_representation_source = self.train_batch[0][:self.batch_size, :]
+            self.image_representation_target = self.train_batch[0][self.batch_size:, :]
+        else:
+            self.image_representation_source = intermediate_output[self.config.depth_jdot][:self.batch_size, :]
+            self.image_representation_target = intermediate_output[self.config.depth_jdot][self.batch_size:, :]
+
+        return intermediate_output
+
+    def train_on_batch(self, validation, hist_l, val_l):
+        output_list = []
+        for name in self.context_output_name: #Creating a bunch of false outputs
+            output_list += [np.zeros((self.train_batch[0].shape[0],) + self.model.get_layer(name).output_shape[1:])]
+        output_list += [self.train_batch[1]]
+        hist = self.model.train_on_batch(self.train_batch[0], output_list)
+        print(hist)
+        hist_l = np.vstack((hist_l, hist))
+
+        print("Loss:", hist[0], " Dice Score: ", hist[1], "Dice Score Source: ", hist[2], "Dice Score Target: ",
+              hist[3], "\n")
+
+        if validation:
+            val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
+            val_l = np.vstack((val_l, val))
+            print("======")
+            print("Validation Loss: ", val[0], "Dice Score :", val[1], "Dice Score Source: ", val[2],
+                  "Dice Score Target: ", val[3], )
+            print("======", "\n")
+
+        self.save_hist_and_model(hist_l, val_l)
+
+        return hist_l, val_l
+
+    def save_hist_and_model(self, hist_l, val_l):
+        if not os.path.exists(self.config.save_dir):
+            os.makedirs(self.config.save_dir)
+        np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
+        np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
+
+        self.model.save(self.config.model_file)
 
     def train_model(self, n_iteration):
         '''
@@ -217,6 +285,7 @@ class JDOT():
 
         hist_l = np.empty((0,4))
         val_l = np.empty((0, 4))
+
         for i in range(n_iteration):
             print("Batch:", i, "/", n_iteration)
             if i % 10 == 0:
@@ -230,38 +299,14 @@ class JDOT():
                 '''
                 self.jdot_alpha *= 2
                 print("Increasing JDOT alpha: ", self.jdot_alpha)
-            start = time.time()
-            self.train_batch, self.validation_batch = self.get_batch(target=True, validation=validation)
-            end = time.time()
-            print("Time for loading: ",end - start)
-            K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
-            K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
 
-            pred = self.model.predict(self.train_batch[0])
+            self.load_batch(validation)
+            intermediate_output = self.get_prediction()
 
-            K.set_value(self.gamma, self.compute_gamma(pred))
+            K.set_value(self.gamma, self.compute_gamma(intermediate_output[-1]))
+            hist_l, val_l = self.train_on_batch(validation, hist_l, val_l)
+            self.save_hist_and_model(hist_l, val_l)
 
-            hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
-
-            hist_l = np.vstack((hist_l, hist))
-            average = np.average(hist_l[-10:], axis=0)
-
-            print("Loss:", hist[0], " Dice Score: ", hist[1], "Dice Score Source: ", hist[2], "Dice Score Target: ", hist[3], "\n")
-
-            if validation:
-                val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
-                val_l = np.vstack((val_l, val))
-                print("======")
-                print("Validation Loss: ", val[0], "Dice Score :", val[1], "Dice Score Source: ", val[2], "Dice Score Target: ", val[3],)
-                print("======", "\n")
-
-        if not os.path.exists(self.config.save_dir):
-            print("Hey")
-            os.makedirs(self.config.save_dir)
-        np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
-        np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
-
-        self.model.save(self.config.model_file)
 
     def train_model_on_source(self, n_iteration):
         hist_l = np.empty((0,2))
@@ -294,7 +339,6 @@ class JDOT():
 
 
         if not os.path.exists(self.config.save_dir):
-            print("Hey")
             os.makedirs(self.config.save_dir)
         np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
         np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
@@ -308,10 +352,15 @@ class JDOT():
         '''
         # Reshaping the samples into vectors of dimensions number of modalities * patch_dimension.
         # train_vecs are of shape (batch_size, d)
-        train_vec_source = np.reshape(self.train_batch[0][:self.batch_size],
-                                      (self.batch_size, len(self.config.training_modalities)*self.config.patch_shape[0]*self.config.patch_shape[1]*self.config.patch_shape[2]))
-        train_vec_target = np.reshape(self.train_batch[0][self.batch_size:],
-                                      (self.batch_size, len(self.config.training_modalities)*self.config.patch_shape[0]*self.config.patch_shape[1]*self.config.patch_shape[2]))
+        train_vec_source = np.reshape(self.image_representation_source, (self.batch_size, self.image_representation_source.shape[1]*
+                                                                         self.image_representation_source.shape[2]*
+                                                                         self.image_representation_source.shape[3]*
+                                                                         self.image_representation_source.shape[4]))
+        
+        train_vec_target = np.reshape(self.image_representation_target, (self.batch_size, self.image_representation_target.shape[1]*
+                                                                         self.image_representation_target.shape[2]*
+                                                                         self.image_representation_target.shape[3]*
+                                                                         self.image_representation_target.shape[4]))
         # Same for the ground truth but the GT is the same for both modalities
 
         truth_vec_source = np.reshape(self.train_batch[1][:self.batch_size],
@@ -368,3 +417,20 @@ class JDOT():
                                 training_modalities=training_modalities, output_label_map=output_label_map, labels=labels,
                                 threshold=threshold, overlap=overlap, permute=permute)
         data_file.close()
+
+    def load_old_model(self, model_file):
+        print("Loading pre-trained model")
+        custom_objects = {'jdot_lost': self.jdot_loss}
+        try:
+            from keras_contrib.layers import InstanceNormalization
+            custom_objects["InstanceNormalization"] = InstanceNormalization
+        except ImportError:
+            pass
+        try:
+            return load_model(model_file, custom_objects=custom_objects)
+        except ValueError as error:
+            if 'InstanceNormalization' in str(error):
+                raise ValueError(str(error) + "\n\nPlease install keras-contrib to use InstanceNormalization:\n"
+                                              "'pip install git+https://www.github.com/keras-team/keras-contrib.git'")
+            else:
+                raise error

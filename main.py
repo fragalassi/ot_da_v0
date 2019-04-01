@@ -30,7 +30,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [128]*1
+batch_size = [1]*1
 initial_lr = [5e-4]*1
 loss_funcs = ["dice_coefficient_loss"]*1
 depth = [5]*1
@@ -41,7 +41,7 @@ image_shape = [(128,128,128)]*1
 training_center = [["All"]]
 augmentation = [True]*1
 jdot_alpha = [0.001]*1
-source_center = ["01"]*1
+source_center = ["08"]*1
 target_center = ["07"]*1
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
@@ -75,20 +75,23 @@ for i in range(df.shape[0]): #df.shape[0]
     '''
     To compare patches
     '''
-    comp = compare_patches.Compare_patches(conf)
-    # comp.main()
-    conf.all_modalities = ["FLAIR-include"]
-    data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
-    comp.save_patch(2, np.array([28,52,76]), "A", data_file_opened, 0)
-    comp.save_patch(4, np.array([60,28,76]), "B", data_file_opened, 0)
+    # comp = compare_patches.Compare_patches(conf)
+    # # comp.main()
+    # conf.all_modalities = ["FLAIR-include"]
+    # data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
+    # comp.save_patch(4, np.array([84,28,36]), "A", data_file_opened, 0)
+    # comp.save_patch(1, np.array([68,52,92]), "B", data_file_opened, 0)
     '''
     For JDOT, uncomment this part
     '''
-    # train_jd = train_jdot.Train_JDOT(conf)
-    # train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
-    #
-    # eval = evaluate.Evaluate(conf)
-    # eval.main()
+    test = create_test.Test(conf)
+    test.main(overwrite_data=conf.overwrite_data)
+
+    train_jd = train_jdot.Train_JDOT(conf)
+    train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+
+    eval = evaluate.Evaluate(conf)
+    eval.main()
 
     '''
     For normal training uncomment this part

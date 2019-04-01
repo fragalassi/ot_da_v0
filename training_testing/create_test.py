@@ -42,7 +42,6 @@ class Test:
         # convert input images into an hdf5 file
         if overwrite_data or not os.path.exists(self.config.data_file):
             testing_files, subject_ids = self.fetch_testing_data_files(return_subject_ids=True)
-            print(testing_files)
             write_data_to_file(testing_files, self.config.data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids)
         data_file_opened = open_data_file(self.config.data_file)

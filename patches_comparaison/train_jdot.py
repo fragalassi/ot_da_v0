@@ -73,7 +73,7 @@ class Train_JDOT:
         else:
             # instantiate new model, compile = False because the compilation is made in JDOT.py
 
-            model = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
+            model, context_output_name = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
                                       initial_learning_rate=self.config.initial_learning_rate,
                                       n_base_filters=self.config.n_base_filters,
                                       loss_function=self.config.loss_function,
@@ -81,7 +81,9 @@ class Train_JDOT:
                                       compile=False)
         # get training and testing generators
 
-        jd = JDOT(model, self.config, source_data, target_data)
+        jd = JDOT(model, self.config, source_data, target_data, context_output_name)
+        # m = jd.load_old_model(self.config.model_file)
+        # print(m)
         jd.compile_model()
         if self.config.train_jdot:
             jd.train_model(self.config.epochs)

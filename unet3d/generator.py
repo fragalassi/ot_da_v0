@@ -8,7 +8,7 @@ import numpy as np
 from .utils import pickle_dump, pickle_load
 from .utils.patches import compute_patch_indices, get_random_nd_index, get_patch_from_3d_data
 from .augment import augment_data, random_permutation_x_y
-
+import sys
 
 def get_training_and_validation_generators(data_file, batch_size, n_labels, training_keys_file, validation_keys_file,
                                            data_split=0.8, overwrite_data=False, labels=None, augment=False,
@@ -56,6 +56,14 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
                                                           training_file=training_keys_file,
                                                           validation_file=validation_keys_file)
 
+    training_path = os.path.abspath("Data/generated_data/training_list_gt")
+    validation_path = os.path.abspath("Data/generated_data/validation_list_gt")
+    if skip_blank:
+        save_patches_with_gt(training_list, data_file, patch_shape, training_patch_overlap, training_patch_start_offset,
+                             path=training_path)
+        save_patches_with_gt(validation_list, data_file, patch_shape, training_patch_overlap, training_patch_start_offset,
+                             path = validation_path)
+
     print("Validation batch size :", validation_batch_size)
     print("Validation patch overlap :", validation_patch_overlap)
 
@@ -70,14 +78,16 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
                                         patch_overlap=training_patch_overlap,
                                         patch_start_offset=training_patch_start_offset,
                                         skip_blank=skip_blank,
-                                        permute=permute)
+                                        permute=permute,
+                                        skip_blank_file_path = training_path)
     validation_generator = data_generator(data_file, validation_list,
                                           batch_size=validation_batch_size,
                                           n_labels=n_labels,
                                           labels=labels,
                                           patch_shape=patch_shape,
                                           patch_overlap=validation_patch_overlap,
-                                          skip_blank=skip_blank)
+                                          skip_blank=skip_blank,
+                                          skip_blank_file_path = validation_path)
 
     # Set the number of training and testing samples per epoch correctly
     num_training_steps = get_number_of_steps(get_number_of_patches(data_file, training_list, patch_shape,
@@ -94,6 +104,33 @@ def get_training_and_validation_generators(data_file, batch_size, n_labels, trai
     print("Number of validation steps: ", num_validation_steps)
 
     return training_generator, validation_generator, num_training_steps, num_validation_steps
+
+def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path):
+    if os.path.exists(path):
+        print("Found a file with indexes of patches with GT...")
+    else:
+        print("Creating and saving a file containing the index of patches with GT. This may take a while...")
+        index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape,
+                                                      patch_overlap, patch_start_offset)
+        index_list = get_patches_with_ground_truth(index_list, data_file, patch_shape)
+        pickle_dump(index_list, path)
+
+def load_index_patches_with_gt(file_name):
+    return pickle_load(file_name)
+
+
+def get_patches_with_ground_truth(index_list, data_file, patch_shape):
+    new_index_list = []
+    initial_length = len(index_list)
+    while len(index_list) > 0:
+        advance = "\r Writing indexes with GT :" + str((initial_length - len(index_list))/initial_length*100 )+ "%"
+        sys.stdout.write(advance)
+        sys.stdout.flush()
+        index = index_list.pop()
+        data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape)
+        if np.mean(truth) != 0:
+            new_index_list += [index]
+    return new_index_list
 
 
 def get_number_of_steps(n_samples, batch_size):
@@ -139,7 +176,7 @@ def split_list(input_list, split=0.8, shuffle_list=True):
 
 def data_generator(data_file, index_list, batch_size=1, n_labels=1, labels=None, augment=True, augment_flip=True,
                    augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
-                   shuffle_index_list=True, skip_blank=True, permute=True):
+                   shuffle_index_list=True, skip_blank=True, permute=True, skip_blank_file_path = None):
     orig_index_list = index_list
     print("Augment Flip :", augment_flip)
     print("Permute :", permute)
@@ -147,8 +184,12 @@ def data_generator(data_file, index_list, batch_size=1, n_labels=1, labels=None,
     while True:
         x_list = list()
         y_list = list()
+
         if patch_shape:
-            index_list = create_patch_index_list(orig_index_list, data_file.root.data.shape[-3:], patch_shape,
+            if skip_blank:
+                index_list = load_index_patches_with_gt(skip_blank_file_path)
+            else:
+                index_list = create_patch_index_list(orig_index_list, data_file.root.data.shape[-3:], patch_shape,
                                                  patch_overlap, patch_start_offset)
         else:
             index_list = copy.copy(orig_index_list)

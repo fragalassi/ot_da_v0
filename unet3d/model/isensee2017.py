@@ -4,7 +4,8 @@ from keras.layers import Input, LeakyReLU, Add, UpSampling3D, Activation, Spatia
 from keras.engine import Model
 from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
-
+import keras.backend as K
+import re
 from .unet import create_convolution_block, concatenate
 from ..metrics import weighted_dice_coefficient_loss, dice_coef, jaccard_distance_loss, dice_coef_loss
 from ..generalized_loss import generalized_dice_loss, dice
@@ -44,7 +45,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     }
 
     loss_function = loss_function_d[loss_function]
-
+    context_module_output = []
     inputs = Input(input_shape)
 
     current_layer = inputs
@@ -59,7 +60,9 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
         else:
             in_conv = create_convolution_block(current_layer, n_level_filters, strides=(2, 2, 2))
 
-        context_output_layer = create_context_module(in_conv, n_level_filters, dropout_rate=dropout_rate)
+        context_output_layer, context_module_name = create_context_module(in_conv, n_level_filters, dropout_rate=dropout_rate)
+
+        context_module_output += [re.findall("[^\/]*",context_module_name)[0]]
 
         summation_layer = Add()([in_conv, context_output_layer])
         level_output_layers.append(summation_layer)
@@ -93,7 +96,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     model = Model(inputs=inputs, outputs=activation_block)
     if compile:
         model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function, metrics=[dice_coef])
-    return model
+    return model, context_module_output
 
 
 def create_localization_module(input_layer, n_filters):
@@ -112,7 +115,7 @@ def create_context_module(input_layer, n_level_filters, dropout_rate=0.3, data_f
     convolution1 = create_convolution_block(input_layer=input_layer, n_filters=n_level_filters)
     dropout = SpatialDropout3D(rate=dropout_rate, data_format=data_format)(convolution1)
     convolution2 = create_convolution_block(input_layer=dropout, n_filters=n_level_filters)
-    return convolution2
+    return convolution2, convolution2.name
 
 
 

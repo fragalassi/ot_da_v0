@@ -47,7 +47,7 @@ class Train_Isensee:
         else:
             # instantiate new model
 
-            model = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
+            model, context_output_name = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
                                       initial_learning_rate=self.config.initial_learning_rate,
                                       n_base_filters=self.config.n_base_filters, loss_function=self.config.loss_function,
                                       shortcut=self.config.shortcut)
