@@ -85,29 +85,29 @@ for i in range(df.shape[0]): #df.shape[0]
     For JDOT, uncomment this part
     '''
 
-    # train_jd = train_jdot.Train_JDOT(conf)
-    # train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
-    #
-    # test = create_test.Test(conf)
-    # test.main(overwrite_data=conf.overwrite_data)
-    #
-    # eval = evaluate.Evaluate(conf)
-    # eval.main()
+    train_jd = train_jdot.Train_JDOT(conf)
+    train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+
+    test = create_test.Test(conf)
+    test.main(overwrite_data=conf.overwrite_data)
+
+    eval = evaluate.Evaluate(conf)
+    eval.main()
 
     '''
     For normal training uncomment this part
     '''
 
-    train = train_isensee2017.Train_Isensee(conf)
-    train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
-
-    test = create_test.Test(conf)
-    test.main(overwrite_data=conf.overwrite_data)
-
-    pred = predict.Predict(conf)
-    pred.main()
-
-    eval = evaluate.Evaluate(conf)
-    eval.main()
+    # train = train_isensee2017.Train_Isensee(conf)
+    # train.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+    #
+    # test = create_test.Test(conf)
+    # test.main(overwrite_data=conf.overwrite_data)
+    #
+    # pred = predict.Predict(conf)
+    # pred.main()
+    #
+    # eval = evaluate.Evaluate(conf)
+    # eval.main()
 
     K.clear_session()
