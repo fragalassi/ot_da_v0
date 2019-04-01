@@ -68,12 +68,10 @@ class Train_JDOT:
         source_data = open_data_file(self.config.source_data_file)
         target_data = open_data_file(self.config.target_data_file)
 
-        if not overwrite_model and os.path.exists(self.config.model_file):
-            model = load_old_model(self.config.model_file)
-        else:
-            # instantiate new model, compile = False because the compilation is made in JDOT.py
 
-            model, context_output_name = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
+        # instantiate new model, compile = False because the compilation is made in JDOT.py
+
+        model, context_output_name = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
                                       initial_learning_rate=self.config.initial_learning_rate,
                                       n_base_filters=self.config.n_base_filters,
                                       loss_function=self.config.loss_function,
@@ -84,6 +82,10 @@ class Train_JDOT:
         jd = JDOT(model, self.config, source_data, target_data, context_output_name)
         # m = jd.load_old_model(self.config.model_file)
         # print(m)
+        if not self.config.overwrite_model:
+            jd.load_old_model(self.config.model_file)
+        else:
+            print("Creating new model, this might overwrite your old model")
         jd.compile_model()
         if self.config.train_jdot:
             jd.train_model(self.config.epochs)

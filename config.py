@@ -32,7 +32,7 @@ class Config:
             self.all_modalities = ["FLAIR-include"]
         else:
             self.data_set="miccai16_no_norm"
-            self.epochs = 1  # cutoff the training after this many epochs
+            self.epochs = 1000  # cutoff the training after this many epochs
             self.all_modalities = ["FLAIR-include", "T1-include"]
 
         self.niseko = niseko

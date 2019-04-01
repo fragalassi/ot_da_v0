@@ -420,14 +420,17 @@ class JDOT():
 
     def load_old_model(self, model_file):
         print("Loading pre-trained model")
-        custom_objects = {'jdot_lost': self.jdot_loss}
+        custom_objects = {'jdot_loss': self.jdot_loss,
+                          'dice_coefficient': self.dice_coefficient,
+                          'dice_coefficient_source': self.dice_coefficient_source,
+                          'dice_coefficient_target': self.dice_coefficient_target}
         try:
             from keras_contrib.layers import InstanceNormalization
             custom_objects["InstanceNormalization"] = InstanceNormalization
         except ImportError:
             pass
         try:
-            return load_model(model_file, custom_objects=custom_objects)
+            self.model = load_model(model_file, custom_objects=custom_objects)
         except ValueError as error:
             if 'InstanceNormalization' in str(error):
                 raise ValueError(str(error) + "\n\nPlease install keras-contrib to use InstanceNormalization:\n"
