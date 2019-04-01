@@ -62,7 +62,6 @@ class JDOT():
             :param y_pred:
             :return: A sum of the source_loss and the OT loss.
             '''
-            print(y_true)
             truth_source = y_true[:self.batch_size, :]  # source true labels
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
@@ -154,6 +153,16 @@ class JDOT():
 
             return K.sqrt(dist)
 
+        def distance_loss(y_true, y_pred):
+
+            prediction_source = y_pred[:self.batch_size, :]  # source prediction
+            prediction_target = y_pred[self.batch_size:, :]  # target prediction
+
+            return euclidean_dist(prediction_source, prediction_target)
+
+
+
+
 
         '''
         Uncomment to check if cos_distance/euclidean_dist is computing the right values.
@@ -175,6 +184,8 @@ class JDOT():
             if self.config.depth_jdot == None:
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
             else:
+                for name in self.context_output_name:
+                    print(name)
                 outputs = [self.model.get_layer(name).output for name in self.context_output_name]
                 outputs += [self.model.layers[-1].output]
                 self.model = Model(inputs=self.model.input,
@@ -302,7 +313,7 @@ class JDOT():
                 print("Increasing JDOT alpha: ", self.jdot_alpha)
 
             self.load_batch(validation)
-            intermediate_output = self.get_prediction()
+            intermediate_output = [self.get_prediction()]
 
             K.set_value(self.gamma, self.compute_gamma(intermediate_output[-1]))
             hist_l, val_l = self.train_on_batch(validation, hist_l, val_l)

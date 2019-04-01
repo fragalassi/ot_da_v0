@@ -79,7 +79,7 @@ class Train_JDOT:
                                       compile=False)
         # get training and testing generators
         if not self.config.depth_jdot:
-            context_output_name = None
+            context_output_name = []
         jd = JDOT(model, config=self.config, source_data=source_data, target_data=target_data, context_output_name=context_output_name)
         # m = jd.load_old_model(self.config.model_file)
         # print(m)
