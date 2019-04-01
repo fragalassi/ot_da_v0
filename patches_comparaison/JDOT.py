@@ -247,6 +247,7 @@ class JDOT():
         for name in self.context_output_name: #Creating a bunch of false outputs
             output_list += [np.zeros((self.train_batch[0].shape[0],) + self.model.get_layer(name).output_shape[1:])]
         output_list += [self.train_batch[1]]
+        print(len(output_list))
         hist = self.model.train_on_batch(self.train_batch[0], output_list)
         print(hist)
         hist_l = np.vstack((hist_l, hist))

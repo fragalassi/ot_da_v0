@@ -8,6 +8,7 @@ from unet3d.data import write_data_to_file, open_data_file
 from unet3d.generator import get_training_and_validation_generators, get_validation_split
 from unet3d.model import isensee2017_model
 from unet3d.training import load_old_model, train_model
+from unet3d.utils.utils import pickle_dump
 
 class Test:
     def __init__(self, conf):
@@ -40,8 +41,9 @@ class Test:
         self.config.validation_file = os.path.abspath(
             "Data/generated_data/" + self.config.data_set + "_testing_validation_ids.pkl")
         # convert input images into an hdf5 file
-        if overwrite_data or not os.path.exists(self.config.data_file):
+        if overwrite_data or not os.path.exists(self.config.data_file) or not os.path.exists(self.config.validation_file):
             testing_files, subject_ids = self.fetch_testing_data_files(return_subject_ids=True)
+            pickle_dump(self.config.validation_file)
             write_data_to_file(testing_files, self.config.data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids)
         data_file_opened = open_data_file(self.config.data_file)
