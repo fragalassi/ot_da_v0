@@ -76,7 +76,8 @@ class Config:
 
         self.train_jdot = True
         self.jdot_alpha = jdot_alpha
-        self.depth_jdot = 5 # The layer from which the computation of the OT is made (0 is the image space).
+        self.alpha_factor = 2
+        self.depth_jdot = None # The layer from which the computation of the OT is made (0 is the image space).
         '''
         If augmentation is set to true, both flip and permutation transforms are taken into account.
         '''

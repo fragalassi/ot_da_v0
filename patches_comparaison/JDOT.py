@@ -23,13 +23,16 @@ class JDOT():
 
         self.config = config
         self.model = model  # target model
-        self.context_output_name = [context_output_name[self.config.depth_jdot -1]]
+        if self.config.depth_jdot:
+            self.context_output_name = [context_output_name[self.config.depth_jdot -1]]
+        else:
+            self.context_output_name = []
         self.source_data = source_data
         self.target_data = target_data
 
         self.batch_size = self.config.batch_size
         self.optimizer = self.config.optimizer
-        self.jdot_alpha = self.config.jdot_alpha
+        self.jdot_alpha = K.variable(self.config.jdot_alpha)
         # initialize the gamma (coupling in OT) with zeros
         self.gamma = K.zeros(shape=(self.batch_size, self.batch_size))
         self.batch_source = K.zeros(shape=(self.batch_size,
@@ -176,7 +179,7 @@ class JDOT():
             dif -= euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(self.target_pred))
             dif = K.abs(dif)
 
-            return K.sum(self.gamma*(dif))
+            return self.jdot_alpha * K.sum(self.gamma*(dif))
 
         self.distance_loss = distance_loss
 
@@ -242,8 +245,8 @@ class JDOT():
                 '''
                 Increasing the weights of jdot every 100 epochs
                 '''
-                self.jdot_alpha *= 10
-                print("Increasing JDOT alpha: ", self.jdot_alpha)
+                K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha) * self.config.alpha_factor)
+                print("Increasing JDOT alpha: ", K.get_value(self.jdot_alpha))
 
             self.load_batch(validation)
             intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
@@ -488,7 +491,9 @@ class JDOT():
 
     def load_old_model(self, model_file):
         print("Loading pre-trained model")
-        custom_objects = {'jdot_loss': self.jdot_loss,
+        custom_objects = {'jdot_loss': self.jdot_image_loss,
+                          'jdot_image_loss': self.jdot_image_loss,
+                          'distance_loss': self.distance_loss,
                           'dice_coefficient': self.dice_coefficient,
                           'dice_coefficient_source': self.dice_coefficient_source,
                           'dice_coefficient_target': self.dice_coefficient_target}
