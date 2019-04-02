@@ -54,6 +54,11 @@ class JDOT():
         self.train_batch = ()
         self.validation_batch = ()
 
+        self.prediction = []
+
+        self.target_pred = K.zeros(shape=(self.batch_size, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
+        self.source_truth = K.zeros(shape=(self.batch_size, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
+
 
         def jdot_loss(y_true, y_pred):
             '''
@@ -81,7 +86,7 @@ class JDOT():
 
             euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
             euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-            return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - 0.001*euc_distance_pred)))
+            return source_loss #+ self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - 0.001*euc_distance_pred)))
 
         self.jdot_loss = jdot_loss
 
@@ -147,19 +152,26 @@ class JDOT():
             :param y:
             :return:
             """
+            print(x)
+            print(y)
             dist = K.reshape(K.sum(K.square(x),1), (-1,1))
+            print(dist)
             dist += K.reshape(K.sum(K.square(y),1), (1,-1))
+            print(dist)
+            print(K.dot(x, K.transpose(y)))
             dist -= 2.0*K.dot(x, K.transpose(y))
 
             return K.sqrt(dist)
 
         def distance_loss(y_true, y_pred):
-
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
+            print(self.target_pred)
+            dif = K.abs(cos_distance(prediction_source, prediction_target) - cos_distance(self.source_truth, self.target_pred))
 
-            return euclidean_dist(prediction_source, prediction_target)
+            return K.sum(self.gamma*(dif))
 
+        self.distance_loss = distance_loss
 
 
 
@@ -167,11 +179,10 @@ class JDOT():
         '''
         Uncomment to check if cos_distance/euclidean_dist is computing the right values.
         '''
-        # x = np.array([[0, 0, 0], [64, 47, 10], [45, 35, 47]])
-        # y = np.array([[0, 0, 0], [4, 22, 156], [547, 48, 7]])
+        # x = np.array([[[[[10]]], [[[20]]], [[[0]]]], [[[[10]]], [[[20]]], [[[0]]]]])
+        # y = np.array([[[[[2]]], [[[9]]], [[[3]]]], [[[[10]]], [[[20]]], [[[0]]]]])
         # print(euclidean(x[0],y[0]))
         # print(euclidean(x[0], y[1]))
-        # print(euclidean(x[2],y[2]))
         # print("Evaluation: \n", K.eval(euclidean_dist(K.constant(x), K.constant(y))))
 
 
@@ -184,15 +195,94 @@ class JDOT():
             if self.config.depth_jdot == None:
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
             else:
-                for name in self.context_output_name:
-                    print(name)
                 outputs = [self.model.get_layer(name).output for name in self.context_output_name]
                 outputs += [self.model.layers[-1].output]
                 self.model = Model(inputs=self.model.input,
                                                  outputs=outputs)
-                self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
+                loss = {
+                    self.model.layers[-1].name : self.jdot_loss,
+                    self.context_output_name[-1]: self.distance_loss,
+                }
+                print(loss)
+                self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
+
+    def train_model(self, n_iteration):
+        '''
+        For every iteration we first load a batch and compute a prediction on this batch.
+        From this prediction we compute the OT gamma.
+        We then train the newtork given the OT and the batch.
+        :param n_iteration:
+        :return:
+        '''
+
+        len_history = len(self.model.metrics_names) # Print self.model.metric_names to know the correspondance
+        hist_l = np.empty((0,len_history))
+        val_l = np.empty((0, len_history))
+
+        for i in range(n_iteration):
+            print("Batch:", i, "/", n_iteration)
+            if i % 10 == 0:
+                validation = True
+            else:
+                validation = False
+
+            if i%100 == 0 and i != 0:
+                '''
+                Increasing the weights of jdot every 100 epochs
+                '''
+                self.jdot_alpha *= 2
+                print("Increasing JDOT alpha: ", self.jdot_alpha)
+
+            self.load_batch(validation)
+            intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
+            self.prediction = intermediate_output[-1]
+
+            self.target_pred = K.constant(self.prediction[self.batch_size:,:])
+            self.source_truth = K.constant(self.train_batch[1][:self.batch_size, :])
+
+            K.set_value(self.gamma, self.compute_gamma(self.prediction))
+            hist_l, val_l = self.train_on_batch(validation, hist_l, val_l)
+        self.save_hist_and_model(hist_l, val_l)
+
+
+    def train_model_on_source(self, n_iteration):
+        hist_l = np.empty((0,2))
+        val_l = np.empty((0, 2))
+        for i in range(n_iteration):
+
+            print("Epoch:", i, "/", n_iteration)
+            if i % 10 == 0:
+                validation = True
+            else:
+                validation = False
+            start = time.time()
+            self.train_batch, self.validation_batch = self.get_batch(target=False, validation=validation)
+            end = time.time()
+            print("Time for loading: ",end - start)
+            hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
+
+            hist_l = np.vstack((hist_l, hist))
+            average = np.average(hist_l[-10:], axis=0)
+
+            print("Loss:", hist[0], " Dice Score: ", hist[1], "| Loss mean: ", average[0], "Dice Score mean:",
+                  average[1], "\n")
+
+            if validation:
+                val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
+                val_l = np.vstack((val_l, val))
+                print("======")
+                print("Validation Loss: ", val[0], "Dice Score :", val[1])
+                print("======", "\n")
+
+
+        if not os.path.exists(self.config.save_dir):
+            os.makedirs(self.config.save_dir)
+        np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
+        np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
+
+        self.model.save(self.config.model_file)
 
 
     def get_batch(self, target = True, validation=False):
@@ -238,11 +328,7 @@ class JDOT():
 
     def get_prediction(self):
 
-        outputs = [self.model.get_layer(name).output for name in self.context_output_name]
-        outputs += [self.model.layers[-1].output]
-        intermediate_layer_model = Model(inputs=self.model.input,
-                                         outputs=outputs)
-        intermediate_output = intermediate_layer_model.predict(self.train_batch[0])
+        intermediate_output = self.model.predict(self.train_batch[0])
 
         if self.config.depth_jdot == None:
             self.image_representation_source = self.train_batch[0][:self.batch_size, :]
@@ -250,6 +336,7 @@ class JDOT():
         else:
             self.image_representation_source = intermediate_output[self.config.depth_jdot][:self.batch_size, :]
             self.image_representation_target = intermediate_output[self.config.depth_jdot][self.batch_size:, :]
+
 
         return intermediate_output
 
@@ -285,77 +372,8 @@ class JDOT():
 
         self.model.save(self.config.model_file)
 
-    def train_model(self, n_iteration):
-        '''
-        For every iteration we first load a batch and compute a prediction on this batch.
-        From this prediction we compute the OT gamma.
-        We then train the newtork given the OT and the batch.
-        :param n_iteration:
-        :return:
-        '''
-
-        len_history = len(self.model.metrics_names) # Print self.model.metric_names to know the correspondance
-        hist_l = np.empty((0,len_history))
-        val_l = np.empty((0, len_history))
-
-        for i in range(n_iteration):
-            print("Batch:", i, "/", n_iteration)
-            if i % 10 == 0:
-                validation = True
-            else:
-                validation = False
-
-            if i%100 == 0 and i != 0:
-                '''
-                Increasing the weights of jdot every 100 epochs
-                '''
-                self.jdot_alpha *= 2
-                print("Increasing JDOT alpha: ", self.jdot_alpha)
-
-            self.load_batch(validation)
-            intermediate_output = [self.get_prediction()]
-
-            K.set_value(self.gamma, self.compute_gamma(intermediate_output[-1]))
-            hist_l, val_l = self.train_on_batch(validation, hist_l, val_l)
-            self.save_hist_and_model(hist_l, val_l)
 
 
-    def train_model_on_source(self, n_iteration):
-        hist_l = np.empty((0,2))
-        val_l = np.empty((0, 2))
-        for i in range(n_iteration):
-
-            print("Epoch:", i, "/", n_iteration)
-            if i % 10 == 0:
-                validation = True
-            else:
-                validation = False
-            start = time.time()
-            self.train_batch, self.validation_batch = self.get_batch(target=False, validation=validation)
-            end = time.time()
-            print("Time for loading: ",end - start)
-            hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
-
-            hist_l = np.vstack((hist_l, hist))
-            average = np.average(hist_l[-10:], axis=0)
-
-            print("Loss:", hist[0], " Dice Score: ", hist[1], "| Loss mean: ", average[0], "Dice Score mean:",
-                  average[1], "\n")
-
-            if validation:
-                val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
-                val_l = np.vstack((val_l, val))
-                print("======")
-                print("Validation Loss: ", val[0], "Dice Score :", val[1])
-                print("======", "\n")
-
-
-        if not os.path.exists(self.config.save_dir):
-            os.makedirs(self.config.save_dir)
-        np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
-        np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
-
-        self.model.save(self.config.model_file)
 
     def compute_gamma(self, pred):
         '''
