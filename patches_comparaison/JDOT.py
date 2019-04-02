@@ -242,7 +242,7 @@ class JDOT():
                 '''
                 Increasing the weights of jdot every 100 epochs
                 '''
-                self.jdot_alpha *= 2
+                self.jdot_alpha *= 10
                 print("Increasing JDOT alpha: ", self.jdot_alpha)
 
             self.load_batch(validation)
