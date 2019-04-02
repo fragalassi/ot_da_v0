@@ -30,7 +30,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [1]*1
+batch_size = [110]*1
 initial_lr = [5e-4]*1
 loss_funcs = ["dice_coefficient_loss"]*1
 depth = [5]*1

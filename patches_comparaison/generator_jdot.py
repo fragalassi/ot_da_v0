@@ -10,6 +10,7 @@ from unet3d.utils.patches import compute_patch_indices, get_random_nd_index, get
 from unet3d.augment import augment_data, random_permutation_x_y
 from multiprocessing.pool import Pool
 from time import time
+import random
 
 
 
@@ -203,6 +204,9 @@ def data_generator_jdot_multi_proc(data_file, training_index_list, validation_in
     training_orig_index_list = training_index_list
     validation_orig_index_list = validation_index_list
 
+    training_selected_index = [(4, np.array([-4, -4, -4])), (4, np.array([-4, -4,  4]))]
+    validation_selected_index = []
+
     training_x_list = list()
     training_y_list = list()
 
@@ -228,7 +232,7 @@ def data_generator_jdot_multi_proc(data_file, training_index_list, validation_in
 
         if shuffle_index_list:
             shuffle(training_index_list)
-        training_x_list, training_y_list = multi_proc_loop(training_index_list, data_file, training_x_list, training_y_list, batch_size = batch_size,
+        training_x_list, training_y_list, training_selected_index = multi_proc_loop(training_index_list, data_file, training_x_list, training_y_list, batch_size = batch_size,
                                          stopping_criterion= batch_size, number_of_threads = number_of_threads,
                                          patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
                                          augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
@@ -239,7 +243,7 @@ def data_generator_jdot_multi_proc(data_file, training_index_list, validation_in
             if shuffle_index_list:
                 shuffle(validation_index_list)
 
-            validation_x_list, validation_y_list = multi_proc_loop(validation_index_list, data_file, validation_x_list, validation_y_list, batch_size = batch_size,
+            validation_x_list, validation_y_list, validation_selected_index = multi_proc_loop(validation_index_list, data_file, validation_x_list, validation_y_list, batch_size = batch_size,
                                              stopping_criterion= batch_size, number_of_threads = number_of_threads,
                                              patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
                                              augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
@@ -272,6 +276,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
     :return:
     '''
     remaining_batch = batch_size
+    selected_index = []
     while len(index_list) > 0:
         # Two verifications for the remaining samples to put in the batch.
         # We want set the number_of_threads to the number of samples remaining
@@ -283,6 +288,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
         results = []
         for i in range(n):
             index = index_list.pop()
+            selected_index += [index]
             data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape)
             if patch_shape is not None:
                 affine = data_file.root.affine[index[0]]
@@ -304,13 +310,10 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
         end = time()
         if len(x_list) == stopping_criterion or (len(index_list) == 0 and len(x_list) > 0):
             break
-
-    return x_list, y_list
+    return x_list, y_list, selected_index
 
 def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path):
-    if os.path.exists(path):
-        print("Found a file with indexes of patches with GT...")
-    else:
+    if not os.path.exists(path):
         print("Creating and saving a file containing the index of patches with GT. This may take a while...")
         index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape,
                                                       patch_overlap, patch_start_offset)
