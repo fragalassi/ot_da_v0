@@ -14,7 +14,7 @@ import random
 
 
 
-def get_training_and_validation_batch_jdot(source_data_file, target_data_file, batch_size, n_labels, training_keys_file, validation_keys_file,
+def get_batch_jdot(selected_source, selected_target, source_data_file, target_data_file, batch_size, n_labels, training_keys_file, validation_keys_file,
                                            data_split=0.8, overwrite_data=False, labels=None, augment=False,
                                            augment_flip=True, augment_distortion_factor=0.25, patch_shape=None,
                                            validation_patch_overlap=0, training_patch_overlap = 0, training_patch_start_offset=None,
@@ -54,37 +54,9 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
     """
     if not validation_batch_size:
         validation_batch_size = batch_size
-    source_training_list, source_validation_list = get_validation_split(source_data_file,
-                                                          data_split=data_split,
-                                                          overwrite_data=overwrite_data,
-                                                          training_file=training_keys_file,
-                                                          validation_file=validation_keys_file,)
 
-    source_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+source_center)
-    source_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + source_center)
-
-    if skip_blank:
-        save_patches_with_gt(source_training_list, source_data_file, patch_shape, training_patch_overlap,
-                             training_patch_start_offset, path=source_training_path)
-        save_patches_with_gt(source_validation_list, source_data_file, patch_shape, validation_patch_overlap,
-                             training_patch_start_offset, path=source_validation_path)
-
-    target_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+target_center)
-    target_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + target_center)
-
-    target_training_list, target_validation_list = get_validation_split(target_data_file,
-                                                          data_split=data_split,
-                                                          overwrite_data=overwrite_data,
-                                                          training_file=training_keys_file,
-                                                          validation_file=validation_keys_file)
-    if skip_blank:
-        save_patches_with_gt(target_training_list, target_data_file, patch_shape, training_patch_overlap,
-                             training_patch_start_offset, path=target_training_path)
-        save_patches_with_gt(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
-                             training_patch_start_offset, path=target_validation_path)
-
-    source_training_x, source_training_y, source_validation_x, source_validation_y = data_generator_jdot_multi_proc(source_data_file,
-                                        source_training_list,source_validation_list,
+    source_x, source_y = data_generator_jdot_multi_proc(selected_source,
+                                        source_data_file,
                                         validation=validation,
                                         batch_size=batch_size,
                                         n_labels=n_labels,
@@ -99,12 +71,10 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                         shuffle_index_list=True,
                                         permute=permute,
                                         number_of_threads = number_of_threads,
-                                        training_path = source_training_path,
-                                        validation_path = source_validation_path
                                         )
     if target:
-        target_training_x, target_training_y, target_validation_x, target_validation_y = data_generator_jdot_multi_proc(target_data_file,
-                                            target_training_list,target_validation_list,
+        target_x, target_y = data_generator_jdot_multi_proc(selected_target,
+                                            target_data_file,
                                             validation=validation,
                                             batch_size=batch_size,
                                             n_labels=n_labels,
@@ -119,24 +89,63 @@ def get_training_and_validation_batch_jdot(source_data_file, target_data_file, b
                                             shuffle_index_list=True,
                                             permute=permute,
                                             number_of_threads = number_of_threads,
-                                            training_path=target_training_path,
-                                            validation_path=target_validation_path
                                             )
 
-        x = np.vstack((source_training_x, target_training_x))
-        y = np.vstack((source_training_y, target_training_y))
+        x = np.vstack((source_x, target_x))
+        y = np.vstack((source_y, target_y))
         training_batch = (x,y)
 
-        x = np.vstack((source_validation_x, target_validation_x))
-        y = np.vstack((source_validation_y, target_validation_y))
-        validation_batch = (x,y)
 
     else:
-        training_batch = (source_training_x, source_training_y)
-        validation_batch = (source_validation_x, source_validation_y)
+        training_batch = (source_x, source_y)
 
-    return training_batch, validation_batch
+    return training_batch
 
+
+def get_patches_index_list(source_data_file, target_data_file, training_keys_file, validation_keys_file, source_center,
+                           target_center, data_split = 0.8, overwrite_data = True, patch_shape = 16, skip_blank = True,
+                           training_patch_overlap = 0.5, validation_patch_overlap = 0.5, training_patch_start_offset = None):
+
+    source_training_list, source_validation_list = get_validation_split(source_data_file,
+                                                          data_split=data_split,
+                                                          overwrite_data=overwrite_data,
+                                                          training_file=training_keys_file,
+                                                          validation_file=validation_keys_file,)
+
+    source_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+source_center)
+    source_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + source_center)
+
+
+
+    if skip_blank:
+        save_patches_with_gt(source_training_list, source_data_file, patch_shape, training_patch_overlap,
+                             training_patch_start_offset, path=source_training_path)
+
+        source_training_list = load_index_patches_with_gt(source_training_path)
+
+        save_patches_with_gt(source_validation_list, source_data_file, patch_shape, validation_patch_overlap,
+                             training_patch_start_offset, path=source_validation_path)
+
+        source_validation_list = load_index_patches_with_gt(source_validation_path)
+
+    target_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+target_center)
+    target_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + target_center)
+
+    target_training_list, target_validation_list = get_validation_split(target_data_file,
+                                                          data_split=data_split,
+                                                          overwrite_data=overwrite_data,
+                                                          training_file=training_keys_file,
+                                                          validation_file=validation_keys_file)
+    if skip_blank:
+        save_patches_with_gt(target_training_list, target_data_file, patch_shape, training_patch_overlap,
+                             training_patch_start_offset, path=target_training_path)
+        target_training_list = load_index_patches_with_gt(target_training_path)
+
+        save_patches_with_gt(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
+                             training_patch_start_offset, path=target_validation_path)
+        target_validation_list = load_index_patches_with_gt(target_validation_path)
+
+    return source_training_list, source_validation_list, target_training_list, target_validation_list
 
 def get_number_of_steps(n_samples, batch_size):
     if n_samples <= batch_size:
@@ -175,10 +184,9 @@ def split_list(input_list, split=0.8, shuffle_list=True):
     testing = input_list[n_training:]
     return training, testing
 
-def data_generator_jdot_multi_proc(data_file, training_index_list, validation_index_list, validation = True, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
+def data_generator_jdot_multi_proc(selected, data_file, validation = True, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
                    augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
-                   shuffle_index_list=True, skip_blank=True, permute=False, number_of_threads = 64, training_path = None,
-                   validation_path = None):
+                   shuffle_index_list=True, skip_blank=True, permute=False, number_of_threads = 64):
     '''
     Create a batch for jdot:
     source data: x_list[:batch_size]
@@ -201,59 +209,17 @@ def data_generator_jdot_multi_proc(data_file, training_index_list, validation_in
     :param number_of_threads: Parameter to set the max number of threads used for the loading
     :return:
     '''
-    training_orig_index_list = training_index_list
-    validation_orig_index_list = validation_index_list
-
-    training_selected_index = [(4, np.array([-4, -4, -4])), (4, np.array([-4, -4,  4]))]
-    validation_selected_index = []
-
-    training_x_list = list()
-    training_y_list = list()
-
-    validation_x_list = list()
-    validation_y_list = list()
-
-    while True:
-
-        if patch_shape:
-            if skip_blank:
-                training_index_list = load_index_patches_with_gt(training_path)
-                validation_index_list = load_index_patches_with_gt(validation_path)
-            else:
-                training_index_list = create_patch_index_list(training_orig_index_list, data_file.root.data.shape[-3:], patch_shape,
-                                                     patch_overlap, patch_start_offset)
-                validation_index_list = create_patch_index_list(validation_orig_index_list, data_file.root.data.shape[-3:],
-                                                            patch_shape,
-                                                            patch_overlap, patch_start_offset)
-
-        else:
-            training_orig_index_list = copy.copy(training_index_list)
-            validation_orig_index_list = copy.copy(validation_index_list)
-
-        if shuffle_index_list:
-            shuffle(training_index_list)
-        training_x_list, training_y_list, training_selected_index = multi_proc_loop(training_index_list, data_file, training_x_list, training_y_list, batch_size = batch_size,
+    training_x_list = []
+    training_y_list = []
+    training_x_list, training_y_list,  = multi_proc_loop(selected, data_file, training_x_list, training_y_list, batch_size = batch_size,
                                          stopping_criterion= batch_size, number_of_threads = number_of_threads,
                                          patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
                                          augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
                                          permute=permute)
 
-        training_x_list, training_y_list = convert_data(training_x_list, training_y_list, n_labels=n_labels, labels=labels)
-        if validation:
-            if shuffle_index_list:
-                shuffle(validation_index_list)
+    training_x_list, training_y_list = convert_data(training_x_list, training_y_list, n_labels=n_labels, labels=labels)
 
-            validation_x_list, validation_y_list, validation_selected_index = multi_proc_loop(validation_index_list, data_file, validation_x_list, validation_y_list, batch_size = batch_size,
-                                             stopping_criterion= batch_size, number_of_threads = number_of_threads,
-                                             patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
-                                             augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
-                                             permute=permute)
-
-            validation_x_list, validation_y_list = convert_data(validation_x_list, validation_y_list, n_labels=n_labels,
-                                                            labels=labels)
-        
-        
-        return training_x_list, training_y_list, validation_x_list, validation_y_list
+    return training_x_list, training_y_list
 
 def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stopping_criterion = 64,
                     number_of_threads = 64, patch_shape = 16, augment = False, augment_flip = False,
@@ -310,7 +276,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
         end = time()
         if len(x_list) == stopping_criterion or (len(index_list) == 0 and len(x_list) > 0):
             break
-    return x_list, y_list, selected_index
+    return x_list, y_list
 
 def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path):
     if not os.path.exists(path):

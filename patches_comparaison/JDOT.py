@@ -1,7 +1,8 @@
 from keras import backend as K
 from keras import Model
 from keras.callbacks import LambdaCallback
-from patches_comparaison.generator_jdot import get_training_and_validation_batch_jdot, get_validation_split, create_patch_index_list, get_data_from_file, add_data_mp
+from patches_comparaison.generator_jdot import get_batch_jdot,\
+    get_validation_split, create_patch_index_list, get_data_from_file, add_data_mp, get_patches_index_list
 from scipy.spatial.distance import cdist, cosine, euclidean, dice
 from unet3d.utils import pickle_load
 import tables
@@ -12,6 +13,8 @@ import ot
 from training_testing import create_test
 from keras.models import load_model
 import time
+import random
+import sys
 from multiprocessing import Pool
 
 class JDOT():
@@ -56,6 +59,20 @@ class JDOT():
 
         self.train_batch = ()
         self.validation_batch = ()
+
+        self.complete_source_training_list = []
+        self.complete_source_validation_list = []
+        self.complete_target_training_list = []
+        self.complete_target_validation_list = []
+
+        self.source_training_list = []
+        self.source_validation_list = []
+        self.target_training_list = []
+        self.target_validation_list = []
+        self.epoch_complete = False
+        self.validation_complete = False
+
+        self.t = 0
 
         self.prediction = []
 
@@ -221,6 +238,7 @@ class JDOT():
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
 
+
     def train_model(self, n_iteration):
         '''
         For every iteration we first load a batch and compute a prediction on this batch.
@@ -233,31 +251,53 @@ class JDOT():
         len_history = len(self.model.metrics_names) # Print self.model.metric_names to know the correspondance
         hist_l = np.empty((0,len_history))
         val_l = np.empty((0, len_history))
+        epoch_hist = np.empty((0, len_history))
+        epoch_val = np.empty((0, len_history))
+        self.get_patch_indexes()
 
         for i in range(n_iteration):
-            print("Batch:", i, "/", n_iteration)
-            if i % 10 == 0:
-                validation = True
-            else:
-                validation = False
+            start_epoch = time.time()
+            print("=============")
+            print("Epoch:", i+1, "/", n_iteration)
 
-            if i%200 == 0 and i != 0:
-                '''
-                Increasing the weights of jdot every 200 epochs
-                '''
-                K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha) * self.config.alpha_factor)
-                print("Increasing JDOT alpha: ", K.get_value(self.jdot_alpha))
+            if i%20 == 0 and i !=0:
+                #Increasing alpha every 10 epochs
+                K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha)*2)
 
-            self.load_batch(validation)
-            intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
-            self.prediction = intermediate_output[-1] #The output segmentation map
 
-            self.target_pred = K.constant(self.prediction[self.batch_size:,:])
-            self.source_truth = K.constant(self.train_batch[1][:self.batch_size, :])
+            while not self.epoch_complete:
+                selected_source, selected_target = self.select_indices_training()
+                self.load_batch(selected_source, selected_target)
+                intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
+                self.prediction = intermediate_output[-1] #The output segmentation map
 
-            K.set_value(self.gamma, self.compute_gamma(self.prediction))
-            hist_l, val_l = self.train_on_batch(validation, hist_l, val_l)
-        self.save_hist_and_model(hist_l, val_l)
+                self.target_pred = K.constant(self.prediction[self.batch_size:,:])
+                self.source_truth = K.constant(self.train_batch[1][:self.batch_size, :])
+
+                K.set_value(self.gamma, self.compute_gamma(self.prediction))
+                epoch_hist = self.train_on_batch(epoch_hist)
+            
+            while not self.validation_complete:
+                selected_source, selected_target = self.select_indices_validation()
+                self.load_validation_batch(selected_source, selected_target)
+                epoch_val = self.test_on_batch(epoch_val)
+
+            end_epoch = time.time()
+            time_epoch = end_epoch - start_epoch
+            epoch_remaining = n_iteration - (i+1)
+
+            mean_epoch = np.mean(epoch_hist, axis=0)
+            mean_val = np.mean(epoch_val, axis=0)
+
+            self.pretty_print(mean_epoch, mean_val, time_epoch, epoch_remaining)
+            hist_l += mean_epoch
+            val_l += mean_val
+
+
+            self.epoch_complete = False
+            self.validation_complete = False
+
+            self.save_hist_and_model(hist_l, val_l)
 
 
     def train_model_on_source(self, n_iteration):
@@ -279,7 +319,7 @@ class JDOT():
             hist_l = np.vstack((hist_l, hist))
             average = np.average(hist_l[-10:], axis=0)
 
-            print("Loss:", hist[0], " Dice Score: ", hist[1], "| Loss mean: ", average[0], "Dice Score mean:",
+            print("Loss: ", hist[0], " Dice Score: ", hist[1], "| Loss mean: ", average[0], "Dice Score mean:",
                   average[1], "\n")
 
             if validation:
@@ -298,15 +338,17 @@ class JDOT():
         self.model.save(self.config.model_file)
 
 
-    def get_batch(self, target = True, validation=False):
+    def get_batch(self, selected_source, selected_target, target = True, validation=False):
         """
         Function to get a random batch of source and target images
         :return: Two tuples (image samples,ground_truth). From 0 to the batch_size the image samples belong to the
         source domain from the batch_size until the end image samples belong to the target domain.
         The image samples are of shape (number_of_modalities, patch_shape)
         """
-        train_batch, validation_batch = get_training_and_validation_batch_jdot(
-            self.source_data, self.target_data,
+        batch = get_batch_jdot(
+            selected_source, selected_target,
+            self.source_data,
+            self.target_data,
             batch_size=self.config.batch_size,
             data_split=self.config.validation_split,
             overwrite_data=self.config.overwrite_data,
@@ -329,15 +371,79 @@ class JDOT():
             validation = validation,
             source_center = self.config.source_center,
             target_center = self.config.target_center)
-        return train_batch, validation_batch
+        return batch
 
-    def load_batch(self, validation):
+    def get_patch_indexes(self, target = True):
+
+        self.complete_source_training_list, self.complete_source_validation_list, self.complete_target_training_list, \
+        self.complete_target_validation_list = get_patches_index_list(
+                               self.source_data, self.target_data,
+                               training_keys_file=self.config.training_file,
+                               validation_keys_file=self.config.validation_file,
+                               source_center=self.config.source_center,
+                               target_center=self.config.target_center,
+                               data_split=self.config.validation_split,
+                               overwrite_data=self.config.overwrite_data,
+                               patch_shape=self.config.patch_shape,
+                               skip_blank=self.config.skip_blank,
+                               training_patch_overlap=self.config.training_patch_overlap,
+                               validation_patch_overlap=self.config.validation_patch_overlap,
+                               training_patch_start_offset=self.config.training_patch_start_offset)
+
+        self.source_training_list = self.complete_source_training_list
+        self.source_validation_list = self.complete_source_validation_list
+        self.target_training_list = self.complete_target_training_list
+        self.target_validation_list = self.complete_target_validation_list
+    def select_indices_training(self):
+        random.shuffle(self.source_training_list)
+        random.shuffle(self.target_training_list)
+        selected_source = []
+        selected_target = []
+        while len(selected_source) < self.batch_size and len(self.source_training_list) > 0 and len(self.target_training_list) > 0:
+            selected_source += [self.source_training_list.pop()]
+            selected_target += [self.target_training_list.pop()]
+
+        if len(self.source_training_list) < self.batch_size or len(self.target_training_list) < self.batch_size:
+            self.source_training_list = self.complete_source_training_list
+            self.target_training_list = self.complete_target_training_list
+            self.epoch_complete = True
+
+        return selected_source, selected_target
+    
+    def select_indices_validation(self):
+        random.shuffle(self.source_validation_list)
+        random.shuffle(self.target_validation_list)
+        selected_source = []
+        selected_target = []
+        while len(selected_source) < self.batch_size and len(self.source_validation_list) > 0 and len(self.target_validation_list) > 0:
+            selected_source += [self.source_validation_list.pop()]
+            selected_target += [self.target_validation_list.pop()]
+        if len(self.source_validation_list) < self.batch_size or len(self.target_validation_list) < self.batch_size:
+            self.source_validation_list = self.complete_source_validation_list
+            self.target_validation_list = self.complete_target_validation_list
+            self.validation_complete = True
+            
+        return selected_source, selected_target
+
+    def load_batch(self, selected_source, selected_target, target = True):
         start = time.time()
-        self.train_batch, self.validation_batch = self.get_batch(target=True, validation=validation)
+        self.train_batch = self.get_batch(selected_source, selected_target, target=target)
         end = time.time()
-        print("Time for loading: ", end - start)
+        t = "\rTime for loading: " + str(end - start)
+        sys.stdout.write(t)
+        sys.stdout.flush()
         K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
         K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
+
+    def load_validation_batch(self, selected_source, selected_target, target = True):
+        start = time.time()
+        self.val_batch = self.get_batch(selected_source, selected_target, target=target)
+        end = time.time()
+        t = "\rTime for loading: " + str(end - start)
+        sys.stdout.write(t)
+        sys.stdout.flush()
+        K.set_value(self.batch_source, self.val_batch[0][:self.batch_size])
+        K.set_value(self.batch_target, self.val_batch[0][self.batch_size:])
 
     def get_prediction(self):
         '''
@@ -360,7 +466,7 @@ class JDOT():
 
         return intermediate_output
 
-    def train_on_batch(self, validation, hist_l, val_l):
+    def train_on_batch(self, hist_l):
         '''
         Function to train the model on the loaded batch.
         We first start by creating dummies output for each deep layer we are interested in.
@@ -379,21 +485,48 @@ class JDOT():
         hist = self.model.train_on_batch(self.train_batch[0], training_output_list)
         hist_l = np.vstack((hist_l, hist))
 
-        print("Loss:", hist[0], " Dice Score: ", hist[-3], "Dice Score Source: ", hist[-2], "Dice Score Target: ",
-              hist[-1], "\n")
+        result = "\rLoss: " + str(hist[0]) + " Dice Score: " + str(hist[-3]) + " Dice Score Source: " + str(hist[-2]) + " Dice Score Target: " + str(hist[-1])
+        sys.stdout.write(result)
+        sys.stdout.flush()
 
-        if validation:
-            validation_output_list = output_list + [self.validation_batch[1]]
-            val = self.model.test_on_batch(self.validation_batch[0], validation_output_list)
-            val_l = np.vstack((val_l, val))
-            print("======")
-            print("Validation Loss: ", val[0], "Dice Score :", val[-3], "Dice Score Source: ", val[-2],
-                  "Dice Score Target: ", val[-1], )
-            print("======", "\n")
 
-        self.save_hist_and_model(hist_l, val_l) # The model is saved at each step in case of crash.
+        return hist_l
+    
+    def test_on_batch(self, val_l):
+        output_list = []
+        for name in self.context_output_name: #Creating a bunch of false outputs
+            output_list += [np.zeros((self.val_batch[0].shape[0],) + self.model.get_layer(name).output_shape[1:])]
+        valing_output_list = output_list + [self.val_batch[1]]
 
-        return hist_l, val_l
+        # We val the model
+        hist = self.model.test_on_batch(self.val_batch[0], valing_output_list)
+        val_l = np.vstack((val_l, hist))
+
+        result = "\r Validation Loss:" + str(hist[0]) + " Validation Dice Score: " + str(hist[-3]) + " Validation Dice Score Source: " + str(hist[-2]) + " Validation Dice Score Target: " + str(hist[-1])
+        sys.stdout.write(result)
+        sys.stdout.flush()
+
+
+        return val_l
+
+    def pretty_print(self, mean_epoch, mean_val, time_epoch, epoch_remaining):
+        delta = time_epoch*epoch_remaining
+        hour = int(delta / 3600)
+        delta -= hour * 3600
+        minute = int(delta / 60)
+        delta -= minute * 60
+        seconds = delta
+
+        print("\n\nMean on epoch :")
+        result = "Loss: " + str(mean_epoch[0]) + " Dice Score: " + str(mean_epoch[-3]) + " Dice Score Source: " + str(
+            mean_epoch[-2]) + " Dice Score Target: " + str(mean_epoch[-1])
+        print(result)
+        print("\nMean on validation")
+        result = "Loss: " + str(mean_val[0]) + " Dice Score: " + str(mean_val[-3]) + " Dice Score Source: " + str(
+            mean_val[-2]) + " Dice Score Target: " + str(mean_val[-1])
+        print(result)
+        print("\nEstimated time remaining for training: ", hour, " hour(s) ", minute, " minute(s) ", int(seconds), " second(s) ")
+        print("==============\n")
 
     def save_hist_and_model(self, hist_l, val_l):
         '''
@@ -493,6 +626,7 @@ class JDOT():
         print("Loading pre-trained model")
         custom_objects = {'jdot_loss': self.jdot_image_loss,
                           'jdot_image_loss': self.jdot_image_loss,
+                          'deep_jdot_loss': self.deep_jdot_loss,
                           'distance_loss': self.distance_loss,
                           'dice_coefficient': self.dice_coefficient,
                           'dice_coefficient_source': self.dice_coefficient_source,
