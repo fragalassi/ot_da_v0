@@ -241,9 +241,9 @@ class JDOT():
             else:
                 validation = False
 
-            if i%100 == 0 and i != 0:
+            if i%200 == 0 and i != 0:
                 '''
-                Increasing the weights of jdot every 100 epochs
+                Increasing the weights of jdot every 200 epochs
                 '''
                 K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha) * self.config.alpha_factor)
                 print("Increasing JDOT alpha: ", K.get_value(self.jdot_alpha))

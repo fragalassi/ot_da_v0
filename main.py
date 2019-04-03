@@ -75,24 +75,24 @@ for i in range(df.shape[0]): #df.shape[0]
     '''
     To compare patches
     '''
-    # comp = compare_patches.Compare_patches(conf)
-    # comp.main()
-    # conf.all_modalities = ["FLAIR-include"]
-    # data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
-    # comp.save_patch(3, np.array([60, 20, 28]), "A", data_file_opened, 0)
-    # comp.save_patch(3, np.array([44, 36, 84]), "B", data_file_opened, 0)
+    comp = compare_patches.Compare_patches(conf)
+    comp.main()
+    conf.all_modalities = ["FLAIR-include"]
+    data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
+    comp.save_patch(3, np.array([60, 20, 28]), "A", data_file_opened, 0)
+    comp.save_patch(3, np.array([44, 36, 84]), "B", data_file_opened, 0)
     '''
     For JDOT, uncomment this part
     '''
 
-    train_jd = train_jdot.Train_JDOT(conf)
-    train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
-
-    test = create_test.Test(conf)
-    test.main(overwrite_data=conf.overwrite_data)
-
-    eval = evaluate.Evaluate(conf)
-    eval.main()
+    # train_jd = train_jdot.Train_JDOT(conf)
+    # train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
+    #
+    # test = create_test.Test(conf)
+    # test.main(overwrite_data=conf.overwrite_data)
+    #
+    # eval = evaluate.Evaluate(conf)
+    # eval.main()
 
     '''
     For normal training uncomment this part
