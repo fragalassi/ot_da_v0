@@ -194,7 +194,7 @@ class JDOT():
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
             dif = euclidean_dist(K.batch_flatten(prediction_source), K.batch_flatten(prediction_target))
-            dif -= euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(self.target_pred))
+            dif += euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(self.target_pred))
             dif = K.abs(dif)
 
             return self.jdot_alpha * K.sum(self.gamma*(dif))
@@ -257,13 +257,6 @@ class JDOT():
         self.get_patch_indexes()
 
         for i in range(n_iteration):
-            print('Lengths complete: ')
-            print(len(self.complete_target_training_list), len(self.complete_source_training_list), len(self.complete_source_validation_list),
-                  len(self.complete_target_validation_list))
-            print('Lengths: ')
-            print(len(self.target_training_list), len(self.source_training_list), len(self.source_validation_list),
-                  len(self.target_validation_list))
-
             start_epoch = time.time()
             print("=============")
             print("Epoch:", i+1, "/", n_iteration)
@@ -448,8 +441,6 @@ class JDOT():
 
     def load_validation_batch(self, selected_source, selected_target, target = True):
         start = time.time()
-        print("Len validations: ")
-        print(len(selected_source), len(selected_target))
         self.val_batch = self.get_batch(selected_source, selected_target, target=target)
         end = time.time()
         t = "\rTime for loading: " + str(end - start)
