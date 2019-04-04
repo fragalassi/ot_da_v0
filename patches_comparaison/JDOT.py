@@ -256,6 +256,11 @@ class JDOT():
         self.get_patch_indexes()
 
         for i in range(n_iteration):
+            self.source_training_list = self.complete_source_training_list
+            self.source_validation_list = self.complete_source_validation_list
+            self.target_training_list = self.complete_target_training_list
+            self.target_validation_list = self.complete_target_validation_list
+
             start_epoch = time.time()
             print("=============")
             print("Epoch:", i+1, "/", n_iteration)
