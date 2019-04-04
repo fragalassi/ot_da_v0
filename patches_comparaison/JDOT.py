@@ -15,6 +15,7 @@ from keras.models import load_model
 import time
 import random
 import sys
+from copy import copy
 from multiprocessing import Pool
 
 class JDOT():
@@ -256,14 +257,12 @@ class JDOT():
         self.get_patch_indexes()
 
         for i in range(n_iteration):
-            print('Lengths: ')
+            print('Lengths complete: ')
             print(len(self.complete_target_training_list), len(self.complete_source_training_list), len(self.complete_source_validation_list),
                   len(self.complete_target_validation_list))
-
-            self.source_training_list = self.complete_source_training_list
-            self.source_validation_list = self.complete_source_validation_list
-            self.target_training_list = self.complete_target_training_list
-            self.target_validation_list = self.complete_target_validation_list
+            print('Lengths: ')
+            print(len(self.target_training_list), len(self.source_training_list), len(self.source_validation_list),
+                  len(self.target_validation_list))
 
             start_epoch = time.time()
             print("=============")
@@ -401,10 +400,10 @@ class JDOT():
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset)
 
-        self.source_training_list = self.complete_source_training_list
-        self.source_validation_list = self.complete_source_validation_list
-        self.target_training_list = self.complete_target_training_list
-        self.target_validation_list = self.complete_target_validation_list
+        self.source_training_list = copy(self.complete_source_training_list)
+        self.source_validation_list = copy(self.complete_source_validation_list)
+        self.target_training_list = copy(self.complete_target_training_list)
+        self.target_validation_list = copy(self.complete_target_validation_list)
 
     def select_indices_training(self):
         random.shuffle(self.source_training_list)
@@ -416,8 +415,8 @@ class JDOT():
             selected_target += [self.target_training_list.pop()]
 
         if len(self.source_training_list) < self.batch_size or len(self.target_training_list) < self.batch_size:
-            self.source_training_list = self.complete_source_training_list
-            self.target_training_list = self.complete_target_training_list
+            self.source_training_list = copy(self.complete_source_training_list)
+            self.target_training_list = copy(self.complete_target_training_list)
             self.epoch_complete = True
 
         return selected_source, selected_target
@@ -431,8 +430,8 @@ class JDOT():
             selected_source += [self.source_validation_list.pop()]
             selected_target += [self.target_validation_list.pop()]
         if len(self.source_validation_list) < self.batch_size or len(self.target_validation_list) < self.batch_size:
-            self.source_validation_list = self.complete_source_validation_list
-            self.target_validation_list = self.complete_target_validation_list
+            self.source_validation_list = copy(self.complete_source_validation_list)
+            self.target_validation_list = copy(self.complete_target_validation_list)
             self.validation_complete = True
             
         return selected_source, selected_target
