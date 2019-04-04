@@ -267,6 +267,8 @@ class JDOT():
 
             while not self.epoch_complete:
                 selected_source, selected_target = self.select_indices_training()
+                if len(selected_source) < self.batch_size or len(selected_target) < self.batch_size:
+                    break
                 self.load_batch(selected_source, selected_target)
                 intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
                 self.prediction = intermediate_output[-1] #The output segmentation map
@@ -394,6 +396,7 @@ class JDOT():
         self.source_validation_list = self.complete_source_validation_list
         self.target_training_list = self.complete_target_training_list
         self.target_validation_list = self.complete_target_validation_list
+
     def select_indices_training(self):
         random.shuffle(self.source_training_list)
         random.shuffle(self.target_training_list)
