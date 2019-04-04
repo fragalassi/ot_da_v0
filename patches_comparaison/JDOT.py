@@ -194,7 +194,7 @@ class JDOT():
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
             dif = euclidean_dist(K.batch_flatten(prediction_source), K.batch_flatten(prediction_target))
-            dif += euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(self.target_pred))
+            dif -= euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(self.target_pred))
             dif = K.abs(dif)
 
             return self.jdot_alpha * K.sum(self.gamma*(dif))
@@ -274,8 +274,8 @@ class JDOT():
                 intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
                 self.prediction = intermediate_output[-1] #The output segmentation map
 
-                self.target_pred = K.constant(self.prediction[self.batch_size:,:])
-                self.source_truth = K.constant(self.train_batch[1][:self.batch_size, :])
+                K.set_value(self.target_pred,K.constant(self.prediction[self.batch_size:,:]))
+                K.set_value(self.source_truth, K.constant(self.train_batch[1][:self.batch_size, :]))
 
                 K.set_value(self.gamma, self.compute_gamma(self.prediction))
                 epoch_hist = self.train_on_batch(epoch_hist)
