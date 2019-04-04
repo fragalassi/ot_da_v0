@@ -256,6 +256,10 @@ class JDOT():
         self.get_patch_indexes()
 
         for i in range(n_iteration):
+            print('Lengths: ')
+            print(len(self.complete_target_training_list), len(self.complete_source_training_list), len(self.complete_source_validation_list),
+                  len(self.complete_target_validation_list))
+
             self.source_training_list = self.complete_source_training_list
             self.source_validation_list = self.complete_source_validation_list
             self.target_training_list = self.complete_target_training_list
@@ -445,6 +449,8 @@ class JDOT():
 
     def load_validation_batch(self, selected_source, selected_target, target = True):
         start = time.time()
+        print("Len validations: ")
+        print(len(selected_source), len(selected_target))
         self.val_batch = self.get_batch(selected_source, selected_target, target=target)
         end = time.time()
         t = "\rTime for loading: " + str(end - start)
