@@ -77,8 +77,8 @@ class JDOT():
 
         self.prediction = []
 
-        self.target_pred = K.zeros(shape=(self.batch_size, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
-        self.source_truth = K.zeros(shape=(self.batch_size, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
+        self.target_pred = K.zeros(shape=(self.batch_size, 1, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
+        self.source_truth = K.zeros(shape=(self.batch_size, 1, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
 
         def deep_jdot_loss(y_true, y_pred):
             truth_source = y_true[:self.batch_size, :]  # source true labels
@@ -274,8 +274,8 @@ class JDOT():
                 intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
                 self.prediction = intermediate_output[-1] #The output segmentation map
 
-                K.set_value(self.target_pred,K.constant(self.prediction[self.batch_size:,:]))
-                K.set_value(self.source_truth, K.constant(self.train_batch[1][:self.batch_size, :]))
+                K.set_value(self.target_pred, self.prediction[self.batch_size:,:])
+                K.set_value(self.source_truth, self.train_batch[1][:self.batch_size, :])
 
                 K.set_value(self.gamma, self.compute_gamma(self.prediction))
                 epoch_hist = self.train_on_batch(epoch_hist)
