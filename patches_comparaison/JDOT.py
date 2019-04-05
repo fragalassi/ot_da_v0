@@ -294,8 +294,8 @@ class JDOT():
             mean_val = np.mean(epoch_val, axis=0)
 
             self.pretty_print(mean_epoch, mean_val, time_epoch, epoch_remaining)
-            hist_l += mean_epoch
-            val_l += mean_val
+            hist_l = np.vstack((hist_l, [mean_epoch]))
+            val_l = np.vstack((val_l, [mean_val]))
 
 
             self.epoch_complete = False
