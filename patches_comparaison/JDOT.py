@@ -146,7 +146,7 @@ class JDOT():
 
         def dice_coefficient_loss(y_true, y_pred):
             return 1-dice_coefficient(y_true, y_pred)
-        self.dice_loss = dice_coefficient_loss
+        self.dice_coefficient_loss = dice_coefficient_loss
         '''
         Uncomment to check if cos_distance/euclidean_dist is computing the right values.
         '''
@@ -221,7 +221,6 @@ class JDOT():
         Compilation with the custom loss function and the metrics.
         :return:
         '''
-        print(self.config.depth_jdot)
         if self.config.train_jdot:
             if self.config.depth_jdot == None:
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_image_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
@@ -238,7 +237,7 @@ class JDOT():
                 print(loss)
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
         else:
-            self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_loss, metrics=[self.dice_coefficient])
+            self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_coefficient_loss, metrics=[self.dice_coefficient])
 
 
     def train_model(self, n_iteration):
@@ -305,42 +304,48 @@ class JDOT():
 
 
     def train_model_on_source(self, n_iteration):
-        hist_l = np.empty((0,2))
-        val_l = np.empty((0, 2))
+        len_history = len(self.model.metrics_names)  # Print self.model.metric_names to know the correspondance
+        hist_l = np.empty((0, len_history))
+        val_l = np.empty((0, len_history))
+        epoch_hist = np.empty((0, len_history))
+        epoch_val = np.empty((0, len_history))
+        self.get_patch_indexes()
+
         for i in range(n_iteration):
+            start_epoch = time.time()
+            print("=============")
+            print("Epoch:", i + 1, "/", n_iteration)
 
-            print("Epoch:", i, "/", n_iteration)
-            if i % 10 == 0:
-                validation = True
-            else:
-                validation = False
-            start = time.time()
-            self.train_batch, self.validation_batch = self.get_batch(target=False, validation=validation)
-            end = time.time()
-            print("Time for loading: ",end - start)
-            hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
+            while not self.epoch_complete:
+                selected_source, selected_target = self.select_indices_training()
+                if len(selected_source) < self.batch_size or len(selected_target) < self.batch_size:
+                    break
+                self.load_batch(selected_source, selected_target, target=False)
+                intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
+                self.prediction = intermediate_output[-1]  # The output segmentation map
 
-            hist_l = np.vstack((hist_l, hist))
-            average = np.average(hist_l[-10:], axis=0)
+                epoch_hist = self.train_on_batch(epoch_hist)
 
-            print("Loss: ", hist[0], " Dice Score: ", hist[1], "| Loss mean: ", average[0], "Dice Score mean:",
-                  average[1], "\n")
+            while not self.validation_complete:
+                selected_source, selected_target = self.select_indices_validation()
+                self.load_validation_batch(selected_source, selected_target, target=False)
+                epoch_val = self.test_on_batch(epoch_val)
 
-            if validation:
-                val = self.model.test_on_batch(self.validation_batch[0], self.validation_batch[1])
-                val_l = np.vstack((val_l, val))
-                print("======")
-                print("Validation Loss: ", val[0], "Dice Score :", val[1])
-                print("======", "\n")
+            end_epoch = time.time()
+            time_epoch = end_epoch - start_epoch
+            epoch_remaining = n_iteration - (i + 1)
 
+            mean_epoch = np.mean(epoch_hist, axis=0)
+            mean_val = np.mean(epoch_val, axis=0)
 
-        if not os.path.exists(self.config.save_dir):
-            os.makedirs(self.config.save_dir)
-        np.savetxt(os.path.join(self.config.save_dir, "validation.csv"), val_l, delimiter=",")
-        np.savetxt(os.path.join(self.config.save_dir, "train.csv"), hist_l, delimiter=",")
+            self.pretty_print(mean_epoch, mean_val, time_epoch, epoch_remaining)
+            hist_l = np.vstack((hist_l, [mean_epoch]))
+            val_l = np.vstack((val_l, [mean_val]))
 
-        self.model.save(self.config.model_file)
+            self.epoch_complete = False
+            self.validation_complete = False
 
+            self.save_hist_and_model(hist_l, val_l)
 
     def get_batch(self, selected_source, selected_target, target = True, validation=False):
         """
@@ -437,9 +442,9 @@ class JDOT():
         t = "\rTime for loading: " + str(end - start)
         sys.stdout.write(t)
         sys.stdout.flush()
-        K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
-        K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
-
+        if target:
+            K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
+            K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
     def load_validation_batch(self, selected_source, selected_target, target = True):
         start = time.time()
         self.val_batch = self.get_batch(selected_source, selected_target, target=target)
@@ -447,9 +452,9 @@ class JDOT():
         t = "\rTime for loading: " + str(end - start)
         sys.stdout.write(t)
         sys.stdout.flush()
-        K.set_value(self.batch_source, self.val_batch[0][:self.batch_size])
-        K.set_value(self.batch_target, self.val_batch[0][self.batch_size:])
-
+        if target:
+            K.set_value(self.batch_source, self.val_batch[0][:self.batch_size])
+            K.set_value(self.batch_target, self.val_batch[0][self.batch_size:])
     def get_prediction(self):
         '''
         Function to get the prediction of the model at a step t.
@@ -487,10 +492,15 @@ class JDOT():
         training_output_list = output_list + [self.train_batch[1]]
 
         # We train the model
-        hist = self.model.train_on_batch(self.train_batch[0], training_output_list)
+        if self.config.train_jdot:
+            hist = self.model.train_on_batch(self.train_batch[0], training_output_list)
+        else:
+            hist = self.model.train_on_batch(self.train_batch[0], self.train_batch[1])
         hist_l = np.vstack((hist_l, hist))
-
-        result = "\rLoss: " + str(hist[0]) + " Dice Score: " + str(hist[-3]) + " Dice Score Source: " + str(hist[-2]) + " Dice Score Target: " + str(hist[-1])
+        if self.config.train_jdot:
+            result = "\rLoss: " + str(hist[0]) + " Dice Score: " + str(hist[-3]) + " Dice Score Source: " + str(hist[-2]) + " Dice Score Target: " + str(hist[-1])
+        else:
+            result = "\rLoss: " + str(hist[0]) + " Dice Score: " + str(hist[-1])
         sys.stdout.write(result)
         sys.stdout.flush()
 
@@ -501,13 +511,22 @@ class JDOT():
         output_list = []
         for name in self.context_output_name: #Creating a bunch of false outputs
             output_list += [np.zeros((self.val_batch[0].shape[0],) + self.model.get_layer(name).output_shape[1:])]
-        valing_output_list = output_list + [self.val_batch[1]]
+        validation_output_list = output_list + [self.val_batch[1]]
 
         # We val the model
-        hist = self.model.test_on_batch(self.val_batch[0], valing_output_list)
+        if self.config.train_jdot:
+            hist = self.model.test_on_batch(self.val_batch[0], validation_output_list)
+            result = "\r Validation Loss:" + str(hist[0]) + " Validation Dice Score: " + str(
+                hist[-3]) + " Validation Dice Score Source: " + str(hist[-2]) + " Validation Dice Score Target: " + str(
+                hist[-1])
+
+        else:
+            hist = self.model.test_on_batch(self.val_batch[0], self.val_batch[1])
+            result = "\r Validation Loss:" + str(hist[0]) + " Validation Dice Score: " + str(
+                hist[-1])
+
         val_l = np.vstack((val_l, hist))
 
-        result = "\r Validation Loss:" + str(hist[0]) + " Validation Dice Score: " + str(hist[-3]) + " Validation Dice Score Source: " + str(hist[-2]) + " Validation Dice Score Target: " + str(hist[-1])
         sys.stdout.write(result)
         sys.stdout.flush()
 
@@ -521,17 +540,28 @@ class JDOT():
         minute = int(delta / 60)
         delta -= minute * 60
         seconds = delta
+        if self.config.train_jdot:
+            print("\n\nMean on epoch :")
+            result = "Loss: " + str(mean_epoch[0]) + " Dice Score: " + str(mean_epoch[-3]) + " Dice Score Source: " + str(
+                mean_epoch[-2]) + " Dice Score Target: " + str(mean_epoch[-1])
+            print(result)
+            print("\nMean on validation")
+            result = "Loss: " + str(mean_val[0]) + " Dice Score: " + str(mean_val[-3]) + " Dice Score Source: " + str(
+                mean_val[-2]) + " Dice Score Target: " + str(mean_val[-1])
+            print(result)
+            print("\nEstimated time remaining for training: ", hour, " hour(s) ", minute, " minute(s) ", int(seconds), " second(s) ")
+            print("==============\n")
 
-        print("\n\nMean on epoch :")
-        result = "Loss: " + str(mean_epoch[0]) + " Dice Score: " + str(mean_epoch[-3]) + " Dice Score Source: " + str(
-            mean_epoch[-2]) + " Dice Score Target: " + str(mean_epoch[-1])
-        print(result)
-        print("\nMean on validation")
-        result = "Loss: " + str(mean_val[0]) + " Dice Score: " + str(mean_val[-3]) + " Dice Score Source: " + str(
-            mean_val[-2]) + " Dice Score Target: " + str(mean_val[-1])
-        print(result)
-        print("\nEstimated time remaining for training: ", hour, " hour(s) ", minute, " minute(s) ", int(seconds), " second(s) ")
-        print("==============\n")
+        else:
+            print("\n\nMean on epoch :")
+            result = "Loss: " + str(mean_epoch[0]) + " Dice Score: " + str(mean_epoch[-1])
+            print(result)
+            print("\nMean on validation")
+            result = "Loss: " + str(mean_val[0]) + " Dice Score: " + str(mean_val[-1])
+            print(result)
+            print("\nEstimated time remaining for training: ", hour, " hour(s) ", minute, " minute(s) ", int(seconds), " second(s) ")
+            print("==============\n")
+
 
     def save_hist_and_model(self, hist_l, val_l):
         '''
@@ -636,6 +666,7 @@ class JDOT():
                           'deep_jdot_loss': self.deep_jdot_loss,
                           'distance_loss': self.distance_loss,
                           'dice_coefficient': self.dice_coefficient,
+                          'dice_coefficient_loss': self.dice_coefficient_loss,
                           'dice_coefficient_source': self.dice_coefficient_source,
                           'dice_coefficient_target': self.dice_coefficient_target}
         try:
