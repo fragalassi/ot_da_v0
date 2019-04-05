@@ -34,7 +34,10 @@ def patch_wise_prediction(model, data, overlap=0, batch_size=10, permute=False):
         batch = list()
         for predicted_patch in prediction:
             predictions.append(predicted_patch)
-    output_shape = [int(model.output.shape[1])] + list(data.shape[-3:])
+    if isinstance(model.output, list):
+        output_shape = [int(model.output[-1].shape[1])] + list(data.shape[-3:])
+    else:
+        output_shape = [int(model.output.shape[1])] + list(data.shape[-3:])
     return reconstruct_from_patches(predictions, patch_indices=indices, data_shape=output_shape)
 
 

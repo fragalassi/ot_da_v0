@@ -41,7 +41,7 @@ image_shape = [(128,128,128)]*1
 training_center = [["All"]]
 augmentation = [True]*1
 jdot_alpha = [0.001]*1
-source_center = ["08"]*1
+source_center = ["01"]*1
 target_center = ["07"]*1
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
@@ -88,11 +88,11 @@ for i in range(df.shape[0]): #df.shape[0]
     train_jd = train_jdot.Train_JDOT(conf)
     train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    test = create_test.Test(conf)
-    test.main(overwrite_data=conf.overwrite_data)
-
-    eval = evaluate.Evaluate(conf)
-    eval.main()
+    # test = create_test.Test(conf)
+    # test.main(overwrite_data=conf.overwrite_data)
+    #
+    # eval = evaluate.Evaluate(conf)
+    # eval.main()
 
     '''
     For normal training uncomment this part

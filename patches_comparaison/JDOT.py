@@ -221,6 +221,7 @@ class JDOT():
         Compilation with the custom loss function and the metrics.
         :return:
         '''
+        print(self.config.depth_jdot)
         if self.config.train_jdot:
             if self.config.depth_jdot == None:
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.jdot_image_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
@@ -594,6 +595,8 @@ class JDOT():
         :return:
         """
         self.load_old_model(self.config.model_file)
+        self.config.depth_jdot = None
+        self.compile_model()
         self.context_output_name = None
 
 
