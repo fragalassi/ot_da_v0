@@ -30,7 +30,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [110]*2
+batch_size = [10]*2
 initial_lr = [5e-3]*2
 loss_funcs = ["dice_coefficient_loss"]*2
 depth = [5]*2
@@ -41,11 +41,13 @@ image_shape = [(128,128,128)]*2
 training_center = [["All"]]*2
 augmentation = [True]*2
 jdot_alpha = [0.001]*2
-source_center = ["01", "08"]
+bool_train_jdot = [False, True]
+source_center = ["01"]*2
 target_center = ["07"]*2
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
+                                      bool_train_jdot,
                                       n_repeat=1)
 
 with pd.option_context("display.max_rows", None, "display.max_columns", None):
@@ -70,6 +72,7 @@ for i in range(df.shape[0]): #df.shape[0]
                          target_center=df["Target center"].iloc[i],
                          training_centers = df["Training centers"].iloc[i],
                          image_shape = df["Image shape"].iloc[i],
+                         bool_train_jdot = df["Train JDOT"].iloc[i],
                          niseko=True, shortcut=True)
 
     '''

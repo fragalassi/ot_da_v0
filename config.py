@@ -11,7 +11,7 @@ class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
-                 jdot_alpha = 0.001, source_center = ["01"], target_center = ["07"]):
+                 jdot_alpha = 0.001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"]):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -74,7 +74,7 @@ class Config:
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
 
-        self.train_jdot = False
+        self.train_jdot = bool_train_jdot
         self.jdot_alpha = jdot_alpha
         self.alpha_factor = 2
         self.depth_jdot = 5 # The layer from which the computation of the OT is made (0 is the image space).

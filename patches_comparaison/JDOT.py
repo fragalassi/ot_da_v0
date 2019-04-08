@@ -238,7 +238,7 @@ class JDOT():
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_coefficient_loss, metrics=[self.dice_coefficient])
-
+        print(self.model.summary())
 
     def train_model(self, n_iteration):
         '''
