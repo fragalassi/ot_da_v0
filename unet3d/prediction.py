@@ -32,6 +32,8 @@ def patch_wise_prediction(model, data, overlap=0, batch_size=10, permute=False):
             i += 1
         prediction = predict(model, np.asarray(batch), permute=permute)
         batch = list()
+        if isinstance(prediction, list):
+            prediction = prediction[-1]
         for predicted_patch in prediction:
             predictions.append(predicted_patch)
     if isinstance(model.output, list):
