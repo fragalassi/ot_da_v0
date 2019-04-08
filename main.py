@@ -30,19 +30,19 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [110]*3
-initial_lr = [5e-3]*3
-loss_funcs = ["dice_coefficient_loss"]*3
-depth = [5]*3
-n_filter = [16]*3
-patch_shape = [16]*3
-overlap = [1/2]*3
-image_shape = [(128,128,128)]*3
-training_center = [["All"]]
-augmentation = [True]*3
-jdot_alpha = [0.001]*3
-source_center = ["01", "07", "08"]*3
-target_center = ["07"]*3
+batch_size = [110]*2
+initial_lr = [5e-3]*2
+loss_funcs = ["dice_coefficient_loss"]*2
+depth = [5]*2
+n_filter = [16]*2
+patch_shape = [16]*2
+overlap = [1/2]*2
+image_shape = [(128,128,128)]*2
+training_center = [["All"]]*2
+augmentation = [True]*2
+jdot_alpha = [0.001]*2
+source_center = ["01", "08"]
+target_center = ["07"]*2
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
@@ -57,7 +57,7 @@ for i in range(df.shape[0]): #df.shape[0]
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=0, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],
@@ -76,7 +76,9 @@ for i in range(df.shape[0]): #df.shape[0]
     To compare patches
     '''
     # comp = compare_patches.Compare_patches(conf)
+    # comp.compute_activations()
     # comp.main()
+
     # conf.all_modalities = ["FLAIR-include"]
     # data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
     # comp.save_patch(3, np.array([60, 20, 28]), "A", data_file_opened, 0)
@@ -88,11 +90,11 @@ for i in range(df.shape[0]): #df.shape[0]
     train_jd = train_jdot.Train_JDOT(conf)
     train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    # test = create_test.Test(conf)
-    # test.main(overwrite_data=conf.overwrite_data)
-    #
-    # eval = evaluate.Evaluate(conf)
-    # eval.main()
+    test = create_test.Test(conf)
+    test.main(overwrite_data=conf.overwrite_data)
+
+    eval = evaluate.Evaluate(conf)
+    eval.main()
 
     '''
     For normal training uncomment this part

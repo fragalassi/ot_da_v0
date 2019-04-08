@@ -76,6 +76,32 @@ class Compare_patches:
         results_df.to_csv(outputdir)
         # self.select_patches(results_df, data_file)
 
+    def compute_activations(self):
+        self.load_model()
+        results = np.empty((0, 256))
+        truth = np.empty((0, 16**3))
+        index_list, validation_list, data_file = self.get_index_list()
+        # index_list, data_file = self.get_index_list_GT()
+        combination_list = self.create_combination_list_batch(index_list)
+        save_path = os.path.abspath("results/sim_patches/activations/activations.csv")
+        truth_path = os.path.abspath("results/sim_patches/activations/truth.csv")
+
+        print(len(index_list))
+
+        for j, l in enumerate(index_list):
+            advance = "\rComputing activations: " + str(j/len(combination_list)*100) + "%"
+            sys.stdout.write(advance)
+            sys.stdout.flush()
+            x_a, y_a = get_data_from_file(data_file, l, self.patch_shape)
+            x_a, x_b = self.compute_activation(x_a, x_a)
+            results = np.vstack((results, x_a.flatten()))
+            truth = np.vstack((truth, y_a.flatten()))
+        np.savetxt(save_path, results, delimiter=",")
+        np.savetxt(truth_path, truth, delimiter=",")
+
+
+
+
     def load_model(self):
         model, context_output_name = isensee2017_model(input_shape=self.config.input_shape, n_labels=self.config.n_labels,
                                       initial_learning_rate=self.config.initial_learning_rate,
@@ -99,7 +125,7 @@ class Compare_patches:
     def get_index_list_GT(self):
         self.config.data_file = os.path.abspath("Data/generated_data/" + self.config.data_set + "_data_source.h5")
         data_file_opened = open_data_file(self.config.data_file)
-        index = pickle_load("Data/generated_data/training_list_gt_01")
+        index = pickle_load("Data/generated_data/training_list_gt_08")
         return index, data_file_opened
 
     def get_index_list(self, overwrite_data=False, patch_overlap=0, patch_start_offset = None):
