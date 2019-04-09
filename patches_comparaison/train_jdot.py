@@ -76,6 +76,7 @@ class Train_JDOT:
                                       n_base_filters=self.config.n_base_filters,
                                       loss_function=self.config.loss_function,
                                       shortcut=self.config.shortcut,
+                                      depth=self.config.depth,
                                       compile=False)
         # get training and testing generators
         if not self.config.depth_jdot:

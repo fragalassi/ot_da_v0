@@ -52,7 +52,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     level_output_layers = list()
     level_filters = list()
     for level_number in range(depth):
-        n_level_filters = (level_number +1) * n_base_filters  #(2**level_number) * n_base_filters
+        n_level_filters = (2**level_number) * n_base_filters
         level_filters.append(n_level_filters)
 
         if current_layer is inputs:

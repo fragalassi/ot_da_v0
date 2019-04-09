@@ -261,7 +261,7 @@ class JDOT():
             print("=============")
             print("Epoch:", i+1, "/", n_iteration)
 
-            if i%20 == 0 and i !=0:
+            if i%1 == 0 and i !=0:
                 #Increasing alpha every 10 epochs
                 K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha)*2)
 
