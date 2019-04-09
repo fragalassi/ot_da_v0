@@ -261,10 +261,10 @@ class JDOT():
             print("=============")
             print("Epoch:", i+1, "/", n_iteration)
 
-            if i%1 == 0 and i !=0:
+            if i%20 == 0 and i !=0:
                 #Increasing alpha every 10 epochs
                 K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha)*2)
-
+                print("Changing jdot's alpha to :", K.get_value(self.jdot_alpha))
 
             while not self.epoch_complete:
                 selected_source, selected_target = self.select_indices_training()
@@ -445,6 +445,7 @@ class JDOT():
         if target:
             K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
             K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
+
     def load_validation_batch(self, selected_source, selected_target, target = True):
         start = time.time()
         self.val_batch = self.get_batch(selected_source, selected_target, target=target)
@@ -455,6 +456,7 @@ class JDOT():
         if target:
             K.set_value(self.batch_source, self.val_batch[0][:self.batch_size])
             K.set_value(self.batch_target, self.val_batch[0][self.batch_size:])
+
     def get_prediction(self):
         '''
         Function to get the prediction of the model at a step t.

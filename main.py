@@ -30,8 +30,8 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [10]*2
-initial_lr = [5e-3]*2
+batch_size = [110]*2
+initial_lr = [5e-2]*2
 loss_funcs = ["dice_coefficient_loss"]*2
 depth = [5]*2
 n_filter = [16]*2
