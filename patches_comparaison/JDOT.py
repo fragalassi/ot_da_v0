@@ -193,10 +193,10 @@ class JDOT():
         def distance_loss(y_true, y_pred):
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
-            dif = 0.001*euclidean_dist(K.batch_flatten(prediction_source), K.batch_flatten(prediction_target))
-            dif += 0.0001*euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(self.target_pred))
-
-            return K.sum(self.gamma*dif)
+            dif = euclidean_dist(K.batch_flatten(prediction_source), K.batch_flatten(prediction_target))
+            dif -= euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(self.target_pred))
+            dif = K.abs(dif)
+            return self.jdot_alpha*K.sum(self.gamma*dif)
 
         self.distance_loss = distance_loss
 
@@ -618,11 +618,11 @@ class JDOT():
                                       (self.batch_size, self.config.patch_shape[0]*self.config.patch_shape[1]*self.config.patch_shape[2]))
 
         # Compute the distance between samples and between the source_truth and the target prediction.
-        C0 = 0.001*cdist(train_vec_source, train_vec_target, metric="sqeuclidean")
-        C1 = 0.0001*cdist(truth_vec_source, pred_vec_target, metric="sqeuclidean")
+        C0 = cdist(train_vec_source, train_vec_target, metric="sqeuclidean")
+        C1 = cdist(truth_vec_source, pred_vec_target, metric="sqeuclidean")
 
         # Resulting cost metric
-        C = C0+C1
+        C = abs(C0-C1)
 
         # Computing gamma using the OT library
 
