@@ -412,6 +412,7 @@ class JDOT():
         elif len(self.complete_target_validation_list) < self.batch_size:
             self.batch_size = len(self.complete_target_validation_list)
             print("Changing batch size to : ", len(self.complete_target_validation_list))
+
     def select_indices_training(self):
         random.shuffle(self.source_training_list)
         random.shuffle(self.target_training_list)
@@ -623,7 +624,6 @@ class JDOT():
 
         # Resulting cost metric
         C = K.get_value(self.jdot_alpha)*C0+C1
-        print(C)
 
         # Computing gamma using the OT library
 
