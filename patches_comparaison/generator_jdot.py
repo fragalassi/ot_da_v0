@@ -118,13 +118,15 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
 
     if skip_blank:
+
+        print("Overwrite data : ", overwrite_data)
         save_patches_with_gt(source_training_list, source_data_file, patch_shape, training_patch_overlap,
-                             training_patch_start_offset, path=source_training_path)
+                             training_patch_start_offset, path=source_training_path, overwrite = overwrite_data)
 
         source_training_list = load_index_patches_with_gt(source_training_path)
 
         save_patches_with_gt(source_validation_list, source_data_file, patch_shape, validation_patch_overlap,
-                             training_patch_start_offset, path=source_validation_path)
+                             training_patch_start_offset, path=source_validation_path, overwrite = overwrite_data)
 
         source_validation_list = load_index_patches_with_gt(source_validation_path)
 
@@ -138,11 +140,11 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           validation_file=validation_keys_file)
     if skip_blank:
         save_patches_with_gt(target_training_list, target_data_file, patch_shape, training_patch_overlap,
-                             training_patch_start_offset, path=target_training_path)
+                             training_patch_start_offset, path=target_training_path, overwrite = overwrite_data)
         target_training_list = load_index_patches_with_gt(target_training_path)
 
         save_patches_with_gt(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
-                             training_patch_start_offset, path=target_validation_path)
+                             training_patch_start_offset, path=target_validation_path, overwrite = overwrite_data)
         target_validation_list = load_index_patches_with_gt(target_validation_path)
 
     return source_training_list, source_validation_list, target_training_list, target_validation_list
@@ -278,8 +280,8 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
             break
     return x_list, y_list
 
-def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path):
-    if not os.path.exists(path):
+def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path, overwrite):
+    if not os.path.exists(path) or overwrite:
         print("Creating and saving a file containing the index of patches with GT. This may take a while...")
         index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape,
                                                       patch_overlap, patch_start_offset)

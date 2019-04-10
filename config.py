@@ -11,7 +11,8 @@ class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
-                 jdot_alpha = 0.001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"]):
+                 jdot_alpha = 0.001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
+                 alpha_factor = 1):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -76,7 +77,7 @@ class Config:
 
         self.train_jdot = bool_train_jdot
         self.jdot_alpha = jdot_alpha
-        self.alpha_factor = 2
+        self.alpha_factor = alpha_factor
         self.depth_jdot = 5 # The layer from which the computation of the OT is made (0 is the image space).
         '''
         If augmentation is set to true, both flip and permutation transforms are taken into account.
@@ -90,7 +91,7 @@ class Config:
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
-        self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
+        self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
