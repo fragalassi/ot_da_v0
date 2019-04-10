@@ -42,8 +42,8 @@ training_center = [["All"]]*3
 augmentation = [True]*3
 jdot_alpha = [0.001]*3
 bool_train_jdot = [True]*3
-source_center = ["01", "08", "08"] #, "07", "07", "01"]
-target_center = ["08", "01", "07"] #, "01", "08", "07"]
+source_center = ["07", "07", "01"]
+target_center = ["01", "08", "07"]
 alpha_factor = [1]*3
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
