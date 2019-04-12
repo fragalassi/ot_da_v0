@@ -73,14 +73,14 @@ class Evaluate:
         plt.savefig("validation_scores_boxplot.png")
         plt.close()
 
-        if os.path.exists("./training.log"):
-            training_df = pd.read_csv("./training.log").set_index('epoch')
-
-            plt.plot(training_df['loss'].values, label='training loss')
-            plt.plot(training_df['val_loss'].values, label='validation loss')
-            plt.ylabel('Loss')
-            plt.xlabel('Epoch')
-            plt.xlim((0, len(training_df.index)))
-            plt.legend(loc='upper right')
-            plt.savefig(os.path.join(path,'loss_graph.png'))
+        # if os.path.exists("./training.log"):
+        #     training_df = pd.read_csv("./training.log").set_index('epoch')
+        #
+        #     plt.plot(training_df['loss'].values, label='training loss')
+        #     plt.plot(training_df['val_loss'].values, label='validation loss')
+        #     plt.ylabel('Loss')
+        #     plt.xlabel('Epoch')
+        #     plt.xlim((0, len(training_df.index)))
+        #     plt.legend(loc='upper right')
+        #     plt.savefig(os.path.join(path,'loss_graph.png'))
 

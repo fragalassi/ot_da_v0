@@ -91,7 +91,7 @@ class JDOT():
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
             target_loss = euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(prediction_target))
 
-            return source_loss + K.sum(self.gamma * target_loss)
+            return source_loss + self.jdot_alpha * K.sum(self.gamma * target_loss)
         self.deep_jdot_loss = deep_jdot_loss
 
         def jdot_image_loss(y_true, y_pred):
@@ -196,7 +196,7 @@ class JDOT():
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
             dif = euclidean_dist(K.batch_flatten(prediction_source), K.batch_flatten(prediction_target))
-            return self.jdot_alpha*K.sum(self.gamma*dif)
+            return self.jdot_alpha * K.sum(self.gamma*dif)
 
         self.distance_loss = distance_loss
 
@@ -623,7 +623,7 @@ class JDOT():
         C1 = cdist(truth_vec_source, pred_vec_target, metric="sqeuclidean")
 
         # Resulting cost metric
-        C = K.get_value(self.jdot_alpha)*C0+C1
+        C = (C0+C1)
 
         # Computing gamma using the OT library
 
