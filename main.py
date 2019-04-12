@@ -32,7 +32,7 @@ Need to be tested with data augmentation.
 '''
 
 batch_size = [125]*3
-initial_lr = [5e-3]*3
+initial_lr = [5e-2]*3
 loss_funcs = ["dice_coefficient_loss"]*3
 depth = [5]*3
 n_filter = [16]*3

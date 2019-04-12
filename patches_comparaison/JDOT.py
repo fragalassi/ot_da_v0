@@ -222,7 +222,7 @@ class JDOT():
         '''
         if self.config.train_jdot:
             if self.config.depth_jdot == None:
-                self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate, clipnorm=1.), loss=self.jdot_image_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
+                self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate, clipnorm=1., clipvalue=0.5), loss=self.jdot_image_loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
             else:
                 outputs = [self.model.get_layer(name).output for name in self.context_output_name]
                 outputs += [self.model.layers[-1].output]
@@ -278,7 +278,7 @@ class JDOT():
 
                 K.set_value(self.gamma, self.compute_gamma(self.prediction))
                 epoch_hist = self.train_on_batch(epoch_hist)
-            
+
             while not self.validation_complete:
                 selected_source, selected_target = self.select_indices_validation()
                 self.load_validation_batch(selected_source, selected_target)
