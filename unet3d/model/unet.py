@@ -13,7 +13,7 @@ from keras.engine import Input, Model
 from keras.layers import Conv3D, MaxPooling3D, UpSampling3D, Activation, BatchNormalization, PReLU, Deconvolution3D
 from keras.optimizers import Adam
 from keras.initializers import glorot_normal
-
+from keras import regularizers
 from unet3d.metrics import dice_coefficient_loss, get_label_dice_coefficient_function, dice_coefficient
 
 K.set_image_data_format("channels_first")
@@ -105,7 +105,7 @@ def create_convolution_block(input_layer, n_filters, batch_normalization=True, k
     :param padding:
     :return:
     """
-    layer = Conv3D(n_filters, kernel, padding=padding, strides=strides, kernel_initializer=glorot_normal())(input_layer)
+    layer = Conv3D(n_filters, kernel, padding=padding, strides=strides, kernel_initializer=glorot_normal(), kernel_regularizer=regularizers.l2(0.01))(input_layer)
     if batch_normalization:
         layer = BatchNormalization(axis=1)(layer)
     elif instance_normalization:
