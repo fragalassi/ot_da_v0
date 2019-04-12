@@ -39,8 +39,8 @@ class Config:
         self.niseko = niseko
 
         self.rev = int(rev)
-        print(self.rev)
-        self.one_patient = True
+        print("Revision :", self.rev)
+        self.one_patient = False
 
         self.image_shape = image_shape# This determines what shape the images will be cropped/resampled to.
         self.patch_shape = (int(float(patch_shape)),int(float(patch_shape)),int(float(patch_shape)))  # switch to None to train on the whole image

@@ -15,6 +15,7 @@ import matplotlib
 from patches_comparaison import compare_patches
 from keras import backend as K
 from Config import create_config
+from scipy.spatial.distance import cdist
 from multiprocessing.pool import ThreadPool
 import os
 
@@ -30,8 +31,8 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [10]*3
-initial_lr = [5e-2]*3
+batch_size = [125]*3
+initial_lr = [5e-3]*3
 loss_funcs = ["dice_coefficient_loss"]*3
 depth = [5]*3
 n_filter = [16]*3
@@ -41,9 +42,9 @@ image_shape = [(128,128,128)]*3
 training_center = [["All"]]*3
 augmentation = [True]*3
 jdot_alpha = [0.001]*3
-bool_train_jdot = [True]*3
-source_center = ["07", "07", "01"]
-target_center = ["01", "08", "07"]
+bool_train_jdot = [False]*3
+source_center = ["01", "07", "08"]
+target_center = ["07", "08", "07"]
 alpha_factor = [1]*3
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
