@@ -623,8 +623,7 @@ class JDOT():
         C1 = cdist(truth_vec_source, pred_vec_target, metric="sqeuclidean")
 
         # Resulting cost metric
-        C = (C0+C1)
-
+        C = C0+C1
         # Computing gamma using the OT library
 
         gamma = ot.emd(ot.unif(self.batch_size), ot.unif(self.batch_size), C)

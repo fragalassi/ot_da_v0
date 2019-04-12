@@ -40,6 +40,7 @@ class Config:
 
         self.rev = int(rev)
         print(self.rev)
+        self.one_patient = True
 
         self.image_shape = image_shape# This determines what shape the images will be cropped/resampled to.
         self.patch_shape = (int(float(patch_shape)),int(float(patch_shape)),int(float(patch_shape)))  # switch to None to train on the whole image

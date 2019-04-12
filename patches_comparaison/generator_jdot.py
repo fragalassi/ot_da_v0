@@ -281,7 +281,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
     return x_list, y_list
 
 def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path, overwrite):
-    if not os.path.exists(path): # or overwrite:
+    if not os.path.exists(path) or overwrite:
         print("Creating and saving a file containing the index of patches with GT. This may take a while...")
         index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape,
                                                       patch_overlap, patch_start_offset)

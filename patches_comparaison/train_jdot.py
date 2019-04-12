@@ -29,22 +29,24 @@ class Train_JDOT:
             subject_center = subject_dir[-9:-7]  # Retrieve for the MICCAI16 data-set the center of the patient
 
             if subject_center in self.config.source_center or self.config.source_center == ["All"]:
-                subject_ids_source.append(os.path.basename(subject_dir))
-                subject_files = list()
-                for modality in self.config.training_modalities + [
-                    "./" + self.config.GT]:  # Autre solution ? "/ManualSegmentation/ pour miccai16"
-                    subject_files.append(
-                        os.path.join(subject_dir, modality + ".nii.gz"))  # + "/Preprocessed/ pour miccai16
-                source_data_files.append(tuple(subject_files))
+                if self.config.one_patient and len(subject_ids_source) < 2:
+                    subject_ids_source.append(os.path.basename(subject_dir))
+                    subject_files = list()
+                    for modality in self.config.training_modalities + [
+                        "./" + self.config.GT]:  # Autre solution ? "/ManualSegmentation/ pour miccai16"
+                        subject_files.append(
+                            os.path.join(subject_dir, modality + ".nii.gz"))  # + "/Preprocessed/ pour miccai16
+                    source_data_files.append(tuple(subject_files))
 
             if subject_center in self.config.target_center or self.config.target_center == ["All"]:
-                subject_ids_target.append(os.path.basename(subject_dir))
-                subject_files = list()
-                for modality in self.config.training_modalities + [
-                    "./" + self.config.GT]:  # Autre solution ? "/ManualSegmentation/ pour miccai16"
-                    subject_files.append(
-                        os.path.join(subject_dir, modality + ".nii.gz"))  # + "/Preprocessed/ pour miccai16
-                target_data_files.append(tuple(subject_files))
+                if self.config.one_patient and len(subject_ids_target) < 2:
+                    subject_ids_target.append(os.path.basename(subject_dir))
+                    subject_files = list()
+                    for modality in self.config.training_modalities + [
+                        "./" + self.config.GT]:  # Autre solution ? "/ManualSegmentation/ pour miccai16"
+                        subject_files.append(
+                            os.path.join(subject_dir, modality + ".nii.gz"))  # + "/Preprocessed/ pour miccai16
+                    target_data_files.append(tuple(subject_files))
 
         if return_subject_ids:
             return source_data_files, target_data_files, subject_ids_source, subject_ids_target
