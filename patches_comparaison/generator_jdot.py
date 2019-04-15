@@ -103,12 +103,12 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
 
 
 def get_patches_index_list(source_data_file, target_data_file, training_keys_file, validation_keys_file, source_center,
-                           target_center, data_split = 0.8, overwrite_data = True, patch_shape = 16, skip_blank = True,
+                           target_center, data_split = 0.8, change_validation = True, patch_shape = 16, skip_blank = True,
                            training_patch_overlap = 0.5, validation_patch_overlap = 0.5, training_patch_start_offset = None):
 
     source_training_list, source_validation_list = get_validation_split(source_data_file,
                                                           data_split=data_split,
-                                                          overwrite_data=overwrite_data,
+                                                          change_validation=change_validation,
                                                           training_file=training_keys_file,
                                                           validation_file=validation_keys_file,)
 
@@ -119,14 +119,14 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
     if skip_blank:
 
-        print("Overwrite data : ", overwrite_data)
+        print("Overwrite data : ", change_validation)
         save_patches_with_gt(source_training_list, source_data_file, patch_shape, training_patch_overlap,
-                             training_patch_start_offset, path=source_training_path, overwrite = overwrite_data)
+                             training_patch_start_offset, path=source_training_path, overwrite = change_validation)
 
         source_training_list = load_index_patches_with_gt(source_training_path)
 
         save_patches_with_gt(source_validation_list, source_data_file, patch_shape, validation_patch_overlap,
-                             training_patch_start_offset, path=source_validation_path, overwrite = overwrite_data)
+                             training_patch_start_offset, path=source_validation_path, overwrite = change_validation)
 
         source_validation_list = load_index_patches_with_gt(source_validation_path)
 
@@ -135,16 +135,16 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
     target_training_list, target_validation_list = get_validation_split(target_data_file,
                                                           data_split=data_split,
-                                                          overwrite_data=overwrite_data,
+                                                          change_validation=change_validation,
                                                           training_file=training_keys_file,
                                                           validation_file=validation_keys_file)
     if skip_blank:
         save_patches_with_gt(target_training_list, target_data_file, patch_shape, training_patch_overlap,
-                             training_patch_start_offset, path=target_training_path, overwrite = overwrite_data)
+                             training_patch_start_offset, path=target_training_path, overwrite = change_validation)
         target_training_list = load_index_patches_with_gt(target_training_path)
 
         save_patches_with_gt(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
-                             training_patch_start_offset, path=target_validation_path, overwrite = overwrite_data)
+                             training_patch_start_offset, path=target_validation_path, overwrite = change_validation)
         target_validation_list = load_index_patches_with_gt(target_validation_path)
 
     return source_training_list, source_validation_list, target_training_list, target_validation_list
@@ -157,7 +157,7 @@ def get_number_of_steps(n_samples, batch_size):
     else:
         return n_samples//batch_size + 1
 
-def get_validation_split(data_file, training_file, validation_file, data_split=0.8, overwrite_data=False):
+def get_validation_split(data_file, training_file, validation_file, data_split=0.8, change_validation=False):
     """
     Splits the data into the training and validation indices list.
     :param data_file: pytables hdf5 data file
@@ -167,7 +167,7 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
     :param overwrite:
     :return:
     """
-    if overwrite_data or not os.path.exists(training_file):
+    if change_validation or not os.path.exists(training_file):
         nb_samples = data_file.root.data.shape[0]
         sample_list = list(range(nb_samples))
         training_list, validation_list = split_list(sample_list, split=data_split)

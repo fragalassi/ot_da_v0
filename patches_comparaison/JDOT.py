@@ -260,7 +260,7 @@ class JDOT():
             print("Epoch:", i+1, "/", n_iteration)
 
             if i%20 == 0 and i !=0:
-                #Increasing alpha every 10 epochs
+                #Increasing alpha every 20 epochs
                 K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha)*self.config.alpha_factor)
                 print("Changing jdot's alpha to :", K.get_value(self.jdot_alpha))
 
@@ -390,7 +390,7 @@ class JDOT():
                                source_center=self.config.source_center,
                                target_center=self.config.target_center,
                                data_split=self.config.validation_split,
-                               overwrite_data=self.config.change_validation,
+                               change_validation=self.config.change_validation,
                                patch_shape=self.config.patch_shape,
                                skip_blank=self.config.skip_blank,
                                training_patch_overlap=self.config.training_patch_overlap,
