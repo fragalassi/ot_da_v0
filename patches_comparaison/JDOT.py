@@ -237,7 +237,6 @@ class JDOT():
                 self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=loss, metrics=[self.dice_coefficient, self.dice_coefficient_source, self.dice_coefficient_target])
         else:
             self.model.compile(optimizer=self.optimizer(lr=self.config.initial_learning_rate), loss=self.dice_coefficient_loss, metrics=[self.dice_coefficient])
-        print(self.model.summary())
 
     def train_model(self, n_iteration):
         '''
@@ -391,7 +390,7 @@ class JDOT():
                                source_center=self.config.source_center,
                                target_center=self.config.target_center,
                                data_split=self.config.validation_split,
-                               overwrite_data=self.config.overwrite_data,
+                               overwrite_data=self.config.change_validation,
                                patch_shape=self.config.patch_shape,
                                skip_blank=self.config.skip_blank,
                                training_patch_overlap=self.config.training_patch_overlap,
@@ -623,7 +622,7 @@ class JDOT():
         C1 = cdist(truth_vec_source, pred_vec_target, metric="sqeuclidean")
 
         # Resulting cost metric
-        C = C0+C1
+        C = K.get_value(self.jdot_alpha)*(C0+C1)
         # Computing gamma using the OT library
 
         gamma = ot.emd(ot.unif(self.batch_size), ot.unif(self.batch_size), C)

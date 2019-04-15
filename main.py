@@ -41,10 +41,10 @@ overlap = [1/2]*3
 image_shape = [(128,128,128)]*3
 training_center = [["All"]]*3
 augmentation = [True]*3
-jdot_alpha = [0.001]*3
+jdot_alpha = [1e-4, 1e-3, 1e-2]
 bool_train_jdot = [True]*3
-source_center = ["07", "01", "08"]
-target_center = ["01", "08", "07"]
+source_center = ["08"]*3
+target_center = ["01"]*3
 alpha_factor = [1]*3
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,

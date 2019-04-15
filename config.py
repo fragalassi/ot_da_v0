@@ -93,6 +93,7 @@ class Config:
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
         self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
+        self.change_validation = False
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")

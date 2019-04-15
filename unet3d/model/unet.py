@@ -105,7 +105,7 @@ def create_convolution_block(input_layer, n_filters, batch_normalization=True, k
     :param padding:
     :return:
     """
-    layer = Conv3D(n_filters, kernel, padding=padding, strides=strides, kernel_initializer=glorot_normal(), kernel_regularizer=regularizers.l2(0.01))(input_layer)
+    layer = Conv3D(n_filters, kernel, padding=padding, strides=strides, kernel_initializer=glorot_normal())(input_layer)
     if batch_normalization:
         layer = BatchNormalization(axis=1)(layer)
     elif instance_normalization:
