@@ -385,8 +385,10 @@ class JDOT():
         self.complete_source_training_list, self.complete_source_validation_list, self.complete_target_training_list, \
         self.complete_target_validation_list = get_patches_index_list(
                                self.source_data, self.target_data,
-                               training_keys_file=self.config.training_file,
-                               validation_keys_file=self.config.validation_file,
+                               training_keys_file_source=self.config.training_file_source,
+                               validation_keys_file_source=self.config.validation_file_source,
+                               training_keys_file_target=self.config.training_file_target,
+                               validation_keys_file_target=self.config.validation_file_target,
                                source_center=self.config.source_center,
                                target_center=self.config.target_center,
                                data_split=self.config.validation_split,

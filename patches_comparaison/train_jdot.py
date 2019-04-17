@@ -87,7 +87,7 @@ class Train_JDOT:
         if not self.config.overwrite_model:
             jd.load_old_model(self.config.model_file)
         else:
-            print("Creating new model, this might overwrite your old model")
+            print("Creating new model, this will overwrite your old model")
         jd.compile_model()
         if self.config.train_jdot:
             jd.train_model(self.config.epochs)

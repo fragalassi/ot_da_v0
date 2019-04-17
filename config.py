@@ -93,7 +93,7 @@ class Config:
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
         self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
-        self.change_validation = True
+        self.change_validation = False
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
@@ -109,6 +109,13 @@ class Config:
         self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids.pkl")
         self.validation_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids.pkl")
 
+
+        self.training_file_source = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids_center_"+str(self.source_center)+".pkl")
+        self.validation_file_source = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids_center_"+str(self.source_center)+".pkl")
+        
+        self.training_file_target = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids_center_"+str(self.target_center)+".pkl")
+        self.validation_file_target = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids_center_"+str(self.target_center)+".pkl")
+        
         self.save_dir =  os.path.abspath("results/prediction/rev_" + str(self.rev))
         self.prediction_dir = os.path.abspath("results/prediction/rev_" + str(self.rev) + "/prediction_" + self.data_set)
 
