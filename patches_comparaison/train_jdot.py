@@ -58,9 +58,11 @@ class Train_JDOT:
             We write two files, one with source samples and one with target samples.
             '''
             source_data_files, target_data_files, subject_ids_source, subject_ids_target = self.fetch_training_data_files(return_subject_ids=True)
-            write_data_to_file(source_data_files, self.config.source_data_file, image_shape=self.config.image_shape,
+            if not os.path.exists(self.config.source_data_file):
+                write_data_to_file(source_data_files, self.config.source_data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids_source)
-            write_data_to_file(target_data_files, self.config.target_data_file, image_shape=self.config.image_shape,
+            if not os.path.exists(self.config.target_data_file):
+                write_data_to_file(target_data_files, self.config.target_data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids_target)
         else:
             print("Reusing previously written data file. Set overwrite_data to True to overwrite this file.")

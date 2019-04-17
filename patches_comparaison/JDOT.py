@@ -547,7 +547,9 @@ class JDOT():
         delta -= minute * 60
         seconds = delta
         if self.config.train_jdot:
-            print("\n\nMean on epoch :")
+            print("\n\n Min gamma value: "+ str(np.min(self.gamma) + " Max gamma value: " + str(np.max(self.gamma))))
+            print("\n Mean gamma: " + str(np.mean(self.gamma)) + " Median gamma: " + str(np.median(self.gamma)))
+            print("\nMean on epoch :")
             result = "Loss: " + str(mean_epoch[0]) + " Dice Score: " + str(mean_epoch[-3]) + " Dice Score Source: " + str(
                 mean_epoch[-2]) + " Dice Score Target: " + str(mean_epoch[-1])
             print(result)
@@ -619,7 +621,6 @@ class JDOT():
 
         # Resulting cost metric
         C = K.get_value(self.jdot_alpha)*(C0+C1)
-        print(C)
         # Computing gamma using the OT library
 
         gamma = ot.emd(ot.unif(self.batch_size), ot.unif(self.batch_size), C)
