@@ -93,12 +93,14 @@ class Config:
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
         self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
-        self.change_validation = False
+        self.change_validation = True
         self.overwrite_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
-        self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_source.h5")
-        self.target_data_file = os.path.abspath("Data/generated_data/" + self.data_set + "_data_target.h5")
+        #self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_source.h5")
+        self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_center_"+str(source_center)+".h5")
+        # self.target_data_file = os.path.abspath("Data/generated_data/" + self.data_set + "_data_target.h5")
+        self.target_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_center_"+str(target_center)+".h5")
 
         if not os.path.exists(os.path.abspath("Data/generated_data")):
             os.makedirs(os.path.abspath("Data/generated_data"))

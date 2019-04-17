@@ -120,7 +120,6 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
     if skip_blank:
 
-        print("Overwrite data : ", change_validation)
         save_patches_with_gt(source_training_list, source_data_file, patch_shape, training_patch_overlap,
                              training_patch_start_offset, path=source_training_path, overwrite = change_validation)
 
