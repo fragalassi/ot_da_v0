@@ -53,7 +53,7 @@ class Train_JDOT:
 
     def main(self, overwrite_data=True, overwrite_model=True):
         # convert input images into an hdf5 file
-        if overwrite_data or not os.path.exists(self.config.data_file):
+        if overwrite_data or not os.path.exists(self.config.source_data_file) or not os.path.exists(self.config.target_data_file):
             '''
             We write two files, one with source samples and one with target samples.
             '''
