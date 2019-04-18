@@ -31,7 +31,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [128]
+batch_size = [110]
 initial_lr = [5e-3]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
@@ -43,7 +43,7 @@ training_center = [["All"]]
 augmentation = [True]
 jdot_alpha = [1e-7]
 bool_train_jdot = [True]
-source_center = ["07"]
+source_center = ["01"]
 target_center = ["08"]
 alpha_factor = [1]
 
