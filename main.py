@@ -31,21 +31,21 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [110]
-initial_lr = [5e-3]
-loss_funcs = ["dice_coefficient_loss"]
-depth = [5]
-n_filter = [16]
-patch_shape = [16]
-overlap = [1/2]
-image_shape = [(128,128,128)]
-training_center = [["All"]]
-augmentation = [True]
-jdot_alpha = [1e-7]
-bool_train_jdot = [True]
-source_center = ["01"]
-target_center = ["08"]
-alpha_factor = [1]
+batch_size = [128]*3
+initial_lr = [5e-3]*3
+loss_funcs = ["dice_coefficient_loss"]*3
+depth = [5]*3
+n_filter = [16]*3
+patch_shape = [16]*3
+overlap = [1/2]*3
+image_shape = [(128,128,128)]*3
+training_center = [["All"]]*3
+augmentation = [True]*3
+jdot_alpha = [1e-6]*3
+bool_train_jdot = [False]*3
+source_center = ["01", "07", "08"]
+target_center = ["08"]*3
+alpha_factor = [1]*3
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
