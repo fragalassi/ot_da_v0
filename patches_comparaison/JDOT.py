@@ -618,10 +618,10 @@ class JDOT():
         C1 = cdist(truth_vec_source, pred_vec_target, metric="sqeuclidean")
 
         # Resulting cost metric
-        # C = K.get_value(self.jdot_alpha)*(C0+C1)
-        C = C0 + C1
-        C = C - np.min(C)
-        C = C / np.max(C)
+        C = C0+C1
+        # C = C0 + C1
+        # C = C - np.min(C)
+        # C = C / np.max(C)
 
         # Computing gamma using the OT library
 

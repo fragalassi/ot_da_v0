@@ -47,9 +47,9 @@ class Train_JDOT:
                 target_data_files.append(tuple(subject_files))
 
         if return_subject_ids:
-            return source_data_files, target_data_files, subject_ids_source, subject_ids_target
+            return source_data_files[:1], target_data_files[:1], subject_ids_source[:1], subject_ids_target[:1]
         else:
-            return source_data_files, target_data_files
+            return source_data_files[:1], target_data_files[:1]
 
     def main(self, overwrite_data=True, overwrite_model=True):
         # convert input images into an hdf5 file
@@ -58,10 +58,10 @@ class Train_JDOT:
             We write two files, one with source samples and one with target samples.
             '''
             source_data_files, target_data_files, subject_ids_source, subject_ids_target = self.fetch_training_data_files(return_subject_ids=True)
-            if not os.path.exists(self.config.source_data_file):
+            if not os.path.exists(self.config.source_data_file) or overwrite_data:
                 write_data_to_file(source_data_files, self.config.source_data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids_source)
-            if not os.path.exists(self.config.target_data_file):
+            if not os.path.exists(self.config.target_data_file) or overwrite_data:
                 write_data_to_file(target_data_files, self.config.target_data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids_target)
         else:
