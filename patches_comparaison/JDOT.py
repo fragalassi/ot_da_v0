@@ -73,6 +73,9 @@ class JDOT():
         self.epoch_complete = False
         self.validation_complete = False
 
+        self.training_data = None
+        self.validation_data = None
+
         self.t = 0
 
         self.prediction = []
@@ -253,7 +256,6 @@ class JDOT():
         epoch_hist = np.empty((0, len_history))
         epoch_val = np.empty((0, len_history))
         self.get_patch_indexes()
-
         for i in range(n_iteration):
             start_epoch = time.time()
             print("=============")
@@ -263,7 +265,6 @@ class JDOT():
                 #Increasing alpha every 20 epochs
                 K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha)*self.config.alpha_factor)
                 print("Changing jdot's alpha to :", K.get_value(self.jdot_alpha))
-
             while not self.epoch_complete:
                 selected_source, selected_target = self.select_indices_training()
                 if len(selected_source) < self.batch_size or len(selected_target) < self.batch_size:
@@ -345,7 +346,7 @@ class JDOT():
 
             self.save_hist_and_model(hist_l, val_l)
 
-    def get_batch(self, selected_source, selected_target, target = True, validation=False):
+    def get_batch(self, selected_source, selected_target, target = True, validation=False, all = False):
         """
         Function to get a random batch of source and target images
         :return: Two tuples (image samples,ground_truth). From 0 to the batch_size the image samples belong to the
@@ -377,7 +378,8 @@ class JDOT():
             target=target,
             validation = validation,
             source_center = self.config.source_center,
-            target_center = self.config.target_center)
+            target_center = self.config.target_center,
+            all = all)
         return batch
 
     def get_patch_indexes(self, target = True):
@@ -399,16 +401,18 @@ class JDOT():
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset)
 
-        self.source_training_list = copy(self.complete_source_training_list)
-        self.source_validation_list = copy(self.complete_source_validation_list)
-        self.target_training_list = copy(self.complete_target_training_list)
-        self.target_validation_list = copy(self.complete_target_validation_list)
+        self.source_training_list = copy(self.complete_source_training_list[:20])
+        self.source_validation_list = copy(self.complete_source_validation_list[:20])
+        self.target_training_list = copy(self.complete_target_training_list[:20])
+        self.target_validation_list = copy(self.complete_target_validation_list[:20])
         print("Source training: ", len(self.complete_source_training_list))
         print("Source validation", len(self.complete_source_validation_list))
         print("Target training", len(self.complete_target_training_list))
         print("Target validation", len(self.complete_target_validation_list))
 
     def select_indices_training(self):
+        print(self.source_training_list)
+        print(len(self.target_training_list))
         random.shuffle(self.source_training_list)
         random.shuffle(self.target_training_list)
         selected_source = []
@@ -418,8 +422,8 @@ class JDOT():
             selected_target += [self.target_training_list.pop()]
 
         if len(self.source_training_list) < self.batch_size or len(self.target_training_list) < self.batch_size:
-            self.source_training_list = copy(self.complete_source_training_list)
-            self.target_training_list = copy(self.complete_target_training_list)
+            self.source_training_list = copy(self.complete_source_training_list[:20])
+            self.target_training_list = copy(self.complete_target_training_list[:20])
             self.epoch_complete = True
 
         return selected_source, selected_target
@@ -433,8 +437,8 @@ class JDOT():
             selected_source += [self.source_validation_list.pop()]
             selected_target += [self.target_validation_list.pop()]
         if len(self.source_validation_list) < self.batch_size or len(self.target_validation_list) < self.batch_size:
-            self.source_validation_list = copy(self.complete_source_validation_list)
-            self.target_validation_list = copy(self.complete_target_validation_list)
+            self.source_validation_list = copy(self.complete_source_validation_list[:20])
+            self.target_validation_list = copy(self.complete_target_validation_list[:20])
             self.validation_complete = True
             
         return selected_source, selected_target
@@ -449,6 +453,15 @@ class JDOT():
         if target:
             K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
             K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
+
+    def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
+        self.training_data = self.get_batch(training_source, training_target, target=target, all = True)
+        self.validation_data = self.get_batch(validation_source, validation_target, target=target, all =True)
+        print(len(self.training_data[0]))
+        print(len(self.training_data[1]))
+        print(len(self.validation_data[0]))
+        print(len(self.validation_data[1]))
+
 
     def load_validation_batch(self, selected_source, selected_target, target = True):
         start = time.time()

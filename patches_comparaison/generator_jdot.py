@@ -19,7 +19,7 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
                                            augment_flip=True, augment_distortion_factor=0.25, patch_shape=None,
                                            validation_patch_overlap=0, training_patch_overlap = 0, training_patch_start_offset=None,
                                            validation_batch_size=None, skip_blank=True, permute=False, number_of_threads = 64,
-                                           target = True, validation = False, source_center = ["01"], target_center = ["07"]):
+                                           target = True, validation = False, source_center = ["01"], target_center = ["07"], all = False):
     """
     Creates the training and validation generators that can be used when training the model.
     :param skip_blank: If True, any blank (all-zero) label images/patches will be skipped by the data generator.
@@ -71,6 +71,7 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
                                         shuffle_index_list=True,
                                         permute=permute,
                                         number_of_threads = number_of_threads,
+                                        all = all,
                                         )
     if target:
         target_x, target_y = data_generator_jdot_multi_proc(selected_target,
@@ -89,6 +90,7 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
                                             shuffle_index_list=True,
                                             permute=permute,
                                             number_of_threads = number_of_threads,
+                                            all = all,
                                             )
 
         x = np.vstack((source_x, target_x))
@@ -188,7 +190,7 @@ def split_list(input_list, split=0.8, shuffle_list=True):
 
 def data_generator_jdot_multi_proc(selected, data_file, validation = True, batch_size=1, n_labels=1, labels=None, augment=False, augment_flip=True,
                    augment_distortion_factor=0.25, patch_shape=None, patch_overlap=0, patch_start_offset=None,
-                   shuffle_index_list=True, skip_blank=True, permute=False, number_of_threads = 64):
+                   shuffle_index_list=True, skip_blank=True, permute=False, number_of_threads = 64, all = False):
     '''
     Create a batch for jdot:
     source data: x_list[:batch_size]
@@ -217,7 +219,7 @@ def data_generator_jdot_multi_proc(selected, data_file, validation = True, batch
                                          stopping_criterion= batch_size, number_of_threads = number_of_threads,
                                          patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
                                          augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
-                                         permute=permute)
+                                         permute=permute, all = all)
 
     training_x_list, training_y_list = convert_data(training_x_list, training_y_list, n_labels=n_labels, labels=labels)
 
@@ -225,7 +227,7 @@ def data_generator_jdot_multi_proc(selected, data_file, validation = True, batch
 
 def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stopping_criterion = 64,
                     number_of_threads = 64, patch_shape = 16, augment = False, augment_flip = False,
-                    augment_distortion_factor = None, skip_blank = False, permute = False):
+                    augment_distortion_factor = None, skip_blank = False, permute = False, all = False):
     '''
     The loop for loading data with multiprocess.
     :param index_list:
@@ -246,6 +248,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
     remaining_batch = batch_size
     selected_index = []
     while len(index_list) > 0:
+        print(len(index_list))
         # Two verifications for the remaining samples to put in the batch.
         # We want set the number_of_threads to the number of samples remaining
         if len(index_list) > number_of_threads:
@@ -271,7 +274,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
 
 
         for i in range(len(results)):
-            if len(results[i][0]) != 0 and remaining_batch != 0:
+            if len(results[i][0]) != 0 and (remaining_batch != 0 or all):
                 remaining_batch -= 1
                 x_list.append(results[i][0][0])
                 y_list.append(results[i][1][0])

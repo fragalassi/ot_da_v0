@@ -31,21 +31,21 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [128]
-initial_lr = [5e-3]
-loss_funcs = ["dice_coefficient_loss"]
-depth = [5]
-n_filter = [16]
-patch_shape = [16]
-overlap = [1/2]
-image_shape = [(128,128,128)]
-training_center = [["All"]]
-augmentation = [True]
-jdot_alpha = [1e-6]
-bool_train_jdot = [False]
-source_center = ["01"]
-target_center = ["08"]
-alpha_factor = [1]
+batch_size = [10]*2
+initial_lr = [5e-3]*2
+loss_funcs = ["dice_coefficient_loss"]*2
+depth = [5]*2
+n_filter = [16]*2
+patch_shape = [16]*2
+overlap = [1/2]*2
+image_shape = [(128,128,128)]*2
+training_center = [["All"]]*2
+augmentation = [True]*2
+jdot_alpha = [1e-6]*2
+bool_train_jdot = [True]*2
+source_center = ["01"]*2
+target_center = ["08"]*2
+alpha_factor = [1]*2
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
@@ -97,11 +97,11 @@ for i in range(df.shape[0]): #df.shape[0]
     train_jd = train_jdot.Train_JDOT(conf)
     train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    test = create_test.Test(conf)
-    test.main(overwrite_data=conf.overwrite_data)
-
-    eval = evaluate.Evaluate(conf)
-    eval.main()
+    # test = create_test.Test(conf)
+    # test.main(overwrite_data=conf.overwrite_data)
+    #
+    # eval = evaluate.Evaluate(conf)
+    # eval.main()
 
     '''
     For normal training uncomment this part

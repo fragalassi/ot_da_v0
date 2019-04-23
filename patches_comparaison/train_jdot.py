@@ -95,7 +95,7 @@ class Train_JDOT:
             jd.train_model(self.config.epochs)
         else:
             jd.train_model_on_source(self.config.epochs)
-        jd.evaluate_model()
+        # jd.evaluate_model()
 
 
         # run training
