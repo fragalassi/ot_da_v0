@@ -31,7 +31,7 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [128]*2
+batch_size = [32]*2
 initial_lr = [5e-3]*2
 loss_funcs = ["dice_coefficient_loss"]*2
 depth = [5]*2
@@ -42,7 +42,7 @@ image_shape = [(128,128,128)]*2
 training_center = [["All"]]*2
 augmentation = [True]*2
 jdot_alpha = [1e-6]*2
-bool_train_jdot = [False, True]
+bool_train_jdot = [True, True]
 source_center = ["08","08"]
 target_center = ["08", "01"]
 alpha_factor = [1]*2

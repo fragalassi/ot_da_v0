@@ -401,10 +401,10 @@ class JDOT():
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset)
 
-        self.source_training_list = copy(self.complete_source_training_list)
-        self.source_validation_list = copy(self.complete_source_validation_list)
-        self.target_training_list = copy(self.complete_target_training_list)
-        self.target_validation_list = copy(self.complete_target_validation_list)
+        self.source_training_list = copy(self.complete_source_training_list[:128])
+        self.source_validation_list = copy(self.complete_source_validation_list[:128])
+        self.target_training_list = copy(self.complete_target_training_list[:128])
+        self.target_validation_list = copy(self.complete_target_validation_list[:128])
         print("Source training: ", len(self.complete_source_training_list))
         print("Source validation", len(self.complete_source_validation_list))
         print("Target training", len(self.complete_target_training_list))
@@ -420,8 +420,8 @@ class JDOT():
             selected_target += [self.target_training_list.pop()]
 
         if len(self.source_training_list) < self.batch_size or len(self.target_training_list) < self.batch_size:
-            self.source_training_list = copy(self.complete_source_training_list)
-            self.target_training_list = copy(self.complete_target_training_list)
+            self.source_training_list = copy(self.complete_source_training_list[:128])
+            self.target_training_list = copy(self.complete_target_training_list[:128])
             self.epoch_complete = True
 
         return selected_source, selected_target
@@ -435,8 +435,8 @@ class JDOT():
             selected_source += [self.source_validation_list.pop()]
             selected_target += [self.target_validation_list.pop()]
         if len(self.source_validation_list) < self.batch_size or len(self.target_validation_list) < self.batch_size:
-            self.source_validation_list = copy(self.complete_source_validation_list)
-            self.target_validation_list = copy(self.complete_target_validation_list)
+            self.source_validation_list = copy(self.complete_source_validation_list[:128])
+            self.target_validation_list = copy(self.complete_target_validation_list[:128])
             self.validation_complete = True
             
         return selected_source, selected_target
@@ -667,7 +667,7 @@ class JDOT():
         validation_indices = pickle_load(validation_keys_file)
         model = self.model
         data_file = tables.open_file(hdf5_file, "r")
-        for i, index in enumerate(validation_indices):
+        for i, index in enumerate(validation_indices[0:1]):
             actual = round(i/len(validation_indices)*100, 2)
             print("Running validation case: ", actual,"%")
             if 'subject_ids' in data_file.root:
