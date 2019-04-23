@@ -411,8 +411,6 @@ class JDOT():
         print("Target validation", len(self.complete_target_validation_list))
 
     def select_indices_training(self):
-        print(self.source_training_list)
-        print(len(self.target_training_list))
         random.shuffle(self.source_training_list)
         random.shuffle(self.target_training_list)
         selected_source = []
