@@ -95,22 +95,7 @@ class Train_JDOT:
             jd.train_model(self.config.epochs)
         else:
             jd.train_model_on_source(self.config.epochs)
-        # jd.evaluate_model()
-
-
-        # run training
-        # train_model(model=model,
-        #             model_file=self.config.model_file,
-        #             training_generator=train_generator,
-        #             validation_generator=validation_generator,
-        #             steps_per_epoch=n_train_steps,
-        #             validation_steps=n_validation_steps,
-        #             initial_learning_rate=self.config.initial_learning_rate,
-        #             learning_rate_drop=self.config.learning_rate_drop,
-        #             learning_rate_patience=self.config.patience,
-        #             early_stopping_patience=self.config.early_stop,
-        #             n_epochs=self.config.epochs,
-        #             niseko=self.config.niseko)
+        jd.evaluate_model()
 
         source_data.close()
         target_data.close()

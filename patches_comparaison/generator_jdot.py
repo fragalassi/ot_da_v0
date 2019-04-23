@@ -267,7 +267,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
             results.append(pool.apply_async(add_data_mp, args=(data, truth, affine, index, augment, augment_flip,
                                                                    augment_distortion_factor, patch_shape, skip_blank,
                                                                    permute)))
-        pool.close()
+        pool.terminate()
         pool.join()
         results = [r.get() for r in results]
 
