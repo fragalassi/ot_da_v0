@@ -248,7 +248,6 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
     remaining_batch = batch_size
     selected_index = []
     while len(index_list) > 0:
-        print(len(index_list))
         # Two verifications for the remaining samples to put in the batch.
         # We want set the number_of_threads to the number of samples remaining
         if len(index_list) > number_of_threads:

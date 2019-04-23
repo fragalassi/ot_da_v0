@@ -33,7 +33,7 @@ class Config:
             self.all_modalities = ["FLAIR-include"]
         else:
             self.data_set="miccai16_no_norm"
-            self.epochs = 1  # cutoff the training after this many epochs
+            self.epochs = 100  # cutoff the training after this many epochs
             self.all_modalities = ["FLAIR-include", "T1-include"]
 
         self.niseko = niseko
@@ -50,7 +50,7 @@ class Config:
         self.source_center = source_center
         self.target_center = target_center
 
-        self.number_of_threads = 5
+        self.number_of_threads = 64
 
         self.labels=(1)
         self.n_labels=1
