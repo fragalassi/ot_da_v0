@@ -1,7 +1,7 @@
 #!/bin/bash
 set -xv
 
-SCRIPTDIR=/udd/aacakouy/OT-DA
+SCRIPTDIR=/udd/aackaouy/OT-DA
 echo "$SCRIPTDIR"
 
 . /etc/profile.d/modules.sh

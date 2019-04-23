@@ -18,7 +18,7 @@ from Config import create_config
 from scipy.spatial.distance import cdist
 from multiprocessing.pool import ThreadPool
 import os
-
+import argparse
 
 sys.path.append('/udd/aackaouy/OT-DA/')
 
@@ -31,21 +31,29 @@ Best configuration yet.
 Need to be tested with data augmentation.
 '''
 
-batch_size = [32]*2
-initial_lr = [5e-3]*2
-loss_funcs = ["dice_coefficient_loss"]*2
-depth = [5]*2
-n_filter = [16]*2
-patch_shape = [16]*2
-overlap = [1/2]*2
-image_shape = [(128,128,128)]*2
-training_center = [["All"]]*2
-augmentation = [True]*2
-jdot_alpha = [1e-6]*2
-bool_train_jdot = [True, True]
-source_center = ["08","08"]
-target_center = ["08", "01"]
-alpha_factor = [1]*2
+parser = argparse.ArgumentParser()
+parser.add_argument("-source", type=str, help="Set the source center")
+parser.add_argument("-target", type=str, help="Set the target center")
+parser.add_argument("-alpha", type=float, help="Set JDOT alpha")
+parser.add_argument("-jdot", type=str, help="Bool to train on JDOT")
+parser.add_argument("-rev", type=int, help="The id of the revision")
+args = parser.parse_args()
+
+batch_size = [128]
+initial_lr = [5e-3]
+loss_funcs = ["dice_coefficient_loss"]
+depth = [5]
+n_filter = [16]
+patch_shape = [16]
+overlap = [1/2]
+image_shape = [(128,128,128)]
+training_center = [["All"]]
+augmentation = [True]
+jdot_alpha = [args.alpha]
+bool_train_jdot = [True if args.jdot == "True" else False]
+source_center = [args.source]
+target_center = [args.target]
+alpha_factor = [1]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
@@ -62,7 +70,7 @@ for i in range(df.shape[0]): #df.shape[0]
     print("=========")
     print(df.iloc[i])
     print("=========")
-    conf = config.Config(test=False, rev=i, batch_size=df["Batch Size"].iloc[i],
+    conf = config.Config(test=False, rev=args.rev, batch_size=df["Batch Size"].iloc[i],
                          initial_lr=df["Initial Learning Rate"].iloc[i],
                          loss_function=df["Loss function"].iloc[i],
                          depth=df["Depth"].iloc[i],

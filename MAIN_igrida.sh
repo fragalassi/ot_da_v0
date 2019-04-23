@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPTDIR=/udd/aacakouy/OT-DA
+SCRIPTDIR=/udd/aackaouy/OT-DA
 chmod +x bypass.sh
 # SCRIPT dir
 

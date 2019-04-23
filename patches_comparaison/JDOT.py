@@ -261,10 +261,17 @@ class JDOT():
             print("=============")
             print("Epoch:", i+1, "/", n_iteration)
 
+            if val_l.shape[0]>25 and val_l[0][-1] >= np.all(val_l[0][-1:-10]):
+                # We let 25 epochs run before starting to monitor the loss
+                print("Early stopping")
+                break
+
+
             if i%20 == 0 and i !=0:
                 #Increasing alpha every 20 epochs
                 K.set_value(self.jdot_alpha, K.get_value(self.jdot_alpha)*self.config.alpha_factor)
                 print("Changing jdot's alpha to :", K.get_value(self.jdot_alpha))
+
             while not self.epoch_complete:
                 selected_source, selected_target = self.select_indices_training()
                 if len(selected_source) < self.batch_size or len(selected_target) < self.batch_size:
@@ -291,6 +298,7 @@ class JDOT():
             mean_epoch = np.mean(epoch_hist, axis=0)
             mean_val = np.mean(epoch_val, axis=0)
 
+
             self.pretty_print(mean_epoch, mean_val, time_epoch, epoch_remaining)
             hist_l = np.vstack((hist_l, [mean_epoch]))
             val_l = np.vstack((val_l, [mean_val]))
@@ -314,6 +322,12 @@ class JDOT():
             start_epoch = time.time()
             print("=============")
             print("Epoch:", i + 1, "/", n_iteration)
+
+            if val_l.shape[0]>25 and val_l[0][-1] >= np.all(val_l[0][-1:-10]):
+                # We let 25 epochs run before starting to monitor the loss
+                print("Early stopping")
+                break
+
 
             while not self.epoch_complete:
                 selected_source, selected_target = self.select_indices_training()
@@ -401,10 +415,10 @@ class JDOT():
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset)
 
-        self.source_training_list = copy(self.complete_source_training_list[:128])
-        self.source_validation_list = copy(self.complete_source_validation_list[:128])
-        self.target_training_list = copy(self.complete_target_training_list[:128])
-        self.target_validation_list = copy(self.complete_target_validation_list[:128])
+        self.source_training_list = copy(self.complete_source_training_list)
+        self.source_validation_list = copy(self.complete_source_validation_list)
+        self.target_training_list = copy(self.complete_target_training_list)
+        self.target_validation_list = copy(self.complete_target_validation_list)
         print("Source training: ", len(self.complete_source_training_list))
         print("Source validation", len(self.complete_source_validation_list))
         print("Target training", len(self.complete_target_training_list))
@@ -420,8 +434,8 @@ class JDOT():
             selected_target += [self.target_training_list.pop()]
 
         if len(self.source_training_list) < self.batch_size or len(self.target_training_list) < self.batch_size:
-            self.source_training_list = copy(self.complete_source_training_list[:128])
-            self.target_training_list = copy(self.complete_target_training_list[:128])
+            self.source_training_list = copy(self.complete_source_training_list)
+            self.target_training_list = copy(self.complete_target_training_list)
             self.epoch_complete = True
 
         return selected_source, selected_target
@@ -435,8 +449,8 @@ class JDOT():
             selected_source += [self.source_validation_list.pop()]
             selected_target += [self.target_validation_list.pop()]
         if len(self.source_validation_list) < self.batch_size or len(self.target_validation_list) < self.batch_size:
-            self.source_validation_list = copy(self.complete_source_validation_list[:128])
-            self.target_validation_list = copy(self.complete_target_validation_list[:128])
+            self.source_validation_list = copy(self.complete_source_validation_list)
+            self.target_validation_list = copy(self.complete_target_validation_list)
             self.validation_complete = True
             
         return selected_source, selected_target
@@ -667,7 +681,7 @@ class JDOT():
         validation_indices = pickle_load(validation_keys_file)
         model = self.model
         data_file = tables.open_file(hdf5_file, "r")
-        for i, index in enumerate(validation_indices[0:1]):
+        for i, index in enumerate(validation_indices):
             actual = round(i/len(validation_indices)*100, 2)
             print("Running validation case: ", actual,"%")
             if 'subject_ids' in data_file.root:
