@@ -437,10 +437,10 @@ class JDOT():
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset)
 
-        self.source_training_list = copy(self.complete_source_training_list[:10])
-        self.source_validation_list = copy(self.complete_source_validation_list[:10])
-        self.target_training_list = copy(self.complete_target_training_list[:10])
-        self.target_validation_list = copy(self.complete_target_validation_list[:10])
+        self.source_training_list = copy(self.complete_source_training_list)
+        self.source_validation_list = copy(self.complete_source_validation_list)
+        self.target_training_list = copy(self.complete_target_training_list)
+        self.target_validation_list = copy(self.complete_target_validation_list)
         print("Source training: ", len(self.complete_source_training_list))
         print("Source validation", len(self.complete_source_validation_list))
         print("Target training", len(self.complete_target_training_list))
@@ -456,8 +456,8 @@ class JDOT():
             selected_target += [self.target_training_list.pop()]
 
         if len(self.source_training_list) < self.batch_size or len(self.target_training_list) < self.batch_size:
-            self.source_training_list = copy(self.complete_source_training_list[:10])
-            self.target_training_list = copy(self.complete_target_training_list[:10])
+            self.source_training_list = copy(self.complete_source_training_list)
+            self.target_training_list = copy(self.complete_target_training_list)
             self.epoch_complete = True
 
         return selected_source, selected_target
@@ -471,8 +471,8 @@ class JDOT():
             selected_source += [self.source_validation_list.pop()]
             selected_target += [self.target_validation_list.pop()]
         if len(self.source_validation_list) < self.batch_size or len(self.target_validation_list) < self.batch_size:
-            self.source_validation_list = copy(self.complete_source_validation_list[:10])
-            self.target_validation_list = copy(self.complete_target_validation_list[:10])
+            self.source_validation_list = copy(self.complete_source_validation_list)
+            self.target_validation_list = copy(self.complete_target_validation_list)
             self.validation_complete = True
             
         return selected_source, selected_target
