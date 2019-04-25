@@ -256,10 +256,20 @@ class JDOT():
         epoch_hist = np.empty((0, len_history))
         epoch_val = np.empty((0, len_history))
         self.get_patch_indexes()
+        count = 0
         for i in range(n_iteration):
             start_epoch = time.time()
             print("=============")
             print("Epoch:", i+1, "/", n_iteration)
+
+            if val_l.shape[0]>0 and val_l[0][-1] >= np.all(val_l[0][-1:-5]) and count == 0:
+                # We let 25 epochs run before starting to monitor the loss
+                # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
+                K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr)*self.config.learning_rate_drop)
+                print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
+                count = 5
+            elif val_l.shape[0]>0 and val_l[0][-1] >= np.all(val_l[0][-1:-5]) and count > -1:
+                count = count - 1
 
             if val_l.shape[0]>25 and val_l[0][-1] >= np.all(val_l[0][-1:-10]):
                 # We let 25 epochs run before starting to monitor the loss
@@ -317,17 +327,20 @@ class JDOT():
         epoch_hist = np.empty((0, len_history))
         epoch_val = np.empty((0, len_history))
         self.get_patch_indexes()
+        count = 0
 
         for i in range(n_iteration):
             start_epoch = time.time()
             print("=============")
             print("Epoch:", i + 1, "/", n_iteration)
 
-            # if val_l.shape[0]>25 and val_l[0][-1] >= np.all(val_l[0][-1:-5]):
-            #     # We let 25 epochs run before starting to monitor the loss
-            #     # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
-            #
-            #     print("Setting learning rate to: ")
+            if val_l.shape[0]>0 and val_l[0][-1] >= np.all(val_l[0][-1:-2]) and count == 0:
+                # We let 25 epochs run before starting to monitor the loss
+                # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
+                print("Setting learning rate to: ")
+                count = 2
+            elif val_l.shape[0]>0 and val_l[0][-1] >= np.all(val_l[0][-1:-2]) and count > -1:
+                count = count - 1
 
             if val_l.shape[0]>25 and val_l[0][-1] >= np.all(val_l[0][-1:-10]):
                 # We let 25 epochs run before starting to monitor the loss
@@ -423,10 +436,10 @@ class JDOT():
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset)
 
-        self.source_training_list = copy(self.complete_source_training_list)
-        self.source_validation_list = copy(self.complete_source_validation_list)
-        self.target_training_list = copy(self.complete_target_training_list)
-        self.target_validation_list = copy(self.complete_target_validation_list)
+        self.source_training_list = copy(self.complete_source_training_list[:10])
+        self.source_validation_list = copy(self.complete_source_validation_list[:10])
+        self.target_training_list = copy(self.complete_target_training_list[:10])
+        self.target_validation_list = copy(self.complete_target_validation_list[:10])
         print("Source training: ", len(self.complete_source_training_list))
         print("Source validation", len(self.complete_source_validation_list))
         print("Target training", len(self.complete_target_training_list))
@@ -442,8 +455,8 @@ class JDOT():
             selected_target += [self.target_training_list.pop()]
 
         if len(self.source_training_list) < self.batch_size or len(self.target_training_list) < self.batch_size:
-            self.source_training_list = copy(self.complete_source_training_list)
-            self.target_training_list = copy(self.complete_target_training_list)
+            self.source_training_list = copy(self.complete_source_training_list[:10])
+            self.target_training_list = copy(self.complete_target_training_list[:10])
             self.epoch_complete = True
 
         return selected_source, selected_target
@@ -457,8 +470,8 @@ class JDOT():
             selected_source += [self.source_validation_list.pop()]
             selected_target += [self.target_validation_list.pop()]
         if len(self.source_validation_list) < self.batch_size or len(self.target_validation_list) < self.batch_size:
-            self.source_validation_list = copy(self.complete_source_validation_list)
-            self.target_validation_list = copy(self.complete_target_validation_list)
+            self.source_validation_list = copy(self.complete_source_validation_list[:10])
+            self.target_validation_list = copy(self.complete_target_validation_list[:10])
             self.validation_complete = True
             
         return selected_source, selected_target
