@@ -40,7 +40,7 @@ parser.add_argument("-rev", type=int, help="The id of the revision")
 args = parser.parse_args()
 
 batch_size = [128]
-initial_lr = [5e-3]
+initial_lr = [1e-2]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
 n_filter = [16]

@@ -358,7 +358,9 @@ class JDOT():
             self.epoch_complete = False
             self.validation_complete = False
 
-            self.save_hist_and_model(hist_l, val_l)
+            if val_l.size != 0 and val_l[0][-1] >= np.all(val_l[0]):
+                # We save the model if it's the best one existing.
+                self.save_hist_and_model(hist_l, val_l)
 
     def get_batch(self, selected_source, selected_target, target = True, validation=False, all = False):
         """

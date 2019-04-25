@@ -18,6 +18,6 @@ module load cuda/9.0.176
 # Activate the py virtual environnement
 . /udd/aackaouy/myVE/bin/activate
 
-PYTHONHASHSEED=0 python3 -W ignore $SCRIPTDIR/main.py
-
+mkdir -p Logs
+python3 -u main.py -source "01" -target "08" -alpha 1e-6 -jdot "True" -rev 0 > Logs/output_0.log
 
