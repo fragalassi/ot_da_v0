@@ -12,7 +12,7 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import matplotlib
-from patches_comparaison import compare_patches
+from patches_comparaison import compare_patches, intensities
 from keras import backend as K
 from Config import create_config
 from scipy.spatial.distance import cdist
@@ -48,7 +48,7 @@ patch_shape = [16]
 overlap = [1/2]
 image_shape = [(128,128,128)]
 training_center = [["All"]]
-augmentation = [True]
+augmentation = [False]
 jdot_alpha = [args.alpha]
 bool_train_jdot = [True if args.jdot == "True" else False]
 source_center = [args.source]
@@ -98,6 +98,9 @@ for i in range(df.shape[0]): #df.shape[0]
     # data_file_opened = open_data_file(os.path.abspath("Data/generated_data/" + conf.data_set + "_data_source.h5"))
     # comp.save_patch(3, np.array([60, 20, 28]), "A", data_file_opened, 0)
     # comp.save_patch(3, np.array([44, 36, 84]), "B", data_file_opened, 0)
+
+    # comp = intensities.Compute_intensities(conf)
+    # comp.fetch_training_data_files()
     '''
     For JDOT, uncomment this part
     '''
@@ -105,11 +108,11 @@ for i in range(df.shape[0]): #df.shape[0]
     train_jd = train_jdot.Train_JDOT(conf)
     train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
-    # test = create_test.Test(conf)
-    # test.main(overwrite_data=conf.overwrite_data)
-    #
-    # eval = evaluate.Evaluate(conf)
-    # eval.main()
+    test = create_test.Test(conf)
+    test.main(overwrite_data=conf.overwrite_data)
+
+    eval = evaluate.Evaluate(conf)
+    eval.main()
 
     '''
     For normal training uncomment this part

@@ -51,6 +51,7 @@ class Config:
         self.target_center = target_center
 
         self.number_of_threads = 64
+        self.load_all_data = True  # Parameter to load all the data directly in memory. Set it to false if you don't have much ram available.
 
         self.labels=(1)
         self.n_labels=1

@@ -47,9 +47,9 @@ class Train_JDOT:
                 target_data_files.append(tuple(subject_files))
 
         if return_subject_ids:
-            return source_data_files[:2], target_data_files[:2], subject_ids_source[:2], subject_ids_target[:2]
+            return source_data_files, target_data_files, subject_ids_source, subject_ids_target
         else:
-            return source_data_files[:2], target_data_files[:2]
+            return source_data_files, target_data_files
 
     def main(self, overwrite_data=True, overwrite_model=True):
         # convert input images into an hdf5 file

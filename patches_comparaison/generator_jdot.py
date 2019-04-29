@@ -52,10 +52,11 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
     :param permute: will randomly permute the data (data must be 3D cube)
     :return: Training data generator, validation data generator, number of training steps, number of validation steps
     """
+    affine_list_target = None
     if not validation_batch_size:
         validation_batch_size = batch_size
 
-    source_x, source_y = data_generator_jdot_multi_proc(selected_source,
+    source_x, source_y, affine_list_source = data_generator_jdot_multi_proc(selected_source,
                                         source_data_file,
                                         validation=validation,
                                         batch_size=batch_size,
@@ -74,7 +75,7 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
                                         all = all,
                                         )
     if target:
-        target_x, target_y = data_generator_jdot_multi_proc(selected_target,
+        target_x, target_y, affine_list_target = data_generator_jdot_multi_proc(selected_target,
                                             target_data_file,
                                             validation=validation,
                                             batch_size=batch_size,
@@ -101,7 +102,7 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
     else:
         training_batch = (source_x, source_y)
 
-    return training_batch
+    return training_batch, affine_list_source, affine_list_target
 
 
 def get_patches_index_list(source_data_file, target_data_file, training_keys_file_source, validation_keys_file_source,
@@ -215,7 +216,7 @@ def data_generator_jdot_multi_proc(selected, data_file, validation = True, batch
     '''
     training_x_list = []
     training_y_list = []
-    training_x_list, training_y_list,  = multi_proc_loop(selected, data_file, training_x_list, training_y_list, batch_size = batch_size,
+    training_x_list, training_y_list, affine_list  = multi_proc_loop(selected, data_file, training_x_list, training_y_list, batch_size = batch_size,
                                          stopping_criterion= batch_size, number_of_threads = number_of_threads,
                                          patch_shape=patch_shape, augment=augment, augment_flip=augment_flip,
                                          augment_distortion_factor=augment_distortion_factor, skip_blank=skip_blank,
@@ -223,7 +224,7 @@ def data_generator_jdot_multi_proc(selected, data_file, validation = True, batch
 
     training_x_list, training_y_list = convert_data(training_x_list, training_y_list, n_labels=n_labels, labels=labels)
 
-    return training_x_list, training_y_list
+    return training_x_list, training_y_list, affine_list
 
 def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stopping_criterion = 64,
                     number_of_threads = 64, patch_shape = 16, augment = False, augment_flip = False,
@@ -247,6 +248,12 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
     '''
     remaining_batch = batch_size
     selected_index = []
+    affine_list = []
+    if all:
+        augment = False
+        augment_flip = False
+        augment_distortion_factor = None
+        permute = False
     while len(index_list) > 0:
         # Two verifications for the remaining samples to put in the batch.
         # We want set the number_of_threads to the number of samples remaining
@@ -254,7 +261,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
             n = number_of_threads
         else:
             n = len(index_list)
-        pool = Pool(number_of_threads)
+        pool = Pool(n)
         results = []
         for i in range(n):
             index = index_list.pop()
@@ -264,6 +271,7 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
                 affine = data_file.root.affine[index[0]]
             else:
                 affine = data_file.root.affine[index]
+            affine_list.append(affine)
             results.append(pool.apply_async(add_data_mp, args=(data, truth, affine, index, augment, augment_flip,
                                                                    augment_distortion_factor, patch_shape, skip_blank,
                                                                    permute)))
@@ -280,7 +288,42 @@ def multi_proc_loop(index_list, data_file, x_list, y_list, batch_size = 64, stop
         end = time()
         if len(x_list) == stopping_criterion or (len(index_list) == 0 and len(x_list) > 0):
             break
-    return x_list, y_list
+    return x_list, y_list, affine_list
+
+def multi_proc_augment_data(data, affine_list, index_list, number_of_threads = 64,  patch_shape = 16, augment = False, augment_flip = False,
+                    augment_distortion_factor = None, skip_blank = False, permute = False):
+    images = data[0]
+    truth = data[1]
+    x_list = []
+    y_list = []
+    i = images.shape[0]
+    while i > 0:
+        if i > number_of_threads:
+            n = number_of_threads
+        else:
+            n = i
+        pool = Pool(n)
+        results = []
+        for j in range(n):
+            image_selected = images[j]
+            truth_selected = np.squeeze(truth[j], axis=0)
+            affine = affine_list[j]
+            index = index_list[j]
+            results.append(pool.apply_async(add_data_mp, args=(image_selected, truth_selected, affine, index, augment, augment_flip,
+                                                               augment_distortion_factor, patch_shape, skip_blank,
+                                                               permute)))
+            i -= 1
+        pool.close()
+        pool.join()
+        results = [r.get() for r in results]
+
+        for h in range(len(results)):
+            x_list.append(results[h][0][0])
+            y_list.append(results[h][1][0])
+
+    x_list, y_list = convert_data(x_list, y_list)
+    return (x_list, y_list)
+
 
 def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path, overwrite):
     if not os.path.exists(path) or overwrite:

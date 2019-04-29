@@ -1,14 +1,14 @@
 from keras import backend as K
 from keras import Model
 from keras.callbacks import LambdaCallback
-from patches_comparaison.generator_jdot import get_batch_jdot,\
-    get_validation_split, create_patch_index_list, get_data_from_file, add_data_mp, get_patches_index_list
+from patches_comparaison.generator_jdot import get_batch_jdot, multi_proc_augment_data, get_patches_index_list
 from scipy.spatial.distance import cdist, cosine, euclidean, dice
 from unet3d.utils import pickle_load
 import tables
 from unet3d.prediction import run_validation_case
 import os
 import numpy as np
+from numpy import all
 import ot
 from training_testing import create_test
 from keras.models import load_model
@@ -75,6 +75,10 @@ class JDOT():
 
         self.training_data = None
         self.validation_data = None
+        self.affine_source_training = None
+        self.affine_source_validation = None
+        self.affine_target_training = None
+        self.affine_target_validation = None
 
         self.t = 0
 
@@ -92,7 +96,7 @@ class JDOT():
             Compute the loss function of the source samples.
             '''
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
-            target_loss = euclidean_dist(K.batch_flatten(self.source_truth), K.batch_flatten(prediction_target))
+            target_loss = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
 
             return source_loss + self.jdot_alpha * K.sum(self.gamma * target_loss)
         self.deep_jdot_loss = deep_jdot_loss
@@ -256,6 +260,9 @@ class JDOT():
         epoch_hist = np.empty((0, len_history))
         epoch_val = np.empty((0, len_history))
         self.get_patch_indexes()
+        if self.config.load_all_data:
+            self.load_all_data(copy(self.complete_source_training_list), copy(self.complete_target_training_list),
+                               copy(self.complete_source_validation_list), copy(self.complete_target_validation_list))
         count = 0
         for i in range(n_iteration):
             start_epoch = time.time()
@@ -286,7 +293,11 @@ class JDOT():
                 selected_source, selected_target = self.select_indices_training()
                 if len(selected_source) < self.batch_size or len(selected_target) < self.batch_size:
                     break
-                self.load_batch(selected_source, selected_target)
+                if self.config.load_all_data:
+                    self.load_training_batch_from_all_data(selected_source, selected_target)
+                else:
+                    self.load_batch(selected_source, selected_target)
+
                 intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
                 self.prediction = intermediate_output[-1] #The output segmentation map
 
@@ -298,7 +309,10 @@ class JDOT():
 
             while not self.validation_complete:
                 selected_source, selected_target = self.select_indices_validation()
-                self.load_validation_batch(selected_source, selected_target)
+                if self.config.load_all_data:
+                    self.load_validation_batch_from_all_data(selected_source, selected_target)
+                else:
+                    self.load_validation_batch(selected_source, selected_target)
                 epoch_val = self.test_on_batch(epoch_val)
 
             end_epoch = time.time()
@@ -327,6 +341,10 @@ class JDOT():
         epoch_hist = np.empty((0, len_history))
         epoch_val = np.empty((0, len_history))
         self.get_patch_indexes()
+        if self.config.load_all_data:
+            self.load_all_data(copy(self.complete_source_training_list), copy(self.complete_target_training_list),
+                               copy(self.complete_source_validation_list), copy(self.complete_target_validation_list), target=False)
+
         count = 0
 
         for i in range(n_iteration):
@@ -353,7 +371,10 @@ class JDOT():
                 selected_source, selected_target = self.select_indices_training()
                 if len(selected_source) < self.batch_size or len(selected_target) < self.batch_size:
                     break
-                self.load_batch(selected_source, selected_target, target=False)
+                if self.config.load_all_data:
+                    self.load_training_batch_from_all_data(selected_source, selected_target, target=False)
+                else:
+                    self.load_batch(selected_source, selected_target, target=False)
                 intermediate_output = [self.get_prediction()] if not self.config.depth_jdot else self.get_prediction()
                 self.prediction = intermediate_output[-1]  # The output segmentation map
 
@@ -361,7 +382,10 @@ class JDOT():
 
             while not self.validation_complete:
                 selected_source, selected_target = self.select_indices_validation()
-                self.load_validation_batch(selected_source, selected_target, target=False)
+                if self.config.load_all_data:
+                    self.load_validation_batch_from_all_data(selected_source, selected_target, target=False)
+                else:
+                    self.load_validation_batch(selected_source, selected_target, target=False)
                 epoch_val = self.test_on_batch(epoch_val)
 
             end_epoch = time.time()
@@ -378,7 +402,7 @@ class JDOT():
             self.epoch_complete = False
             self.validation_complete = False
 
-            if val_l.size != 0 and val_l[0][-1] >= np.all(val_l[0]):
+            if val_l.size != 0 and val_l[0][-1] <= np.all(val_l[0]):
                 # We save the model if it's the best one existing.
                 self.save_hist_and_model(hist_l, val_l)
 
@@ -389,7 +413,7 @@ class JDOT():
         source domain from the batch_size until the end image samples belong to the target domain.
         The image samples are of shape (number_of_modalities, patch_shape)
         """
-        batch = get_batch_jdot(
+        batch, affine_list_source, affine_list_target = get_batch_jdot(
             selected_source, selected_target,
             self.source_data,
             self.target_data,
@@ -416,7 +440,7 @@ class JDOT():
             source_center = self.config.source_center,
             target_center = self.config.target_center,
             all = all)
-        return batch
+        return batch, affine_list_source, affine_list_target
 
     def get_patch_indexes(self, target = True):
 
@@ -479,7 +503,7 @@ class JDOT():
 
     def load_batch(self, selected_source, selected_target, target = True):
         start = time.time()
-        self.train_batch = self.get_batch(selected_source, selected_target, target=target)
+        self.train_batch, _, _ = self.get_batch(selected_source, selected_target, target=target)
         end = time.time()
         t = "\rTime for loading: " + str(end - start)
         sys.stdout.write(t)
@@ -488,18 +512,10 @@ class JDOT():
             K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
             K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
 
-    def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
-        self.training_data = self.get_batch(training_source, training_target, target=target, all = True)
-        self.validation_data = self.get_batch(validation_source, validation_target, target=target, all =True)
-        print(len(self.training_data[0]))
-        print(len(self.training_data[1]))
-        print(len(self.validation_data[0]))
-        print(len(self.validation_data[1]))
-
 
     def load_validation_batch(self, selected_source, selected_target, target = True):
         start = time.time()
-        self.val_batch = self.get_batch(selected_source, selected_target, target=target)
+        self.val_batch, _, _ = self.get_batch(selected_source, selected_target, target=target)
         end = time.time()
         t = "\rTime for loading: " + str(end - start)
         sys.stdout.write(t)
@@ -507,6 +523,84 @@ class JDOT():
         if target:
             K.set_value(self.batch_source, self.val_batch[0][:self.batch_size])
             K.set_value(self.batch_target, self.val_batch[0][self.batch_size:])
+
+
+    def load_training_batch_from_all_data(self, selected_source, selected_target, target = True):
+        index_source = []
+        index_target = []
+        start = time.time()
+        for i, index in enumerate(copy(self.complete_source_training_list)):
+            for j in selected_source:
+                if index[0] == j[0] and (index[1] == j[1]).all():
+                    index_source += [i]
+        if target:
+            for i, index in enumerate(copy(self.complete_target_training_list)):
+                for j in selected_target:
+                    if index[0] == j[0] and (index[1] == j[1]).all():
+                        index_target += [i]
+        selected_index = index_source + [i + len(self.complete_source_training_list) for i in index_target]
+        self.train_batch = (np.array([self.training_data[0][i] for i in selected_index]), np.array([self.training_data[1][i] for i in selected_index]))
+        affine_list = [self.affine_source_training[i] for i in index_source]
+        affine_list += [self.affine_target_training[i] for i in index_target]
+        if target:
+            index_list = selected_source + selected_target
+        else:
+            index_list = selected_source
+        if self.config.augment:
+            self.train_batch = multi_proc_augment_data(self.train_batch, affine_list, index_list, patch_shape= self.config.patch_shape, augment=self.config.augment,
+                                    augment_flip=self.config.flip, augment_distortion_factor=self.config.distort, skip_blank=self.config.skip_blank,
+                                    permute=self.config.permute)
+        if target:
+            K.set_value(self.batch_source, self.train_batch[0][:self.batch_size])
+            K.set_value(self.batch_target, self.train_batch[0][self.batch_size:])
+
+        end = time.time()
+
+        t = "\rTime for loading: " + str(end - start)
+        sys.stdout.write(t)
+        sys.stdout.flush()
+
+    def load_validation_batch_from_all_data(self, selected_source, selected_target, target = True):
+        index_source = []
+        index_target = []
+        start = time.time()
+        for i, index in enumerate(copy(self.complete_source_validation_list)):
+            for j in selected_source:
+                if index[0] == j[0] and (index[1] == j[1]).all():
+                    index_source += [i]
+        if target:
+
+            for i, index in enumerate(copy(self.complete_target_validation_list)):
+                for j in selected_target:
+                    if index[0] == j[0] and (index[1] == j[1]).all():
+                        index_target += [i]
+        selected_index = index_source + [i + len(self.complete_source_validation_list) for i in index_target]
+        self.val_batch = (np.array([self.validation_data[0][i] for i in selected_index]), np.array([self.validation_data[1][i] for i in selected_index]))
+        affine_list = [self.affine_source_validation[i] for i in index_source]
+        affine_list += [self.affine_target_validation[i] for i in index_target]
+        if target:
+            index_list = selected_source + selected_target
+        else:
+            index_list = selected_source
+        if self.config.augment:
+            self.val_batch = multi_proc_augment_data(self.validation_batch, affine_list, index_list, patch_shape= self.config.patch_shape, augment=self.config.augment,
+                                    augment_flip=self.config.flip, augment_distortion_factor=self.config.distort, skip_blank=self.config.skip_blank,
+                                    permute=self.config.permute)
+
+        if target:
+            K.set_value(self.batch_source, self.val_batch[0][:self.batch_size])
+            K.set_value(self.batch_target, self.val_batch[0][self.batch_size:])
+
+        end = time.time()
+
+        t = "\rTime for loading: " + str(end - start)
+        sys.stdout.write(t)
+        sys.stdout.flush()
+
+
+    def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
+        self.training_data, self.affine_source_training, self.affine_target_training = self.get_batch(training_source, training_target, target=target, all = True)
+        self.validation_data, self.affine_source_validation, self.affine_target_validation = self.get_batch(validation_source, validation_target, target=target, all =True)
 
     def get_prediction(self):
         '''
