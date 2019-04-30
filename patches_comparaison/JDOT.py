@@ -413,6 +413,7 @@ class JDOT():
         source domain from the batch_size until the end image samples belong to the target domain.
         The image samples are of shape (number_of_modalities, patch_shape)
         """
+
         batch, affine_list_source, affine_list_target = get_batch_jdot(
             selected_source, selected_target,
             self.source_data,
@@ -601,7 +602,8 @@ class JDOT():
     def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
         self.training_data, self.affine_source_training, self.affine_target_training = self.get_batch(training_source, training_target, target=target, all = True)
         self.validation_data, self.affine_source_validation, self.affine_target_validation = self.get_batch(validation_source, validation_target, target=target, all =True)
-
+        print("Training data: ", len(self.training_data[0]))
+        print("Validation data: ", len(self.validation_data[0]))
     def get_prediction(self):
         '''
         Function to get the prediction of the model at a step t.

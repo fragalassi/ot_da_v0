@@ -96,6 +96,7 @@ class Config:
         self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
         self.change_validation = False
         self.overwrite_model = True
+        self.load_base_model = True
 
         self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
         #self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_source.h5")

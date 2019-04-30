@@ -86,7 +86,10 @@ class Train_JDOT:
         jd = JDOT(model, config=self.config, source_data=source_data, target_data=target_data, context_output_name=context_output_name)
         # m = jd.load_old_model(self.config.model_file)
         # print(m)
-        if not self.config.overwrite_model:
+        if self.config.load_base_model:
+            print("Loading based model")
+            jd.load_old_model(os.path.abspath("Data/saved_models/model_center_"+self.config.source_center)+".h5")
+        elif not self.config.overwrite_model:
             jd.load_old_model(self.config.model_file)
         else:
             print("Creating new model, this will overwrite your old model")
