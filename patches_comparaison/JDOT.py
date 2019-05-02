@@ -87,7 +87,7 @@ class JDOT():
         self.target_pred = K.zeros(shape=(self.batch_size, 1, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
         self.source_truth = K.zeros(shape=(self.batch_size, 1, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
 
-        def deep_jdot_loss(y_true, y_pred):
+        def deep_jdot_loss_euclidean(y_true, y_pred):
             truth_source = y_true[:self.batch_size, :]  # source true labels
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :] # target prediction
@@ -97,9 +97,28 @@ class JDOT():
             '''
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
             target_loss = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-
             return source_loss + self.jdot_alpha * K.sum(self.gamma * target_loss)
-        self.deep_jdot_loss = deep_jdot_loss
+
+        def deep_jdot_loss_dice(y_true, y_pred):
+            truth_source = y_true[:self.batch_size, :]  # source true labels
+            prediction_source = y_pred[:self.batch_size, :]  # source prediction
+            prediction_target = y_pred[self.batch_size:, :] # target prediction
+            '''
+            Compute the loss function of the source samples.
+            '''
+            source_loss = dice_coefficient_loss(truth_source, prediction_source)
+            target_loss = parwise_dice_coefficient(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+            return source_loss + self.jdot_alpha * K.sum(self.gamma * target_loss)
+
+        distance_dic = {
+            "sqeuclidean": deep_jdot_loss_euclidean,
+            "dice": deep_jdot_loss_dice,
+        }
+
+        self.deep_jdot_loss = distance_dic[self.config.jdot_distance]
+        print("Using ", self.config.jdot_distance, "distance to compute gamma")
+
+
 
         def jdot_image_loss(y_true, y_pred):
             '''
@@ -138,6 +157,16 @@ class JDOT():
             return (2. * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
         self.dice_coefficient = dice_coefficient
 
+        def parwise_dice_coefficient(y_true, y_pred, smooth=1.):
+            x = K.expand_dims(y_true, axis=-1)
+            y = y_pred
+            intersection = x * K.transpose(y)
+            intersection = K.sum(K.permute_dimensions(intersection, (0, 2, 1)), axis = -1)
+            sum = K.abs(x) + K.abs(K.transpose(y))
+            sum = K.sum(K.permute_dimensions(sum, (0, 2, 1)), axis = -1)
+            return (2 * intersection + smooth)/(sum + smooth)
+        self.pairwise_dice_coefficient = parwise_dice_coefficient
+
         def dice_coefficient_target(y_true, y_pred, smooth=1.):
             y_true_f = K.flatten(y_true[self.batch_size:, :])
             y_pred_f = K.flatten(y_pred[self.batch_size:, :])
@@ -159,15 +188,38 @@ class JDOT():
         '''
         Uncomment to check if cos_distance/euclidean_dist is computing the right values.
         '''
-        # x = np.array([[0, 1, 0], [1, 0, 1], [1, 1, 0]])
+
+        def jaccard_distance_loss(y_true, y_pred, smooth=100):
+            """
+            Jaccard = (|X & Y|)/ (|X|+ |Y| - |X & Y|)
+                    = sum(|A*B|)/(sum(|A|)+sum(|B|)-sum(|A*B|))
+
+            The jaccard distance loss is usefull for unbalanced datasets. This has been
+            shifted so it converges on 0 and is smoothed to avoid exploding or disapearing
+            gradient.
+
+            Ref: https://en.wikipedia.org/wiki/Jaccard_index
+
+            @url: https://gist.github.com/wassname/f1452b748efcbeb4cb9b1d059dce6f96
+            @author: wassname
+            """
+            # y_true = K.expand_dims(y_true, axis=-1)
+            # y_pred = K.expand_dims(y_pred, axis=-1)
+            x = K.reshape(y_true, (-1, 1))
+            y = K.reshape(y_pred, (-1, 1))
+            intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
+            sum_ = K.sum(K.abs(y_true) + K.abs(y_pred), axis=-1)
+            jac = (intersection + smooth) / (sum_ - intersection + smooth)
+            return (1 - jac) * smooth
+
+        # x = np.array([[0, 1, 0], [200, 0, 1], [1, 1, 0]])
         # y = np.array([[0, 1, 0], [0, 0, 1], [0, 1, 1]])
         # z = np.array([[2, 2, 2], [2, 2, 2], [2, 2, 2]])
-        # print(K.eval(K.constant(x)-K.constant(y)))
-        # print(K.eval(K.constant(z)*(K.constant(x) - K.constant(y))))
-        # print(dice(x[0],y[0]))
-        # print(dice(x[1], y[1]))
-        # print(dice(x[2],y[2]))
-        # print("Evaluation: \n", K.eval(dice_coefficient_loss(K.constant(x), K.constant(y))))
+        # print(1-dice(x[0],y[0]))
+        # print(1-dice(x[1], y[1]))
+        # print(1-dice(x[2],y[2]))
+        # print("Evaluation: \n", K.eval(dice_coefficient(K.constant(x), K.constant(y))))
+        # print("Evaluation pairwise: \n", K.eval(parwise_dice_coefficient(K.constant(x), K.constant(y))))
 
         def cos_distance(x,y):
             """
@@ -758,8 +810,11 @@ class JDOT():
 
         # Compute the distance between samples and between the source_truth and the target prediction.
         C0 = cdist(train_vec_source, train_vec_target, metric="sqeuclidean")
-        C1 = cdist(truth_vec_source, pred_vec_target, metric="sqeuclidean")
-
+        C1 = cdist(truth_vec_source, pred_vec_target, metric=self.config.jdot_distance)
+        # C0 = self.dice_coefficient(train_vec_source, train_vec_target)
+        # C1 = self.dice_coefficient(truth_vec_source, pred_vec_target)
+        # print("Mean C0: ", np.mean(C0))
+        # print("Mean C1: ", np.mean(C1))
         # Resulting cost metric
         C = C0+C1
         # C = C0 + C1

@@ -39,7 +39,7 @@ parser.add_argument("-jdot", type=str, help="Bool to train on JDOT")
 parser.add_argument("-rev", type=int, help="The id of the revision")
 args = parser.parse_args()
 
-batch_size = [64]
+batch_size = [110]
 initial_lr = [1e-2]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]

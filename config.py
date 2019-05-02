@@ -81,6 +81,8 @@ class Config:
         self.jdot_alpha = jdot_alpha
         self.alpha_factor = alpha_factor
         self.depth_jdot = 5 # The layer from which the computation of the OT is made (0 is the image space).
+        self.jdot_distance = "dice" #Distance used for the computation of gamma (sqeuclidean or dice)
+
         '''
         If augmentation is set to true, both flip and permutation transforms are taken into account.
         '''

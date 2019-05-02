@@ -46,6 +46,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
 
     loss_function = loss_function_d[loss_function]
     context_module_output = []
+    localization_module_output = []
     inputs = Input(input_shape)
 
     current_layer = inputs
