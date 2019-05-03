@@ -36,6 +36,8 @@ parser.add_argument("-source", type=str, help="Set the source center")
 parser.add_argument("-target", type=str, help="Set the target center")
 parser.add_argument("-alpha", type=float, help="Set JDOT alpha")
 parser.add_argument("-jdot", type=str, help="Bool to train on JDOT")
+parser.add_argument("-shape", type=str, help="Patch shape")
+parser.add_argument("-augment", type=str, help="Boolean for data augmentation")
 parser.add_argument("-rev", type=int, help="The id of the revision")
 args = parser.parse_args()
 
@@ -44,11 +46,11 @@ initial_lr = [5e-2]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
 n_filter = [16]
-patch_shape = [16]
+patch_shape = [args.shape]
 overlap = [1/2]
 image_shape = [(128,128,128)]
 training_center = [["All"]]
-augmentation = [False]
+augmentation = [True if args.augment == "True" else False]
 jdot_alpha = [args.alpha]
 bool_train_jdot = [True if args.jdot == "True" else False]
 source_center = [args.source]

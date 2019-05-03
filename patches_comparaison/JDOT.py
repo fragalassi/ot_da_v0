@@ -407,16 +407,16 @@ class JDOT():
             print("=============")
             print("Epoch:", i + 1, "/", n_iteration)
 
-            if val_l.shape[0]>25 and all(val_l[-1][0] >= x for x in val_l[-25:-1][:,0]) and count == 0:
+            if val_l.shape[0]>25 and all(val_l[-1][0] >= x for x in val_l[-24:-1][:,0]) and count == 0:
                 # We let 25 epochs run before starting to monitor the loss
                 # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
                 K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr)*self.config.learning_rate_drop)
                 print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
                 count = 25
-            elif val_l.shape[0]>25 and all(val_l[-1][0] >= x for x in val_l[-25:-1][:,0]) and count > -1:
+            elif val_l.shape[0]>25 and all(val_l[-1][0] >= x for x in val_l[-24:-1][:,0]) and count > -1:
                 count = count - 1
 
-            if val_l.shape[0]>25 and all(val_l[-1][0] >= x for x in val_l[-50:-1][:,0]):
+            if val_l.shape[0]>50 and all(val_l[-1][0] >= x for x in val_l[-49:-1][:,0]):
                 # We let 25 epochs run before starting to monitor the loss
                 print("Early stopping")
                 break
