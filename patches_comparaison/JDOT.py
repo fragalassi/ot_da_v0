@@ -98,6 +98,7 @@ class JDOT():
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
             target_loss = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
             return source_loss + self.jdot_alpha * K.sum(self.gamma * target_loss)
+        self.deep_jdot_loss_euclidean = deep_jdot_loss_euclidean
 
         def deep_jdot_loss_dice(y_true, y_pred):
             truth_source = y_true[:self.batch_size, :]  # source true labels
@@ -109,6 +110,7 @@ class JDOT():
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
             target_loss = parwise_dice_coefficient(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
             return source_loss + self.jdot_alpha * K.sum(self.gamma * target_loss)
+        self.deep_jdot_loss_dice = deep_jdot_loss_dice
 
         distance_dic = {
             "sqeuclidean": deep_jdot_loss_euclidean,
@@ -871,6 +873,8 @@ class JDOT():
         custom_objects = {'jdot_loss': self.jdot_image_loss,
                           'jdot_image_loss': self.jdot_image_loss,
                           'deep_jdot_loss': self.deep_jdot_loss,
+                          'deep_jdot_loss_dice': self.deep_jdot_loss_dice,
+                          'deep_jdot_loss_euclidean': self.deep_jdot_loss_euclidean,
                           'distance_loss': self.distance_loss,
                           'dice_coefficient': self.dice_coefficient,
                           'dice_coefficient_loss': self.dice_coefficient_loss,
