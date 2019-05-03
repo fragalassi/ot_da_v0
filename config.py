@@ -12,7 +12,7 @@ class Config:
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
                  jdot_alpha = 0.001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
-                 alpha_factor = 1):
+                 alpha_factor = 1, epochs = 1000):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -33,7 +33,7 @@ class Config:
             self.all_modalities = ["FLAIR-include"]
         else:
             self.data_set="miccai16_no_norm"
-            self.epochs = 3000  # cutoff the training after this many epochs
+            self.epochs = epochs  # cutoff the training after this many epochs
             self.all_modalities = ["FLAIR-include", "T1-include"]
 
         self.niseko = niseko
