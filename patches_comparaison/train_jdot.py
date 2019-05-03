@@ -28,7 +28,7 @@ class Train_JDOT:
                 os.path.join(os.path.dirname(__file__), "../Data/data_" + self.config.data_set, "training", "*")):
             subject_center = subject_dir[-9:-7]  # Retrieve for the MICCAI16 data-set the center of the patient
 
-            if subject_center in self.config.source_center or self.config.source_center == ["All"]:
+            if subject_center in self.config.source_center or self.config.source_center == "All":
                 subject_ids_source.append(os.path.basename(subject_dir))
                 subject_files = list()
                 for modality in self.config.training_modalities + [
@@ -37,7 +37,7 @@ class Train_JDOT:
                     os.path.join(subject_dir, modality + ".nii.gz"))  # + "/Preprocessed/ pour miccai16
                 source_data_files.append(tuple(subject_files))
 
-            if subject_center in self.config.target_center or self.config.target_center == ["All"]:
+            if subject_center in self.config.target_center or self.config.target_center == "All":
                 subject_ids_target.append(os.path.basename(subject_dir))
                 subject_files = list()
                 for modality in self.config.training_modalities + [
@@ -58,6 +58,7 @@ class Train_JDOT:
             We write two files, one with source samples and one with target samples.
             '''
             source_data_files, target_data_files, subject_ids_source, subject_ids_target = self.fetch_training_data_files(return_subject_ids=True)
+
             if not os.path.exists(self.config.source_data_file) or overwrite_data:
                 write_data_to_file(source_data_files, self.config.source_data_file, image_shape=self.config.image_shape,
                                subject_ids=subject_ids_source)
