@@ -81,6 +81,7 @@ class JDOT():
         self.affine_target_validation = None
 
         self.t = 0
+        self.count = 0
 
         self.prediction = []
 
@@ -322,20 +323,10 @@ class JDOT():
         for i in range(n_iteration):
             start_epoch = time.time()
 
-            if val_l.shape[0]>self.config.patience and all([val_l[-1][0] >= x for x in val_l[-self.config.patience:-1][:,0]]) and count == 0:
-                # We let 25 epochs run before starting to monitor the loss
-                # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
-                K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr)*self.config.learning_rate_drop)
-                print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
-                count = self.config.patience
-            if count > 0:
-                print("Count: ", count)
-                count = count - 1
-
-            if val_l.shape[0]>self.config.early_stop and all([val_l[-1][0] >= x for x in val_l[-self.config.early_stop:-1][:,0]]):
-                # We let 25 epochs run before starting to monitor the loss
-                print("Early stopping")
-                break
+            if self.config.callback:
+                early_stop = self.callback(val_l)
+                if early_stop:
+                    break
 
             print("=============")
             print("Epoch:", i+1, "/", n_iteration)
@@ -403,24 +394,13 @@ class JDOT():
             self.load_all_data(copy(self.complete_source_training_list), copy(self.complete_target_training_list),
                                copy(self.complete_source_validation_list), copy(self.complete_target_validation_list), target=False)
 
-        count = 0
-
         for i in range(n_iteration):
             start_epoch = time.time()
 
-            if val_l.shape[0]>self.config.patience and all([val_l[-1][0] >= x for x in val_l[-self.config.patience:-1][:,0]]) and count == 0:
-                # We let 25 epochs run before starting to monitor the loss
-                # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
-                K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr)*self.config.learning_rate_drop)
-                print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
-                count = self.config.patience
-            if count > 0:
-                count = count - 1
-
-            if val_l.shape[0]>self.config.early_stop and all([val_l[-1][0] >= x for x in val_l[-self.config.early_stop:-1][:,0]]):
-                # We let 25 epochs run before starting to monitor the loss
-                print("Early stopping")
-                break
+            if self.config.callback:
+                early_stop = self.callback(val_l)
+                if early_stop:
+                    break
 
             print("=============")
             print("Epoch:", i + 1, "/", n_iteration)
@@ -463,6 +443,25 @@ class JDOT():
             if val_l.size != 0 and val_l[0][-1] <= np.all(val_l[0]):
                 # We save the model if it's the best one existing.
                 self.save_hist_and_model(hist_l, val_l)
+
+    def callback(self, val_l):
+        if val_l.shape[0] > self.config.patience and all(
+                [val_l[-1][0] >= x for x in val_l[-self.config.patience:-1][:, 0]]) and self.count == 0:
+            # We let 25 epochs run before starting to monitor the loss
+            # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
+            K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr) * self.config.learning_rate_drop)
+            print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
+            self.count = self.config.patience
+        if self.count > 0:
+            self.count = self.count - 1
+
+        if val_l.shape[0] > self.config.early_stop and all(
+                [val_l[-1][0] >= x for x in val_l[-self.config.early_stop:-1][:, 0]]):
+            # We let 25 epochs run before starting to monitor the loss
+            print("Early stopping")
+            return True
+        else:
+            return False
 
     def get_batch(self, selected_source, selected_target, target = True, validation=False, all = False):
         """

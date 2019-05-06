@@ -12,7 +12,7 @@ class Config:
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
                  jdot_alpha = 0.001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
-                 alpha_factor = 1, epochs = 1000):
+                 alpha_factor = 1, epochs = 1000, callback = False):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -71,6 +71,7 @@ class Config:
         self.loss_function = loss_function
         self.optimizer = Adam
 
+        self.callback = callback
         self.patience = 5  # learning rate will be reduced after this many epochs if the validation loss is not improving
         self.early_stop = 20  # training will be stopped after this many epochs without the validation loss improving
         self.initial_learning_rate = float(initial_lr)

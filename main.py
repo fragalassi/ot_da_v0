@@ -40,6 +40,7 @@ parser.add_argument("-shape", type=str, help="Patch shape")
 parser.add_argument("-augment", type=str, help="Boolean for data augmentation")
 parser.add_argument("-rev", type=int, help="The id of the revision")
 parser.add_argument("-epochs", type=int, help="Number of epochs")
+parser.add_argument("-callback", type=str, help="Boolean for the usage of callback")
 args = parser.parse_args()
 
 batch_size = [110]
@@ -57,12 +58,13 @@ bool_train_jdot = [True if args.jdot == "True" else False]
 source_center = [args.source]
 target_center = [args.target]
 epochs = [args.epochs]
+callback = [True if args.callback == "True" else False]
 alpha_factor = [1]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
-                                      bool_train_jdot, alpha_factor, epochs,
+                                      bool_train_jdot, alpha_factor, epochs, callback,
                                       n_repeat=1)
 
 with pd.option_context("display.max_rows", None, "display.max_columns", None):
@@ -90,6 +92,7 @@ for i in range(df.shape[0]): #df.shape[0]
                          bool_train_jdot = df["Train JDOT"].iloc[i],
                          alpha_factor = df["Alpha factor"].iloc[i],
                          epochs = df["Epochs"].iloc[i],
+                         callback = df["Callback"].iloc[i],
                          niseko=True, shortcut=True)
 
     '''

@@ -73,7 +73,7 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
 def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[],
                        n_filter=[], patch_shape = [], overlap = [], training_center = [],
                        image_shape = [], augmentation = [], jdot_alpha = [],
-                       source_center=[], target_center=[], train_jdot = [], alpha_factor = [], epochs = [],
+                       source_center=[], target_center=[], train_jdot = [], alpha_factor = [], epochs = [], callback = [],
                        n_repeat = 1):
     '''
     Create configuration from the list.
@@ -99,11 +99,11 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
                                     depth*n_repeat, n_filter*n_repeat, patch_shape*n_repeat,
                                     overlap*n_repeat, training_center*n_repeat, image_shape*n_repeat,
                                     augmentation*n_repeat, jdot_alpha*n_repeat, source_center*n_repeat, target_center*n_repeat,
-                                    train_jdot*n_repeat, alpha_factor*n_repeat, epochs*n_repeat], dtype=object)).T
+                                    train_jdot*n_repeat, alpha_factor*n_repeat, epochs*n_repeat, callback*n_repeat], dtype=object)).T
         df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth",
                       "Number of filters", "Patch shape", "Overlap", "Training centers",
                       "Image shape", "Augmentation", "JDOT Alpha", "Source center", "Target center",
-                      "Train JDOT", "Alpha factor", "Epochs"]
+                      "Train JDOT", "Alpha factor", "Epochs", "Callback"]
     save_path = os.path.abspath("Config/")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
