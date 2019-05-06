@@ -321,8 +321,6 @@ class JDOT():
         count = 0
         for i in range(n_iteration):
             start_epoch = time.time()
-            print("=============")
-            print("Epoch:", i+1, "/", n_iteration)
 
             if val_l.shape[0]>self.config.patience and all([val_l[-1][0] >= x for x in val_l[-self.config.patience:-1][:,0]]) and count == 0:
                 # We let 25 epochs run before starting to monitor the loss
@@ -330,13 +328,18 @@ class JDOT():
                 K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr)*self.config.learning_rate_drop)
                 print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
                 count = self.config.patience
-            elif val_l.shape[0]>self.config.patience and all([val_l[-1][0] >= x for x in val_l[-self.config.patience:-1][:,0]]) and count > -1:
+            if count > 0:
+                print("Count: ", count)
                 count = count - 1
 
             if val_l.shape[0]>self.config.early_stop and all([val_l[-1][0] >= x for x in val_l[-self.config.early_stop:-1][:,0]]):
                 # We let 25 epochs run before starting to monitor the loss
                 print("Early stopping")
                 break
+
+            print("=============")
+            print("Epoch:", i+1, "/", n_iteration)
+
 
 
             if i%20 == 0 and i !=0:
@@ -404,8 +407,6 @@ class JDOT():
 
         for i in range(n_iteration):
             start_epoch = time.time()
-            print("=============")
-            print("Epoch:", i + 1, "/", n_iteration)
 
             if val_l.shape[0]>self.config.patience and all([val_l[-1][0] >= x for x in val_l[-self.config.patience:-1][:,0]]) and count == 0:
                 # We let 25 epochs run before starting to monitor the loss
@@ -413,7 +414,7 @@ class JDOT():
                 K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr)*self.config.learning_rate_drop)
                 print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
                 count = self.config.patience
-            elif val_l.shape[0]>self.config.patience and all([val_l[-1][0] >= x for x in val_l[-self.config.patience:-1][:,0]]) and count > -1:
+            if count > 0:
                 count = count - 1
 
             if val_l.shape[0]>self.config.early_stop and all([val_l[-1][0] >= x for x in val_l[-self.config.early_stop:-1][:,0]]):
@@ -421,7 +422,8 @@ class JDOT():
                 print("Early stopping")
                 break
 
-
+            print("=============")
+            print("Epoch:", i + 1, "/", n_iteration)
 
             while not self.epoch_complete:
                 selected_source, selected_target = self.select_indices_training()
