@@ -71,8 +71,8 @@ class Config:
         self.loss_function = loss_function
         self.optimizer = Adam
 
-        self.patience = 15  # learning rate will be reduced after this many epochs if the validation loss is not improving
-        self.early_stop = 100  # training will be stopped after this many epochs without the validation loss improving
+        self.patience = 5  # learning rate will be reduced after this many epochs if the validation loss is not improving
+        self.early_stop = 20  # training will be stopped after this many epochs without the validation loss improving
         self.initial_learning_rate = float(initial_lr)
         self.learning_rate_drop = 0.5  # factor by which the learning rate will be reduced
         self.validation_split = 0.8  # portion of the data that will be used for training
