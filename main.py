@@ -44,7 +44,7 @@ parser.add_argument("-callback", type=str, help="Boolean for the usage of callba
 args = parser.parse_args()
 
 batch_size = [110]
-initial_lr = [5e-2]
+initial_lr = [5e-6]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
 n_filter = [16]
