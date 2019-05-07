@@ -446,7 +446,7 @@ class JDOT():
 
     def callback(self, val_l):
         if val_l.shape[0] > self.config.patience + 2 and all(
-                [val_l[-(x+2)][0] <= val_l[-(x+1)][0] for x in range(self.config.patience)]) and self.count == 0:
+                [val_l[-(x+2)][0] <= val_l[-(x+1)][0]+0.005 for x in range(self.config.patience)]) and self.count == 0:
             # We let 25 epochs run before starting to monitor the loss
             # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
             K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr) * self.config.learning_rate_drop)
