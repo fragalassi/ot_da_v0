@@ -40,11 +40,12 @@ parser.add_argument("-shape", type=str, help="Patch shape")
 parser.add_argument("-augment", type=str, help="Boolean for data augmentation")
 parser.add_argument("-rev", type=int, help="The id of the revision")
 parser.add_argument("-epochs", type=int, help="Number of epochs")
+parser.add_argument("-lr", type=float, help="Set the initial lr")
 parser.add_argument("-callback", type=str, help="Boolean for the usage of callback")
 args = parser.parse_args()
 
 batch_size = [110]
-initial_lr = [5e-6]
+initial_lr = [args.lr]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
 n_filter = [16]

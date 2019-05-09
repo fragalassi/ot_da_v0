@@ -1,75 +1,60 @@
-python3 -u main.py -source '01' -target '07' -alpha 6.06 -epochs 20 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 0 > Logs/output_0.log 
-python3 -u main.py -source '01' -target '07' -alpha 12.93 -epochs 31 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 1 > Logs/output_1.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.14 -epochs 56 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 2 > Logs/output_2.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.95 -epochs 51 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 3 > Logs/output_3.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.1 -epochs 77 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 4 > Logs/output_4.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.76 -epochs 79 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 5 > Logs/output_5.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.4 -epochs 11 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 6 > Logs/output_6.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.89 -epochs 16 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 7 > Logs/output_7.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.48 -epochs 38 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 8 > Logs/output_8.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.56 -epochs 25 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 9 > Logs/output_9.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.51 -epochs 23 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 10 > Logs/output_10.log 
-python3 -u main.py -source '01' -target '07' -alpha 11.13 -epochs 29 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 11 > Logs/output_11.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.67 -epochs 36 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 12 > Logs/output_12.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.99 -epochs 311 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 13 > Logs/output_13.log 
-python3 -u main.py -source '01' -target '07' -alpha 12.72 -epochs 64 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 14 > Logs/output_14.log 
-python3 -u main.py -source '01' -target '07' -alpha 11.59 -epochs 81 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 15 > Logs/output_15.log 
-python3 -u main.py -source '01' -target '07' -alpha 19.68 -epochs 90 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 16 > Logs/output_16.log 
-python3 -u main.py -source '01' -target '07' -alpha 14.55 -epochs 199 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 17 > Logs/output_17.log 
-python3 -u main.py -source '01' -target '07' -alpha 8.79 -epochs 32 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 18 > Logs/output_18.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.8 -epochs 113 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 19 > Logs/output_19.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.57 -epochs 116 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 20 > Logs/output_20.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.13 -epochs 13 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 21 > Logs/output_21.log 
-python3 -u main.py -source '01' -target '07' -alpha 9.1 -epochs 19 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 22 > Logs/output_22.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.88 -epochs 38 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 23 > Logs/output_23.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.68 -epochs 44 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 24 > Logs/output_24.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.19 -epochs 42 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 25 > Logs/output_25.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.65 -epochs 101 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 26 > Logs/output_26.log 
-python3 -u main.py -source '01' -target '07' -alpha 6.7 -epochs 75 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 27 > Logs/output_27.log 
-python3 -u main.py -source '01' -target '07' -alpha 9.0 -epochs 174 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 28 > Logs/output_28.log 
-python3 -u main.py -source '01' -target '07' -alpha 6.32 -epochs 33 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 29 > Logs/output_29.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.8 -epochs 45 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 30 > Logs/output_30.log 
-python3 -u main.py -source '01' -target '07' -alpha 6.17 -epochs 25 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 31 > Logs/output_31.log 
-python3 -u main.py -source '01' -target '07' -alpha 33.14 -epochs 92 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 32 > Logs/output_32.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.23 -epochs 66 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 33 > Logs/output_33.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.87 -epochs 97 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 34 > Logs/output_34.log 
-python3 -u main.py -source '01' -target '07' -alpha 15.93 -epochs 36 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 35 > Logs/output_35.log 
-python3 -u main.py -source '01' -target '07' -alpha 6.54 -epochs 73 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 36 > Logs/output_36.log 
-python3 -u main.py -source '01' -target '07' -alpha 7.52 -epochs 14 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 37 > Logs/output_37.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.1 -epochs 17 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 38 > Logs/output_38.log 
-python3 -u main.py -source '01' -target '07' -alpha 11.96 -epochs 95 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 39 > Logs/output_39.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.23 -epochs 71 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 40 > Logs/output_40.log 
-python3 -u main.py -source '01' -target '07' -alpha 9.59 -epochs 58 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 41 > Logs/output_41.log 
-python3 -u main.py -source '01' -target '07' -alpha 10.15 -epochs 120 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 42 > Logs/output_42.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.87 -epochs 15 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 43 > Logs/output_43.log 
-python3 -u main.py -source '01' -target '07' -alpha 8.23 -epochs 52 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 44 > Logs/output_44.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.29 -epochs 47 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 45 > Logs/output_45.log 
-python3 -u main.py -source '01' -target '07' -alpha 17.14 -epochs 54 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 46 > Logs/output_46.log 
-python3 -u main.py -source '01' -target '07' -alpha 6.95 -epochs 49 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 47 > Logs/output_47.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.31 -epochs 60 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 48 > Logs/output_48.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.87 -epochs 106 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 49 > Logs/output_49.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.2 -epochs 143 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 50 > Logs/output_50.log 
-python3 -u main.py -source '01' -target '07' -alpha 10.7 -epochs 142 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 51 > Logs/output_51.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.45 -epochs 70 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 52 > Logs/output_52.log 
-python3 -u main.py -source '01' -target '07' -alpha 7.2 -epochs 21 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 53 > Logs/output_53.log 
-python3 -u main.py -source '01' -target '07' -alpha 9.7 -epochs 40 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 54 > Logs/output_54.log 
-python3 -u main.py -source '01' -target '07' -alpha 6.84 -epochs 156 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 55 > Logs/output_55.log 
-python3 -u main.py -source '01' -target '07' -alpha 10.32 -epochs 67 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 56 > Logs/output_56.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.67 -epochs 85 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 57 > Logs/output_57.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.47 -epochs 62 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 58 > Logs/output_58.log 
-python3 -u main.py -source '01' -target '07' -alpha 7.77 -epochs 55 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 59 > Logs/output_59.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.65 -epochs 27 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 60 > Logs/output_60.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.95 -epochs 109 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 61 > Logs/output_61.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.36 -epochs 87 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 62 > Logs/output_62.log 
-python3 -u main.py -source '01' -target '07' -alpha 2.3 -epochs 28 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 63 > Logs/output_63.log 
-python3 -u main.py -source '01' -target '07' -alpha 13.92 -epochs 48 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 64 > Logs/output_64.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.54 -epochs 30 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 65 > Logs/output_65.log 
-python3 -u main.py -source '01' -target '07' -alpha 5.23 -epochs 12 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 66 > Logs/output_66.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.05 -epochs 41 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 67 > Logs/output_67.log 
-python3 -u main.py -source '01' -target '07' -alpha 4.36 -epochs 20 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 68 > Logs/output_68.log 
-python3 -u main.py -source '01' -target '07' -alpha 7.32 -epochs 162 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 69 > Logs/output_69.log 
-python3 -u main.py -source '01' -target '07' -alpha 7.62 -epochs 35 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 70 > Logs/output_70.log 
-python3 -u main.py -source '01' -target '07' -alpha 7.97 -epochs 220 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 71 > Logs/output_71.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.35 -epochs 24 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 72 > Logs/output_72.log 
-python3 -u main.py -source '01' -target '07' -alpha 8.39 -epochs 136 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 73 > Logs/output_73.log 
-python3 -u main.py -source '01' -target '07' -alpha 3.7 -epochs 128 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 74 > Logs/output_74.log 
+python3 -u main.py -source '01' -target '07' -alpha 7.13 -epochs 23 -lr 3.867519508259416e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 0 > Logs/output_0.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.75 -epochs 17 -lr 3.504883087042516e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 1 > Logs/output_1.log 
+python3 -u main.py -source '01' -target '07' -alpha 8.52 -epochs 18 -lr 2.5090989719995484e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 2 > Logs/output_2.log 
+python3 -u main.py -source '01' -target '07' -alpha 6.47 -epochs 49 -lr 3.3217983233981733e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 3 > Logs/output_3.log 
+python3 -u main.py -source '01' -target '07' -alpha 5.96 -epochs 59 -lr 2.9125832601945683e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 4 > Logs/output_4.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.23 -epochs 62 -lr 6.607153433758144e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 5 > Logs/output_5.log 
+python3 -u main.py -source '01' -target '07' -alpha 29.52 -epochs 31 -lr 4.7069198300886335e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 6 > Logs/output_6.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.42 -epochs 27 -lr 1.2248935692639405e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 7 > Logs/output_7.log 
+python3 -u main.py -source '01' -target '07' -alpha 12.93 -epochs 114 -lr 3.216774868476409e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 8 > Logs/output_8.log 
+python3 -u main.py -source '01' -target '07' -alpha 9.87 -epochs 89 -lr 1.0861254378580708e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 9 > Logs/output_9.log 
+python3 -u main.py -source '01' -target '07' -alpha 10.69 -epochs 124 -lr 8.415772326601552e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 10 > Logs/output_10.log 
+python3 -u main.py -source '01' -target '07' -alpha 5.87 -epochs 38 -lr 2.5309880143330075e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 11 > Logs/output_11.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.75 -epochs 51 -lr 2.2300783256436664e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 12 > Logs/output_12.log 
+python3 -u main.py -source '01' -target '07' -alpha 15.52 -epochs 171 -lr 1.6546723068266099e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 13 > Logs/output_13.log 
+python3 -u main.py -source '01' -target '07' -alpha 7.55 -epochs 57 -lr 3.4709004805593926e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 14 > Logs/output_14.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.73 -epochs 40 -lr 2.4811339738664757e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 15 > Logs/output_15.log 
+python3 -u main.py -source '01' -target '07' -alpha 11.38 -epochs 15 -lr 1.524966183720324e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 16 > Logs/output_16.log 
+python3 -u main.py -source '01' -target '07' -alpha 13.57 -epochs 29 -lr 1.5920954239435202e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 17 > Logs/output_17.log 
+python3 -u main.py -source '01' -target '07' -alpha 5.1 -epochs 111 -lr 2.338901950816891e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 18 > Logs/output_18.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.38 -epochs 77 -lr 1.103576535212428e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 19 > Logs/output_19.log 
+python3 -u main.py -source '01' -target '07' -alpha 5.67 -epochs 105 -lr 3.3347512928303872e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 20 > Logs/output_20.log 
+python3 -u main.py -source '01' -target '07' -alpha 5.48 -epochs 20 -lr 2.199365228737186e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 21 > Logs/output_21.log 
+python3 -u main.py -source '01' -target '07' -alpha 8.13 -epochs 74 -lr 1.8643184384145306e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 22 > Logs/output_22.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.28 -epochs 44 -lr 3.651223896878306e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 23 > Logs/output_23.log 
+python3 -u main.py -source '01' -target '07' -alpha 7.24 -epochs 12 -lr 2.3086568684163784e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 24 > Logs/output_24.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.26 -epochs 284 -lr 1.348043821391829e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 25 > Logs/output_25.log 
+python3 -u main.py -source '01' -target '07' -alpha 5.27 -epochs 14 -lr 2.1937377635699665e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 26 > Logs/output_26.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.56 -epochs 65 -lr 4.8439048901755815e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 27 > Logs/output_27.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.36 -epochs 21 -lr 3.362558020028966e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 28 > Logs/output_28.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.15 -epochs 79 -lr 4.8693061824044725e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 29 > Logs/output_29.log 
+python3 -u main.py -source '01' -target '07' -alpha 6.08 -epochs 127 -lr 1.1736369842783552e-08 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 30 > Logs/output_30.log 
+python3 -u main.py -source '01' -target '07' -alpha 8.71 -epochs 25 -lr 1.1183208112167936e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 31 > Logs/output_31.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.44 -epochs 24 -lr 6.332680745956022e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 32 > Logs/output_32.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.59 -epochs 70 -lr 3.296470826353789e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 33 > Logs/output_33.log 
+python3 -u main.py -source '01' -target '07' -alpha 14.35 -epochs 53 -lr 2.265924388533009e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 34 > Logs/output_34.log 
+python3 -u main.py -source '01' -target '07' -alpha 18.6 -epochs 37 -lr 1.380183844295496e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 35 > Logs/output_35.log 
+python3 -u main.py -source '01' -target '07' -alpha 6.35 -epochs 34 -lr 8.685365556006273e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 36 > Logs/output_36.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.03 -epochs 213 -lr 2.9424652568131126e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 37 > Logs/output_37.log 
+python3 -u main.py -source '01' -target '07' -alpha 11.18 -epochs 21 -lr 3.5068691559055187e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 38 > Logs/output_38.log 
+python3 -u main.py -source '01' -target '07' -alpha 12.09 -epochs 140 -lr 3.079612249684478e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 39 > Logs/output_39.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.9 -epochs 195 -lr 3.360568733112002e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 40 > Logs/output_40.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.02 -epochs 68 -lr 1.1816270242497841e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 41 > Logs/output_41.log 
+python3 -u main.py -source '01' -target '07' -alpha 6.75 -epochs 34 -lr 2.2344784348276557e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 42 > Logs/output_42.log 
+python3 -u main.py -source '01' -target '07' -alpha 6.87 -epochs 85 -lr 2.674207529438225e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 43 > Logs/output_43.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.49 -epochs 45 -lr 4.169223873892797e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 44 > Logs/output_44.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.77 -epochs 47 -lr 1.0068399740760443e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 45 > Logs/output_45.log 
+python3 -u main.py -source '01' -target '07' -alpha 4.88 -epochs 138 -lr 1.4529450119545886e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 46 > Logs/output_46.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.14 -epochs 150 -lr 4.240828249771517e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 47 > Logs/output_47.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.88 -epochs 84 -lr 4.853340843185833e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 48 > Logs/output_48.log 
+python3 -u main.py -source '01' -target '07' -alpha 7.68 -epochs 32 -lr 4.6778677306301393e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 49 > Logs/output_49.log 
+python3 -u main.py -source '01' -target '07' -alpha 3.93 -epochs 55 -lr 3.1851018702736344e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 50 > Logs/output_50.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.65 -epochs 72 -lr 2.647990924198068e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 51 > Logs/output_51.log 
+python3 -u main.py -source '01' -target '07' -alpha 5.24 -epochs 94 -lr 1.6686778177523344e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 52 > Logs/output_52.log 
+python3 -u main.py -source '01' -target '07' -alpha 9.98 -epochs 40 -lr 2.797726800737407e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 53 > Logs/output_53.log 
+python3 -u main.py -source '01' -target '07' -alpha 8.97 -epochs 60 -lr 2.0001224524470198e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 54 > Logs/output_54.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.53 -epochs 28 -lr 4.465697875907611e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 55 > Logs/output_55.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.02 -epochs 43 -lr 3.258372477006241e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 56 > Logs/output_56.log 
+python3 -u main.py -source '01' -target '07' -alpha 7.96 -epochs 13 -lr 3.936905037857682e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 57 > Logs/output_57.log 
+python3 -u main.py -source '01' -target '07' -alpha 2.37 -epochs 101 -lr 6.336904075214812e-07 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 58 > Logs/output_58.log 
+python3 -u main.py -source '01' -target '07' -alpha 9.47 -epochs 98 -lr 4.361587610914009e-06 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev 59 > Logs/output_59.log 

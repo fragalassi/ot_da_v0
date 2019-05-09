@@ -3,26 +3,30 @@ import pandas as pd
 import numpy as np
 from scipy.stats.distributions import gamma
 import matplotlib.pyplot as plt
+import random
 
 bound_alpha = [0.01, 20]
 bound_epochs = [10, 500]
+bound_lr = [5e-10, 5e-5]
 
-
-al = pyDOE.lhs(2, samples=75)
+al = pyDOE.lhs(2, criterion="maximin", samples=60)
 means = [0.1, 0.0001]
 stds = [0.2, 0.1]
 
 for i in range(2):
     al[:, i] = gamma(a = 1.2, loc = means[i], scale = stds[i]).ppf(al[:, i])
 
+
 epochs = []
 alpha = []
-
+lr = []
 
 for exp in al:
     alpha += [(bound_alpha[1] - bound_alpha[0])* exp[0] + bound_alpha[0]]
     epochs += [round((bound_epochs[1] - bound_epochs[0])* exp[1] + bound_epochs[0])]
 
+for i in range(len(al)):
+    lr += [random.uniform(5e-5, 5e-1)/1e5]
 
 plt.hist(alpha)
 plt.show()
@@ -31,15 +35,18 @@ plt.close()
 plt.hist(epochs)
 plt.show()
 
+plt.hist(lr)
+plt.show()
+
 file = open("call.sh", "w")
 file.truncate(0)
 
 for i in range(len(alpha)):
-    file.write("python3 -u main.py -source '01' -target '07' -alpha "+str(round(alpha[i],2))+" -epochs "+str(int(epochs[i]))+" -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev "+str(i)+" > Logs/output_"+str(i)+".log \n")
+    file.write("python3 -u main.py -source '01' -target '07' -alpha "+str(round(alpha[i],2))+" -epochs "+str(int(epochs[i]))+" -lr "+str(lr[i])+" -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev "+str(i)+" > Logs/output_"+str(i)+".log \n")
 
 file.close()
 
-df = pd.DataFrame([alpha, epochs])
+df = pd.DataFrame([alpha, epochs, lr])
 df = df.transpose()
-df.columns = ["Alpha", "Epochs"]
+df.columns = ["Alpha", "Epochs", "Learning Rate"]
 df.to_csv("./Config/exp.csv", header=True)
