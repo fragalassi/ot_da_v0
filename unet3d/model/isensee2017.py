@@ -45,8 +45,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     }
 
     loss_function = loss_function_d[loss_function]
-    context_module_output = []
-    localization_module_output = []
+    output = []
     inputs = Input(input_shape)
 
     current_layer = inputs
@@ -63,7 +62,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
 
         context_output_layer, context_module_name = create_context_module(in_conv, n_level_filters, dropout_rate=dropout_rate)
 
-        context_module_output += [re.findall("[^\/]*",context_module_name)[0]]
+        output += [re.findall("[^\/]*",context_module_name)[0]]
 
         summation_layer = Add()([in_conv, context_output_layer])
         level_output_layers.append(summation_layer)
@@ -71,7 +70,8 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
 
     segmentation_layers = list()
     for level_number in range(depth - 2, -1, -1):
-        up_sampling = create_up_sampling_module(current_layer, level_filters[level_number])
+        up_sampling, up_sampling_name = create_up_sampling_module(current_layer, level_filters[level_number])
+        output += [re.findall("[^\/]*", up_sampling_name)[0]]
         if shortcut:
             concatenation_layer = concatenate([level_output_layers[level_number], up_sampling], axis=1)
             localization_output = create_localization_module(concatenation_layer, level_filters[level_number])
@@ -97,7 +97,7 @@ def isensee2017_model(input_shape=(2, 200, 200, 200), n_base_filters=16, depth=5
     model = Model(inputs=inputs, outputs=activation_block)
     if compile:
         model.compile(optimizer=optimizer(lr=initial_learning_rate), loss=loss_function, metrics=[dice_coef])
-    return model, context_module_output
+    return model, output
 
 
 def create_localization_module(input_layer, n_filters):
@@ -109,7 +109,7 @@ def create_localization_module(input_layer, n_filters):
 def create_up_sampling_module(input_layer, n_filters, size=(2, 2, 2)):
     up_sample = UpSampling3D(size=size)(input_layer)
     convolution = create_convolution_block(up_sample, n_filters)
-    return convolution
+    return convolution, convolution.name
 
 
 def create_context_module(input_layer, n_level_filters, dropout_rate=0.3, data_format="channels_first"):

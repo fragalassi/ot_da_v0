@@ -42,9 +42,12 @@ parser.add_argument("-rev", type=int, help="The id of the revision")
 parser.add_argument("-epochs", type=int, help="Number of epochs")
 parser.add_argument("-lr", type=float, help="Set the initial lr")
 parser.add_argument("-callback", type=str, help="Boolean for the usage of callback")
+parser.add_argument("-dist", type=str, help="Distance used to compute the Optimal Transport. Can be sqeuclidean or dice.")
+parser.add_argument("-OT_depth", type=int, help="Depth to compute the OT on. 5 is the most compact. 9 is the deepest.")
+
 args = parser.parse_args()
 
-batch_size = [110]
+batch_size = [64]
 initial_lr = [args.lr]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
@@ -61,11 +64,13 @@ target_center = [args.target]
 epochs = [args.epochs]
 callback = [True if args.callback == "True" else False]
 alpha_factor = [1]
+distance = [args.dist]
+OT_depth = [args.OT_depth]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
-                                      bool_train_jdot, alpha_factor, epochs, callback,
+                                      bool_train_jdot, alpha_factor, epochs, callback, distance, OT_depth,
                                       n_repeat=1)
 
 with pd.option_context("display.max_rows", None, "display.max_columns", None):
@@ -94,6 +99,8 @@ for i in range(df.shape[0]): #df.shape[0]
                          alpha_factor = df["Alpha factor"].iloc[i],
                          epochs = df["Epochs"].iloc[i],
                          callback = df["Callback"].iloc[i],
+                         distance = df["Distance"].iloc[i],
+                         OT_depth = df["OT Depth"].iloc[i],
                          niseko=True, shortcut=True)
 
     '''

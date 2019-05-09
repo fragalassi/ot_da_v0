@@ -12,7 +12,7 @@ class Config:
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
                  jdot_alpha = 0.001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
-                 alpha_factor = 1, epochs = 1000, callback = False):
+                 alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -81,8 +81,8 @@ class Config:
         self.train_jdot = bool_train_jdot
         self.jdot_alpha = jdot_alpha
         self.alpha_factor = alpha_factor
-        self.depth_jdot = 5 # The layer from which the computation of the OT is made (0 is the image space).
-        self.jdot_distance = "sqeuclidean" #Distance used for the computation of gamma (sqeuclidean or dice)
+        self.depth_jdot = OT_depth # 5 is the middle layer (with the smallest representation) 9 is the deepest layer
+        self.jdot_distance = distance #Distance used for the computation of gamma (sqeuclidean or dice)
 
         '''
         If augmentation is set to true, both flip and permutation transforms are taken into account.

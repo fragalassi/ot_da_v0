@@ -88,7 +88,7 @@ class Train_JDOT:
         # m = jd.load_old_model(self.config.model_file)
         # print(m)
         if self.config.load_base_model:
-            print("Loading based model")
+            print("Loading trained model")
             jd.load_old_model(os.path.abspath("Data/saved_models/model_center_"+self.config.source_center)+".h5")
         elif not self.config.overwrite_model:
             jd.load_old_model(self.config.model_file)
