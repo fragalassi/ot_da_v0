@@ -657,6 +657,7 @@ class JDOT():
 
 
     def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
+
         start = time.time()
         print("Loading training data: \n")
         self.training_data, self.affine_source_training, self.affine_target_training = self.get_batch(training_source, training_target, target=target, all = True)
@@ -665,6 +666,7 @@ class JDOT():
         print("Training data: ", len(self.training_data[0]))
         print("Validation data: ", len(self.validation_data[0]))
         end = time.time()
+
         hour, minute, seconds = self.compute_time(end - start)
         print("Time for evaluation: ", hour, "hour(s)", minute, "minute(s)", seconds, "second(s)")
 

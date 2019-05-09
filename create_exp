@@ -1,4 +1,5 @@
 import pyDOE
+import pandas as pd
 import numpy as np
 from scipy.stats.distributions import gamma
 import matplotlib.pyplot as plt
@@ -38,3 +39,7 @@ for i in range(len(alpha)):
 
 file.close()
 
+df = pd.DataFrame([alpha, epochs])
+df = df.transpose()
+df.columns = ["Alpha", "Epochs"]
+df.to_csv("./Config/exp.csv", header=True)
