@@ -1,0 +1,40 @@
+import pyDOE
+import numpy as np
+from scipy.stats.distributions import gamma
+import matplotlib.pyplot as plt
+
+bound_alpha = [0.01, 20]
+bound_epochs = [10, 500]
+
+
+al = pyDOE.lhs(2, samples=75)
+means = [0.1, 0.0001]
+stds = [0.2, 0.1]
+
+for i in range(2):
+    al[:, i] = gamma(a = 1.2, loc = means[i], scale = stds[i]).ppf(al[:, i])
+
+epochs = []
+alpha = []
+
+
+for exp in al:
+    alpha += [(bound_alpha[1] - bound_alpha[0])* exp[0] + bound_alpha[0]]
+    epochs += [round((bound_epochs[1] - bound_epochs[0])* exp[1] + bound_epochs[0])]
+
+
+plt.hist(alpha)
+plt.show()
+plt.close()
+
+plt.hist(epochs)
+plt.show()
+
+file = open("call.sh", "w")
+file.truncate(0)
+
+for i in range(len(alpha)):
+    file.write("python3 -u main.py -source '01' -target '07' -alpha "+str(round(alpha[i],2))+" -epochs "+str(int(epochs[i]))+" -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev "+str(i)+" > Logs/output_"+str(i)+".log \n")
+
+file.close()
+

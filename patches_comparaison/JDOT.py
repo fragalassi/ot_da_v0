@@ -657,10 +657,17 @@ class JDOT():
 
 
     def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
+        start = time.time()
+        print("Loading training data: \n")
         self.training_data, self.affine_source_training, self.affine_target_training = self.get_batch(training_source, training_target, target=target, all = True)
+        print("Loading validation data: \n")
         self.validation_data, self.affine_source_validation, self.affine_target_validation = self.get_batch(validation_source, validation_target, target=target, all =True)
         print("Training data: ", len(self.training_data[0]))
         print("Validation data: ", len(self.validation_data[0]))
+        end = time.time()
+        hour, minute, seconds = self.compute_time(end - start)
+        print("Time for evaluation: ", hour, "hour(s)", minute, "minute(s)", seconds, "second(s)")
+
     def get_prediction(self):
         '''
         Function to get the prediction of the model at a step t.
@@ -741,11 +748,7 @@ class JDOT():
 
     def pretty_print(self, mean_epoch, mean_val, time_epoch, epoch_remaining):
         delta = time_epoch*epoch_remaining
-        hour = int(delta / 3600)
-        delta -= hour * 3600
-        minute = int(delta / 60)
-        delta -= minute * 60
-        seconds = delta
+        hour, minute, seconds = self.compute_time(delta)
         if self.config.train_jdot:
             print("\n\nMean on epoch :")
             result = "Loss: " + str(mean_epoch[0]) + " Dice Score: " + str(mean_epoch[-3]) + " Dice Score Source: " + str(
@@ -767,6 +770,16 @@ class JDOT():
             print(result)
             print("\nEstimated time remaining for training: ", hour, " hour(s) ", minute, " minute(s) ", int(seconds), " second(s) ")
             print("==============\n")
+
+    def compute_time(self, time):
+        hour = int(time / 3600)
+        time -= hour * 3600
+        minute = int(time / 60)
+        time -= minute * 60
+        seconds = time
+        return hour, minute, seconds
+
+
 
 
     def save_hist_and_model(self, hist_l, val_l):
@@ -836,6 +849,7 @@ class JDOT():
         Function to evaluate the trained model.
         :return:
         """
+        start = time.time()
         self.load_old_model(self.config.model_file)
         self.config.depth_jdot = None
         self.compile_model()
@@ -852,7 +866,9 @@ class JDOT():
                                   output_label_map=True,
                                   overlap=self.config.validation_patch_overlap,
                                   output_dir=self.config.prediction_dir)
-
+        end = time.time()
+        hour, minute, seconds = self.compute_time(end - start)
+        print("Time for evaluation: ", hour, "hour(s)", minute, "minute(s)", seconds, "second(s)")
 
     def run_validation_cases(self, validation_keys_file, training_modalities, labels, hdf5_file,
                              output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False):
