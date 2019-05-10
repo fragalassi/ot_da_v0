@@ -6,15 +6,15 @@ import matplotlib.pyplot as plt
 import random
 
 bound_alpha = [0.01, 20]
-bound_epochs = [10, 500]
+bound_epochs = [10, 300]
 bound_lr = [5e-10, 5e-5]
 
-al = pyDOE.lhs(2, criterion="maximin", samples=60)
+al = pyDOE.lhs(2, criterion="maximin", samples=40)
 means = [0.1, 0.0001]
 stds = [0.2, 0.1]
 
 for i in range(2):
-    al[:, i] = gamma(a = 1.2, loc = means[i], scale = stds[i]).ppf(al[:, i])
+    al[:, i] = gamma(a = 1.99, loc = means[i], scale = stds[i]).ppf(al[:, i])
 
 
 epochs = []
@@ -34,7 +34,7 @@ plt.close()
 
 plt.hist(epochs)
 plt.show()
-
+print(np.mean(epochs))
 plt.hist(lr)
 plt.show()
 
@@ -42,7 +42,7 @@ file = open("call.sh", "w")
 file.truncate(0)
 
 for i in range(len(alpha)):
-    file.write("python3 -u main.py -source '01' -target '07' -alpha "+str(round(alpha[i],2))+" -epochs "+str(int(epochs[i]))+" -lr "+str(lr[i])+" -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev "+str(i)+" > Logs/output_"+str(i)+".log \n")
+    file.write("python3 -u main.py -source '01' -target '07' -dist 'sqeuclidean' -OT_depth 5 -alpha "+str(round(alpha[i],2))+" -epochs "+str(int(epochs[i]))+" -lr "+str(lr[i])+" -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev "+str(i+60)+" > Logs/output_"+str(i+60)+".log \n")
 
 file.close()
 
