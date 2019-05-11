@@ -22,13 +22,17 @@ import argparse
 
 sys.path.append('/udd/aackaouy/OT-DA/')
 
-# df = create_config.create_conf(batch_size_l = [32, 64], initial_lr_l = [5e-2, 5e-4],
-#                  loss_funcs = ["dice_coefficient_loss", "dice_coefficient_loss"],
-#                  depth_l = [5, 8], n_filters=[8, 16, 32], patch_shape_l=[16, 32], overlap_l=[0, 0.5],  n_exp = 30)
-
 '''
-Best configuration yet.
-Need to be tested with data augmentation.
+Main file defining the argument we can pass through the terminal.
+Some more arguments are available in the Config.py file.
+To add a new argument make sure it was first defined in the Config.py file.
+Add a new argument through the parser.
+Create a var fetching its value in a list.
+Pass this value through create_conf_with_l.
+Add to the lists variable.
+Then add it to the data_frame (*n_repeat).
+Name a column after your argument.
+Pass the value to the Config.
 '''
 
 parser = argparse.ArgumentParser()
@@ -117,11 +121,11 @@ for i in range(df.shape[0]): #df.shape[0]
 
     # comp = intensities.Compute_intensities(conf)
     # comp.fetch_training_data_files()
+
     '''
     For JDOT, uncomment this part
     '''
-
-    train_jd = train_jdot.Train_JDOT(conf)
+    train_jd = train_jdot.Train_JDOT(conf) # We instanciate a new JDOT object with the conf.
     train_jd.main(overwrite_data=conf.overwrite_data, overwrite_model=conf.overwrite_model)
 
     test = create_test.Test(conf)
