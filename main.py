@@ -35,6 +35,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-source", type=str, help="Set the source center")
 parser.add_argument("-target", type=str, help="Set the target center")
 parser.add_argument("-alpha", type=float, help="Set JDOT alpha")
+parser.add_argument("-beta", type=float, help="Set JDOT beta")
 parser.add_argument("-jdot", type=str, help="Bool to train on JDOT")
 parser.add_argument("-shape", type=str, help="Patch shape")
 parser.add_argument("-augment", type=str, help="Boolean for data augmentation")
@@ -47,7 +48,7 @@ parser.add_argument("-OT_depth", type=int, help="Depth to compute the OT on. 5 i
 
 args = parser.parse_args()
 
-batch_size = [64]
+batch_size = [256]
 initial_lr = [args.lr]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
@@ -58,6 +59,7 @@ image_shape = [(128,128,128)]
 training_center = [["All"]]
 augmentation = [True if args.augment == "True" else False]
 jdot_alpha = [args.alpha]
+jdot_beta = [args.beta]
 bool_train_jdot = [True if args.jdot == "True" else False]
 source_center = [args.source]
 target_center = [args.target]
@@ -71,6 +73,7 @@ df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
                                       bool_train_jdot, alpha_factor, epochs, callback, distance, OT_depth,
+                                      jdot_beta,
                                       n_repeat=1)
 
 with pd.option_context("display.max_rows", None, "display.max_columns", None):
@@ -101,6 +104,7 @@ for i in range(df.shape[0]): #df.shape[0]
                          callback = df["Callback"].iloc[i],
                          distance = df["Distance"].iloc[i],
                          OT_depth = df["OT Depth"].iloc[i],
+                         jdot_beta = df["JDOT beta"].iloc[i],
                          niseko=True, shortcut=True)
 
     '''
@@ -117,6 +121,7 @@ for i in range(df.shape[0]): #df.shape[0]
 
     # comp = intensities.Compute_intensities(conf)
     # comp.fetch_training_data_files()
+    # comp.compute_intensity()
     '''
     For JDOT, uncomment this part
     '''

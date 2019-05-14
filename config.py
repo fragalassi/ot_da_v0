@@ -11,7 +11,7 @@ class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
-                 jdot_alpha = 0.001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
+                 jdot_alpha = 0.001, jdot_beta = 0.0001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
                  alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5):
         '''
 
@@ -80,6 +80,7 @@ class Config:
 
         self.train_jdot = bool_train_jdot
         self.jdot_alpha = jdot_alpha
+        self.jdot_beta = jdot_beta
         self.alpha_factor = alpha_factor
         self.depth_jdot = OT_depth # 5 is the middle layer (with the smallest representation) 9 is the deepest layer
         self.jdot_distance = distance #Distance used for the computation of gamma (sqeuclidean or dice)

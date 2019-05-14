@@ -37,6 +37,7 @@ class JDOT():
         self.batch_size = self.config.batch_size
         self.optimizer = self.config.optimizer
         self.jdot_alpha = K.variable(self.config.jdot_alpha)
+        self.jdot_beta = K.variable(self.config.jdot_beta)
         # initialize the gamma (coupling in OT) with zeros
         self.gamma = K.zeros(shape=(self.batch_size, self.batch_size))
         self.batch_source = K.zeros(shape=(self.batch_size,
@@ -98,7 +99,7 @@ class JDOT():
             '''
             source_loss = dice_coefficient_loss(truth_source, prediction_source)
             target_loss = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-            return source_loss + self.jdot_alpha * K.sum(self.gamma * target_loss)
+            return source_loss + self.jdot_beta * K.sum(self.gamma * target_loss)
         self.deep_jdot_loss_euclidean = deep_jdot_loss_euclidean
 
         def deep_jdot_loss_dice(y_true, y_pred):
@@ -833,7 +834,7 @@ class JDOT():
         # print("Mean C0: ", np.mean(C0))
         # print("Mean C1: ", np.mean(C1))
         # Resulting cost metric
-        C = C0+C1
+        C = K.get_value(self.jdot_alpha)*C0+K.get_value(self.jdot_beta)*C1
         # C = C0 + C1
         # C = C - np.min(C)
         # C = C / np.max(C)
