@@ -54,7 +54,7 @@ class Config:
         self.load_all_data = True  # Parameter to load all the data directly in memory. Set it to false if you don't have much ram available.
 
         self.labels=(1)
-        self.n_labels=1
+        self.n_labels=1 # Number of labels JDOT never was tested with more than one parameter.
 
         # self.all_modalities = ["FLAIR-norm-include"]
         self.GT = "Consensus-reg-m-include"
@@ -102,29 +102,31 @@ class Config:
         self.overwrite_model = True
         self.load_base_model = True
 
-        self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5")
-        #self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_source.h5")
-        self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_center_"+str(source_center)+".h5")
-        # self.target_data_file = os.path.abspath("Data/generated_data/" + self.data_set + "_data_target.h5")
-        self.target_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_center_"+str(target_center)+".h5")
-
-        if not os.path.exists(os.path.abspath("Data/generated_data")):
-            os.makedirs(os.path.abspath("Data/generated_data"))
 
         self.n_base_filters = int(float(n_filter))
         self.depth = int(float(depth))
-        self.model_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_2017_model_rev"+str(self.rev)+".h5")
+
+        '''
+        Definition of all the path to the files that will be generated. They all lie in the Data/generated_data folder.
+        '''
+        if not os.path.exists(os.path.abspath("Data/generated_data")):
+            os.makedirs(os.path.abspath("Data/generated_data"))
+
+        self.data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data.h5") # Training without JDOT: one single h5 where the data is saved.
+        self.source_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_center_"+str(source_center)+".h5") # Source data file for a given center
+        self.target_data_file = os.path.abspath("Data/generated_data/"+self.data_set+"_data_center_"+str(target_center)+".h5") # Target data file for a given center
+
+        self.model_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_2017_model_rev"+str(self.rev)+".h5") # The model that will be created (or loaded)
+
         self.training_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids.pkl")
         self.validation_file = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids.pkl")
 
-
+        # Next are all the files containing the IDs of a given validation split.
         self.training_file_source = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids_center_"+str(self.source_center)+".pkl")
         self.validation_file_source = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids_center_"+str(self.source_center)+".pkl")
-        
         self.training_file_target = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_training_ids_center_"+str(self.target_center)+".pkl")
         self.validation_file_target = os.path.abspath("Data/generated_data/"+self.data_set+"_isensee_validation_ids_center_"+str(self.target_center)+".pkl")
-        
+
+        # The directories where the results will be saved.
         self.save_dir =  os.path.abspath("results/prediction/rev_" + str(self.rev))
         self.prediction_dir = os.path.abspath("results/prediction/rev_" + str(self.rev) + "/prediction_" + self.data_set)
-
-

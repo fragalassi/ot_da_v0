@@ -77,7 +77,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
                        distance = [], OT_depth = [], jdot_beta=[],
                        n_repeat = 1):
     '''
-    Create configuration from the list.
+    Create configuration from the list. Refer to main.py for more information on how to add a new parameter.
     :param batch_size:
     :param initial_lr:
     :param loss_funcs:
