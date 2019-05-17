@@ -48,7 +48,7 @@ parser.add_argument("-OT_depth", type=int, help="Depth to compute the OT on. 5 i
 
 args = parser.parse_args()
 
-batch_size = [64]
+batch_size = [256]
 initial_lr = [args.lr]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
