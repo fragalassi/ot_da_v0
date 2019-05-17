@@ -574,7 +574,6 @@ class JDOT():
         self.val_batch, _, _ = self.get_batch(selected_source, selected_target, target=target)
         end = time.time()
         t = "\rTime for loading: " + str(end - start)
-        print(t)
         sys.stdout.write(t)
         sys.stdout.flush()
         if target:
