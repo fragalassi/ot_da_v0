@@ -35,7 +35,7 @@ file = open("call.sh", "w")
 file.truncate(0)
 
 for i in range(len(alpha)):
-    file.write("python3 -u main.py -source '08' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha "+str(round(alpha[i],2))+" -beta "+str(round(beta[i],2))+" -epochs "+str(int(epochs[i]))+" -lr 5e-5 -callback 'False' -jdot 'True' -augment 'False' -shape 16 -rev "+str(i+20)+" > Logs/output_"+str(i+20)+".log \n")
+    file.write("python3 -u main.py -source '08' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha "+str(round(alpha[i],2))+" -beta "+str(round(beta[i],2))+" -epochs "+str(int(epochs[i]))+" -lr 5e-5 -callback 'False' -load_model 'True' -jdot 'True' -augment 'False' -shape 16 -rev "+str(i+20)+" > Logs/output_"+str(i+20)+".log \n")
 
 file.close()
 
