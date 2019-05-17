@@ -1,8 +1,4 @@
 python3 -u main.py -source 'All' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha 20.39 -beta 1.64 -epochs 2000 -lr 5e-5 -callback 'False' -jdot 'False' -load_model 'False' -augment 'False' -shape 16 -rev 0 > Logs/output_0.log
-python3 -u main.py -source '08' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha 20.39 -beta 1.64 -epochs 2000 -lr 5e-5 -callback 'False' -jdot 'False' -load_model 'False' -augment 'False' -shape 16 -rev 1 > Logs/output_1.log
-python3 -u main.py -source '07' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha 20.39 -beta 1.64 -epochs 2000 -lr 5e-5 -callback 'False' -jdot 'False' -load_model 'False' -augment 'False' -shape 16 -rev 2 > Logs/output_2.log
-python3 -u main.py -source '01' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha 20.39 -beta 1.64 -epochs 2000 -lr 5e-5 -callback 'False' -jdot 'False' -load_model 'False' -augment 'False' -shape 16 -rev 3 > Logs/output_3.log
-
 
 python3 -u main.py -source '08' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha 13.52 -beta 8.81 -epochs 5 -lr 5e-5 -callback 'False' -load_model 'True' -jdot 'True' -augment 'False' -shape 16 -rev 20 > Logs/output_20.log
 python3 -u main.py -source '08' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha 12.28 -beta 3.7 -epochs 81 -lr 5e-5 -callback 'False' -load_model 'True' -jdot 'True' -augment 'False' -shape 16 -rev 21 > Logs/output_21.log 
