@@ -97,8 +97,8 @@ class Config:
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
-        self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
-        self.change_validation = True
+        self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
+        self.change_validation = False
         self.overwrite_model = True
         self.load_base_model = True
 
