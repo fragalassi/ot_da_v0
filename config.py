@@ -32,9 +32,9 @@ class Config:
             self.epochs = 1
             self.all_modalities = ["FLAIR-include"]
         else:
-            self.data_set="miccai16_no_norm"
+            self.data_set="miccai16_preprocessed"
             self.epochs = epochs  # cutoff the training after this many epochs
-            self.all_modalities = ["FLAIR-include", "T1-include"]
+            self.all_modalities = ["FLAIR-norm-include", "T1-norm-include"]
 
         self.niseko = niseko
 
@@ -97,8 +97,8 @@ class Config:
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
 
-        self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
-        self.change_validation = False
+        self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
+        self.change_validation = True
         self.overwrite_model = True
         self.load_base_model = True
 
