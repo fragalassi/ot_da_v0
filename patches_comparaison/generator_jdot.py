@@ -133,6 +133,18 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
         source_validation_list = load_index_patches_with_gt(source_validation_path)
 
+    else:
+
+        source_training_list = create_patch_index_list(source_training_list, source_data_file.root.data.shape[-3:],
+                                                       patch_shape,
+                                                       training_patch_overlap, training_patch_start_offset)
+        pickle_dump(source_training_list, source_training_path)
+
+        source_validation_list = create_patch_index_list(source_validation_list, source_data_file.root.data.shape[-3:],
+                                                         patch_shape,
+                                                         training_patch_overlap, training_patch_start_offset)
+        pickle_dump(source_validation_list, source_validation_path)
+
     target_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+target_center)
     target_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + target_center)
 
@@ -141,6 +153,9 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_target,
                                                           validation_file=validation_keys_file_target)
+
+
+
     if skip_blank:
         save_patches_with_gt(target_training_list, target_data_file, patch_shape, training_patch_overlap,
                              training_patch_start_offset, path=target_training_path, overwrite = change_validation)
@@ -149,6 +164,19 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
         save_patches_with_gt(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
                              training_patch_start_offset, path=target_validation_path, overwrite = change_validation)
         target_validation_list = load_index_patches_with_gt(target_validation_path)
+
+
+    else:
+        target_training_list = create_patch_index_list(target_training_list, target_data_file.root.data.shape[-3:], patch_shape,
+                                             training_patch_overlap, training_patch_start_offset)
+        pickle_dump(target_training_list, target_training_path)
+
+        target_validation_list = create_patch_index_list(target_validation_list, target_data_file.root.data.shape[-3:], patch_shape,
+                                             training_patch_overlap, training_patch_start_offset)
+        pickle_dump(target_validation_list, target_validation_path)
+
+
+
 
     return source_training_list, source_validation_list, target_training_list, target_validation_list
 
@@ -473,6 +501,21 @@ def get_data_from_file(data_file, index, patch_shape=None):
         x, y = data_file.root.data[index], data_file.root.truth[index, 0]
     return x, y
 
+def get_all_patches_from_file(data_file, index_list, patch_index_list, patch_shape):
+    x_list = []
+    y_list = []
+    affine_list = []
+    for index in index_list:
+        print("Index: ", index)
+        data, truth = get_data_from_file(data_file, index, patch_shape=None)
+        truth = truth[np.newaxis]
+        for patch_index in patch_index_list:
+            if patch_index[0] == index:
+                x_list += [get_patch_from_3d_data(data, patch_shape, patch_index[1])]
+                y_list += [get_patch_from_3d_data(truth, patch_shape, patch_index[1])]
+                affine_list += [data_file.root.affine[patch_index[0]]]
+
+    return (x_list, y_list), affine_list
 
 def convert_data(x_list, y_list, n_labels=1, labels=None):
     x = np.asarray(x_list)

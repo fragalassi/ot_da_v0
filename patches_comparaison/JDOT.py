@@ -1,7 +1,7 @@
 from keras import backend as K
 from keras import Model
 from keras.callbacks import LambdaCallback
-from patches_comparaison.generator_jdot import get_batch_jdot, multi_proc_augment_data, get_patches_index_list
+from patches_comparaison.generator_jdot import get_batch_jdot, multi_proc_augment_data, get_patches_index_list, get_all_patches_from_file
 from scipy.spatial.distance import cdist, cosine, euclidean, dice
 from unet3d.utils import pickle_load
 import tables
@@ -66,6 +66,11 @@ class JDOT():
         self.complete_source_validation_list = []
         self.complete_target_training_list = []
         self.complete_target_validation_list = []
+
+        self.source_training_list = []
+        self.source_validation_index_list = []
+        self.target_training_index_list = []
+        self.target_validation_index_list = []
 
         self.source_training_list = []
         self.source_validation_list = []
@@ -518,9 +523,22 @@ class JDOT():
                                training_patch_start_offset=self.config.training_patch_start_offset)
 
         self.source_training_list = copy(self.complete_source_training_list)
+        index_list = [i[0] for i in self.complete_source_training_list]
+        self.source_training_index_list = np.unique(index_list)
+        print(self.source_training_index_list)
+
         self.source_validation_list = copy(self.complete_source_validation_list)
+        index_list = [i[0] for i in self.complete_source_validation_list]
+        self.source_validation_index_list = np.unique(index_list)
+
         self.target_training_list = copy(self.complete_target_training_list)
+        index_list = [i[0] for i in self.complete_target_training_list]
+        self.target_training_index_list = np.unique(index_list)
+
         self.target_validation_list = copy(self.complete_target_validation_list)
+        index_list = [i[0] for i in self.complete_target_validation_list]
+        self.target_validation_index_list = np.unique(index_list)
+
         print("Source training: ", len(self.complete_source_training_list))
         print("Source validation", len(self.complete_source_validation_list))
         print("Target training", len(self.complete_target_training_list))
@@ -595,6 +613,7 @@ class JDOT():
                     if index[0] == j[0] and (index[1] == j[1]).all():
                         index_target += [i]
         selected_index = index_source + [i + len(self.complete_source_training_list) for i in index_target]
+        print(len(self.training_data[0]))
         self.train_batch = (np.array([self.training_data[0][i] for i in selected_index]), np.array([self.training_data[1][i] for i in selected_index]))
         affine_list = [self.affine_source_training[i] for i in index_source]
         affine_list += [self.affine_target_training[i] for i in index_target]
@@ -656,17 +675,32 @@ class JDOT():
 
     def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
 
-        start = time.time()
-        print("Loading training data: \n")
-        self.training_data, self.affine_source_training, self.affine_target_training = self.get_batch(training_source, training_target, target=target, all = True)
-        print("Loading validation data: \n")
-        self.validation_data, self.affine_source_validation, self.affine_target_validation = self.get_batch(validation_source, validation_target, target=target, all =True)
-        print("Training data: ", len(self.training_data[0]))
-        print("Validation data: ", len(self.validation_data[0]))
-        end = time.time()
+        if self.config.skip_blank:
+            start = time.time()
+            print("Loading training data: \n")
+            self.training_data, self.affine_source_training, self.affine_target_training = self.get_batch(training_source, training_target, target=target, all = True)
+            print("Loading validation data: \n")
+            self.validation_data, self.affine_source_validation, self.affine_target_validation = self.get_batch(validation_source, validation_target, target=target, all =True)
+            print("Training data: ", len(self.training_data[0]))
+            print("Validation data: ", len(self.validation_data[0]))
+            end = time.time()
 
-        hour, minute, seconds = self.compute_time(end - start)
-        print("Time for evaluation: ", hour, "hour(s)", minute, "minute(s)", seconds, "second(s)")
+            hour, minute, seconds = self.compute_time(end - start)
+            print("Time for loading: ", hour, "hour(s)", minute, "minute(s)", seconds, "second(s)")
+
+        else:
+            source_training_data, self.affine_source_training = get_all_patches_from_file(self.source_data, self.source_training_index_list, self.complete_source_training_list, self.config.patch_shape)
+            target_training_data, self.affine_target_training = get_all_patches_from_file(self.target_data, self.target_training_index_list, self.complete_target_training_list, self.config.patch_shape)
+            source_validation_data, self.affine_source_validation = get_all_patches_from_file(self.source_data, self.source_validation_index_list, self.complete_source_validation_list, self.config.patch_shape)
+            target_validation_data, self.affine_target_validation = get_all_patches_from_file(self.target_data, self.target_validation_index_list, self.complete_target_validation_list, self.config.patch_shape)
+
+            print(source_training_data[0][0].shape)
+            print(target_training_data[0][0].shape)
+            print(source_training_data[1][0].shape)
+            print(target_training_data[1][0].shape)
+
+            self.training_data = (np.vstack((source_training_data[0],target_training_data[0])), np.vstack((source_training_data[1],target_training_data[1])))
+            self.validation_data = (np.vstack((source_validation_data[0],target_validation_data[0])), np.vstack((source_validation_data[1],target_validation_data[1])))
 
     def get_prediction(self):
         '''
