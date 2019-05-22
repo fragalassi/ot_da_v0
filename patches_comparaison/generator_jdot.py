@@ -114,7 +114,8 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           data_split=data_split,
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_source,
-                                                          validation_file=validation_keys_file_source,)
+                                                          validation_file=validation_keys_file_source,
+                                                          force_list=([2,4,1,0],[3]))
     print("List of patients for source training: ", source_training_list)
     source_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+source_center)
     source_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + source_center)
@@ -140,7 +141,8 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           data_split=data_split,
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_target,
-                                                          validation_file=validation_keys_file_target)
+                                                          validation_file=validation_keys_file_target,
+                                                                        force_list=([4,0,1,2],[3]))
     print("List of patients for target training: ", target_training_list)
 
     if skip_blank:
@@ -162,7 +164,7 @@ def get_number_of_steps(n_samples, batch_size):
     else:
         return n_samples//batch_size + 1
 
-def get_validation_split(data_file, training_file, validation_file, data_split=0.8, change_validation=False):
+def get_validation_split(data_file, training_file, validation_file, data_split=0.8, change_validation=False, force_list = ()):
     """
     Splits the data into the training and validation indices list.
     :param data_file: pytables hdf5 data file
@@ -176,6 +178,8 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
         nb_samples = data_file.root.data.shape[0]
         sample_list = list(range(nb_samples))
         training_list, validation_list = split_list(sample_list, split=data_split)
+        training_list = force_list[0]
+        validation_list = force_list[1]
         pickle_dump(training_list, training_file)
         pickle_dump(validation_list, validation_file)
         return training_list, validation_list
