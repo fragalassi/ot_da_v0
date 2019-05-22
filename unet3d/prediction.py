@@ -108,7 +108,8 @@ def multi_class_prediction(prediction, affine):
 
 
 def run_validation_case(data_index, output_dir, model, data_file, training_modalities,
-                        output_label_map=False, threshold=0.5, labels=None, overlap=16, permute=False):
+                        output_label_map=False, threshold=0.5, labels=None, overlap=16, permute=False,
+                        save_image = False):
     """
     Runs a test case and writes predicted images to file.
     :param data_index: Index from of the list of test cases to get an image prediction from.
@@ -127,8 +128,9 @@ def run_validation_case(data_index, output_dir, model, data_file, training_modal
     affine = data_file.root.affine[data_index]
     test_data = np.asarray([data_file.root.data[data_index]])
     for i, modality in enumerate(training_modalities):
-        image = nib.Nifti1Image(test_data[0, i], affine)
-        image.to_filename(os.path.join(output_dir, "data_{0}.nii.gz".format(modality)))
+        if save_image:
+            image = nib.Nifti1Image(test_data[0, i], affine)
+            image.to_filename(os.path.join(output_dir, "data_{0}.nii.gz".format(modality)))
 
     test_truth = nib.Nifti1Image(data_file.root.truth[data_index][0], affine)
     test_truth.to_filename(os.path.join(output_dir, "truth.nii.gz"))

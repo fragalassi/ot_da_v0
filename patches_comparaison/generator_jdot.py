@@ -115,7 +115,6 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_source,
                                                           validation_file=validation_keys_file_source,)
-
     source_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+source_center)
     source_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + source_center)
 

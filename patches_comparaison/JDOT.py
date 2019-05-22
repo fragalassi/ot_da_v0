@@ -865,13 +865,15 @@ class JDOT():
                                   hdf5_file=self.config.data_file,
                                   output_label_map=True,
                                   overlap=self.config.validation_patch_overlap,
-                                  output_dir=self.config.prediction_dir)
+                                  output_dir=self.config.prediction_dir,
+                                  save_image=self.config.save_image)
         end = time.time()
         hour, minute, seconds = self.compute_time(end - start)
         print("Time for evaluation: ", hour, "hour(s)", minute, "minute(s)", seconds, "second(s)")
 
     def run_validation_cases(self, validation_keys_file, training_modalities, labels, hdf5_file,
-                             output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False):
+                             output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False,
+                             save_image = False):
         validation_indices = pickle_load(validation_keys_file)
         model = self.model
         data_file = tables.open_file(hdf5_file, "r")
@@ -884,7 +886,7 @@ class JDOT():
                 case_directory = os.path.join(output_dir, "validation_case_{}".format(index))
             run_validation_case(data_index=index, output_dir=case_directory, model=model, data_file=data_file,
                                 training_modalities=training_modalities, output_label_map=output_label_map, labels=labels,
-                                threshold=threshold, overlap=overlap, permute=permute)
+                                threshold=threshold, overlap=overlap, permute=permute, save_imag0=save_image)
         data_file.close()
 
     def load_old_model(self, model_file):
