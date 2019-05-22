@@ -12,7 +12,7 @@ class Config:
                  n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
                  jdot_alpha = 0.001, jdot_beta = 0.0001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
-                 alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5):
+                 alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5, load_model=False):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -101,7 +101,7 @@ class Config:
         self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
         self.change_validation = False
         self.overwrite_model = True
-        self.load_base_model = True
+        self.load_base_model = load_model
 
 
         self.n_base_filters = int(float(n_filter))

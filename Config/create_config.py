@@ -74,7 +74,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
                        n_filter=[], patch_shape = [], overlap = [], training_center = [],
                        image_shape = [], augmentation = [], jdot_alpha = [],
                        source_center=[], target_center=[], train_jdot = [], alpha_factor = [], epochs = [], callback = [],
-                       distance = [], OT_depth = [], jdot_beta=[],
+                       distance = [], OT_depth = [], jdot_beta=[], load_model = [],
                        n_repeat = 1):
     '''
     Create configuration from the list. Refer to main.py for more information on how to add a new parameter.
@@ -89,7 +89,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
     '''
     lists = [batch_size, initial_lr, loss_funcs, depth, patch_shape, overlap,
              training_center, image_shape, augmentation, jdot_alpha, source_center, target_center,
-             train_jdot, alpha_factor, epochs, distance, OT_depth, jdot_beta]
+             train_jdot, alpha_factor, epochs, distance, OT_depth, jdot_beta, load_model]
     it = iter(lists)
     the_len = len(next(it))
     print(training_center*n_repeat)
@@ -101,11 +101,11 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
                                     overlap*n_repeat, training_center*n_repeat, image_shape*n_repeat,
                                     augmentation*n_repeat, jdot_alpha*n_repeat, source_center*n_repeat, target_center*n_repeat,
                                     train_jdot*n_repeat, alpha_factor*n_repeat, epochs*n_repeat, callback*n_repeat, distance*n_repeat,
-                                    OT_depth*n_repeat, jdot_beta*n_repeat], dtype=object)).T
+                                    OT_depth*n_repeat, jdot_beta*n_repeat, load_model*n_repeat], dtype=object)).T
         df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth",
                       "Number of filters", "Patch shape", "Overlap", "Training centers",
                       "Image shape", "Augmentation", "JDOT Alpha", "Source center", "Target center",
-                      "Train JDOT", "Alpha factor", "Epochs", "Callback", "Distance", "OT Depth", "JDOT beta"]
+                      "Train JDOT", "Alpha factor", "Epochs", "Callback", "Distance", "OT Depth", "JDOT beta", "Load model"]
     save_path = os.path.abspath("Config/")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
