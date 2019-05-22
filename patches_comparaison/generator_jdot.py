@@ -115,6 +115,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_source,
                                                           validation_file=validation_keys_file_source,)
+    print("List of patients for source training: ", source_training_list)
     source_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+source_center)
     source_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + source_center)
 
@@ -140,6 +141,8 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_target,
                                                           validation_file=validation_keys_file_target)
+    print("List of patients for target training: ", target_training_list)
+
     if skip_blank:
         save_patches_with_gt(target_training_list, target_data_file, patch_shape, training_patch_overlap,
                              training_patch_start_offset, path=target_training_path, overwrite = change_validation)
