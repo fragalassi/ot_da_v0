@@ -51,7 +51,7 @@ parser.add_argument("-force_training_list", type=str, help="Tuple of tuples, fir
 
 args = parser.parse_args()
 
-batch_size = [256]
+batch_size = [10]
 initial_lr = [args.lr]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
