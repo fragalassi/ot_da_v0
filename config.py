@@ -9,10 +9,10 @@ setting test to false in main.py result in using only two examples and a reduce 
 
 class Config:
     def __init__(self, test=False, rev = 0, batch_size = 1, initial_lr = 5e-4, loss_function = "generalized_dice_loss", depth = 5,
-                 n_filter=16, patch_shape = 16, overlap = 0, training_centers=["All"],
+                 n_filter=16, patch_shape = 16, training_overlap = None, testing_overlap = None, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
                  jdot_alpha = 0.001, jdot_beta = 0.0001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
-                 alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5, load_model=False):
+                 alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5, load_model=False, force_training_list = (([0,1,2,4], [3]),([0,1,2,4], [3]))):
         '''
 
         :param test: To only use the test data with only two training cases and 3 testing cases
@@ -92,14 +92,15 @@ class Config:
         self.permute = augmentation  # data shape must be a cube. Augments the data by permuting in various directions
         self.distort = None  # switch to None if you want no distortion
         self.augment = self.permute or self.distort
-        self.validation_patch_overlap = int(float(overlap)*float(patch_shape))  # if > 0, during training, validation patches will be overlapping
-        self.training_patch_overlap = int(float(overlap)*float(patch_shape))  # Overlap could be the number of overlapping pixels.
+        self.validation_patch_overlap = int(float(testing_overlap)*float(patch_shape))  # if > 0, during training, validation patches will be overlapping
+        self.training_patch_overlap = int(float(training_overlap)*float(patch_shape))  # Overlap could be the number of overlapping pixels.
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
         self.skip_blank = True  # if True, then patches without any target will be skipped
         self.save_image = False
 
-        self.overwrite_data = False # If True, will previous files. If False, will use previously written files.
-        self.change_validation = False
+        self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
+        self.change_validation = True
+        self.force_training_list = force_training_list
         self.overwrite_model = True
         self.load_base_model = load_model
 

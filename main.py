@@ -46,17 +46,21 @@ parser.add_argument("-callback", type=str, help="Boolean for the usage of callba
 parser.add_argument("-dist", type=str, help="Distance used to compute the Optimal Transport. Can be sqeuclidean or dice.")
 parser.add_argument("-OT_depth", type=int, help="Depth to compute the OT on. 5 is the most compact. 9 is the deepest.")
 parser.add_argument("-load_model", type=str, help="Wether to load the base model or not")
+parser.add_argument("-force_training_list", type=str, help="Tuple of tuples, first level is for source/target, second level is for training/validation")
+
 
 args = parser.parse_args()
 
-batch_size = [64]
+batch_size = [256]
 initial_lr = [args.lr]
 loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
 n_filter = [16]
 patch_shape = [args.shape]
-overlap = [1/2]
+training_overlap = [0]
+testing_overlap = [1/2]
 image_shape = [(128,128,128)]
+force_training_list = [eval(args.force_training_list)]
 training_center = [["All"]]
 augmentation = [True if args.augment == "True" else False]
 jdot_alpha = [args.alpha]
@@ -72,10 +76,10 @@ OT_depth = [args.OT_depth]
 load_model = [args.load_model]
 
 df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
-                                      depth, n_filter, patch_shape, overlap, training_center,
+                                      depth, n_filter, patch_shape, training_overlap, testing_overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
                                       bool_train_jdot, alpha_factor, epochs, callback, distance, OT_depth,
-                                      jdot_beta, load_model,
+                                      jdot_beta, load_model, force_training_list,
                                       n_repeat=1)
 
 with pd.option_context("display.max_rows", None, "display.max_columns", None):
@@ -93,7 +97,8 @@ for i in range(df.shape[0]): #df.shape[0]
                          depth=df["Depth"].iloc[i],
                          n_filter=df["Number of filters"].iloc[i],
                          patch_shape = df["Patch shape"].iloc[i],
-                         overlap = df["Overlap"].iloc[i],
+                         training_overlap = df["Training overlap"].iloc[i],
+                         testing_overlap = df["Testing overlap"],
                          augmentation = df["Augmentation"].iloc[i],
                          jdot_alpha=df["JDOT Alpha"].iloc[i],
                          source_center=df["Source center"].iloc[i],
@@ -108,6 +113,7 @@ for i in range(df.shape[0]): #df.shape[0]
                          OT_depth = df["OT Depth"].iloc[i],
                          jdot_beta = df["JDOT beta"].iloc[i],
                          load_model = df["Load model"].iloc[i],
+                         force_training_list = df["Force training list"].iloc[i],
                          niseko=True, shortcut=True)
 
     '''

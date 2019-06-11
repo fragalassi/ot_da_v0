@@ -108,15 +108,36 @@ def get_batch_jdot(selected_source, selected_target, source_data_file, target_da
 def get_patches_index_list(source_data_file, target_data_file, training_keys_file_source, validation_keys_file_source,
                            training_keys_file_target, validation_keys_file_target, source_center,
                            target_center, data_split = 0.8, change_validation = True, patch_shape = 16, skip_blank = True,
-                           training_patch_overlap = 0.5, validation_patch_overlap = 0.5, training_patch_start_offset = None):
+                           training_patch_overlap = 0.5, validation_patch_overlap = 0.5, training_patch_start_offset = None,
+                           force_training_list = (([0,1,2,4], [3]),([0,1,2,4], [3]))):
+    '''
+
+    :param source_data_file:
+    :param target_data_file:
+    :param training_keys_file_source:
+    :param validation_keys_file_source:
+    :param training_keys_file_target:
+    :param validation_keys_file_target:
+    :param source_center:
+    :param target_center:
+    :param data_split:
+    :param change_validation:
+    :param patch_shape:
+    :param skip_blank:
+    :param training_patch_overlap:
+    :param validation_patch_overlap:
+    :param training_patch_start_offset:
+    :return:
+    '''
 
     source_training_list, source_validation_list = get_validation_split(source_data_file,
                                                           data_split=data_split,
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_source,
                                                           validation_file=validation_keys_file_source,
-                                                          force_list=([2,4,1,0],[3]))
-    print("List of patients for source training: ", source_training_list)
+                                                          force_list=force_training_list[0])
+    print("\nList of patients for source training: ", source_training_list)
+    print("\nList of patients for source validation: ", source_validation_list)
     source_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+source_center)
     source_validation_path = os.path.abspath("Data/generated_data/validation_list_gt_" + source_center)
 
@@ -142,8 +163,9 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_target,
                                                           validation_file=validation_keys_file_target,
-                                                                        force_list=([4,0,1,2],[3]))
-    print("List of patients for target training: ", target_training_list)
+                                                                        force_list=force_training_list[1])
+    print("\nList of patients for target training: ", target_training_list)
+    print("\nList of patients for target validation: ", target_validation_list)
 
     if skip_blank:
         save_patches_with_gt(target_training_list, target_data_file, patch_shape, training_patch_overlap,
