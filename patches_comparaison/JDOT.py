@@ -887,7 +887,7 @@ class JDOT():
                 case_directory = os.path.join(output_dir, "validation_case_{}".format(index))
             run_validation_case(data_index=index, output_dir=case_directory, model=model, data_file=data_file,
                                 training_modalities=training_modalities, output_label_map=output_label_map, labels=labels,
-                                threshold=threshold, overlap=overlap, permute=permute, save_imag0=save_image)
+                                threshold=threshold, overlap=overlap, permute=permute, save_image=save_image)
         data_file.close()
 
     def load_old_model(self, model_file):
