@@ -109,23 +109,23 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                            training_keys_file_target, validation_keys_file_target, source_center,
                            target_center, data_split = 0.8, change_validation = True, patch_shape = 16, skip_blank = True,
                            training_patch_overlap = 0.5, validation_patch_overlap = 0.5, training_patch_start_offset = None,
-                           force_training_list = (([0,1,2,4], [3]),([0,1,2,4], [3]))):
+                           split_list = (([0,1,2,4], [3]),([0,1,2,4], [3]))):
     '''
 
-    :param source_data_file:
-    :param target_data_file:
-    :param training_keys_file_source:
+    :param source_data_file: Path to source images data file
+    :param target_data_file: Path to target images data file
+    :param training_keys_file_source: The path to the file were to save the ids of training source
     :param validation_keys_file_source:
     :param training_keys_file_target:
     :param validation_keys_file_target:
-    :param source_center:
-    :param target_center:
-    :param data_split:
-    :param change_validation:
-    :param patch_shape:
-    :param skip_blank:
-    :param training_patch_overlap:
-    :param validation_patch_overlap:
+    :param source_center: Id of the source center
+    :param target_center: Id of the target center
+    :param data_split: Percentage of training split
+    :param change_validation: Boolean to change the validation split. If false, will load the previously computed validation split.
+    :param patch_shape: Shape of the patches
+    :param skip_blank: Boolean. If true, only patches with GT will be kept
+    :param training_patch_overlap: Percentage of overlapping allowed between patches during training
+    :param validation_patch_overlap: Percentage of overlapping allowed during testing
     :param training_patch_start_offset:
     :return:
     '''
@@ -135,7 +135,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_source,
                                                           validation_file=validation_keys_file_source,
-                                                          force_list=force_training_list[0])
+                                                          split_list=split_list[0])
     print("\nList of patients for source training: ", source_training_list)
     print("\nList of patients for source validation: ", source_validation_list)
     source_training_path = os.path.abspath("Data/generated_data/training_list_gt_"+source_center)
@@ -175,7 +175,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                                           change_validation=change_validation,
                                                           training_file=training_keys_file_target,
                                                           validation_file=validation_keys_file_target,
-                                                                        force_list=force_training_list[1])
+                                                          split_list=split_list[1])
     print("\nList of patients for target training: ", target_training_list)
     print("\nList of patients for target validation: ", target_validation_list)
 
@@ -210,7 +210,7 @@ def get_number_of_steps(n_samples, batch_size):
     else:
         return n_samples//batch_size + 1
 
-def get_validation_split(data_file, training_file, validation_file, data_split=0.8, change_validation=False, force_list = ()):
+def get_validation_split(data_file, training_file, validation_file, data_split=0.8, change_validation=False, split_list = ()):
     """
     Splits the data into the training and validation indices list.
     :param data_file: pytables hdf5 data file
@@ -224,8 +224,8 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
         nb_samples = data_file.root.data.shape[0]
         sample_list = list(range(nb_samples))
         training_list, validation_list = split_list(sample_list, split=data_split)
-        training_list = force_list[0]
-        validation_list = force_list[1]
+        training_list = split_list[0]
+        validation_list = split_list[1]
         pickle_dump(training_list, training_file)
         pickle_dump(validation_list, validation_file)
         return training_list, validation_list
@@ -384,6 +384,17 @@ def multi_proc_augment_data(data, affine_list, index_list, number_of_threads = 6
 
 
 def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path, overwrite):
+    '''
+    Save the indices computed in get_patches_with_GT
+    :param index_list:
+    :param data_file:
+    :param patch_shape:
+    :param patch_overlap:
+    :param patch_start_offset:
+    :param path:
+    :param overwrite:
+    :return:
+    '''
     if not os.path.exists(path) or overwrite:
         print("Creating and saving a file containing the index of patches with GT. This may take a while...")
         index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape,
@@ -392,18 +403,30 @@ def save_patches_with_gt(index_list, data_file, patch_shape, patch_overlap, patc
         pickle_dump(index_list, path)
 
 def load_index_patches_with_gt(file_name):
+    '''
+    Load the array indices with lesions (if it had already been computed)
+    :param file_name:
+    :return:
+    '''
     return pickle_load(file_name)
 
 def get_patches_with_ground_truth(index_list, data_file, patch_shape):
+    '''
+    Load all patches from the data file and create a list from the indexes of the patches containing a lesion.
+    :param index_list:
+    :param data_file:
+    :param patch_shape:
+    :return:
+    '''
     new_index_list = []
     initial_length = len(index_list)
-    while len(index_list) > 0:
+    while len(index_list) > 0: #Go through all the patches
         advance = "\r Writing indexes with GT :" + str((initial_length - len(index_list))/initial_length*100 )+ "%"
         sys.stdout.write(advance)
         sys.stdout.flush()
         index = index_list.pop()
-        data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape)
-        if np.mean(truth) != 0:
+        data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape) # Fetch the patch
+        if np.mean(truth) != 0: # Check if the mean of the patch's truth is different from 0 (equivalent to check if at least one voxel represent a lesion)
             new_index_list += [index]
     return new_index_list
 
@@ -425,6 +448,15 @@ def get_number_of_patches(data_file, index_list, patch_shape=None, patch_overlap
 
 
 def create_patch_index_list(index_list, image_shape, patch_shape, patch_overlap, patch_start_offset=None):
+    """
+    Function that returns an array of all the patches - of a given patch shape - in a given image.
+    :param index_list:
+    :param image_shape:
+    :param patch_shape:
+    :param patch_overlap:
+    :param patch_start_offset:
+    :return:
+    """
     patch_index = list()
     for index in index_list:
         if patch_start_offset is not None:

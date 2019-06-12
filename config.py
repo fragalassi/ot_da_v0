@@ -1,9 +1,9 @@
 import os
 from keras.optimizers import Adam
+
+
 '''
 Config class definition, here are grouped all the parameters.
-
-setting test to false in main.py result in using only two examples and a reduce amout of epochs
 
 '''
 
@@ -12,45 +12,32 @@ class Config:
                  n_filter=16, patch_shape = 16, training_overlap = None, testing_overlap = None, training_centers=["All"],
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
                  jdot_alpha = 0.001, jdot_beta = 0.0001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
-                 alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5, load_model=False, force_training_list = (([0,1,2,4], [3]),([0,1,2,4], [3]))):
-        '''
-
-        :param test: To only use the test data with only two training cases and 3 testing cases
-        :param rev: The number given to the files to test different configurations
-        :param batch_size:
-        :param initial_lr:
-        :param loss_function:
-        :param depth:
-        :param n_filter:
-        :param patch_shape:
-        :param niseko: When working on niseko CPU workers need to be set to 0
-        :param shortcut: To test the 3D-Unet with no shortcuts (spoil it doesn't work well)
-        '''
+                 alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5, load_model=False, split_list = (([0,1,2,4], [3]),([0,1,2,4], [3]))):
 
         if test == True:
             self.data_set="test"
             self.epochs = 1
             self.all_modalities = ["FLAIR-include"]
         else:
-            self.data_set="miccai16_no_norm"
+            self.data_set="miccai16_no_norm" # data_self.data_set is the name of the directory in which the patients are
             self.epochs = epochs  # cutoff the training after this many epochs
-            self.all_modalities = ["FLAIR-include", "T1-include"]
+            self.all_modalities = ["FLAIR-include", "T1-include"] # Modalities to use during training
 
         self.niseko = niseko
 
-        self.rev = int(rev)
+        self.rev = int(rev) # Number of the revision for when testing numerous configurations
         print("Revision :", self.rev)
         self.one_patient = False
 
-        self.image_shape = image_shape# This determines what shape the images will be cropped/resampled to.
+        self.image_shape = image_shape # This determines what shape the images will be cropped/resampled to.
         self.patch_shape = (int(float(patch_shape)),int(float(patch_shape)),int(float(patch_shape)))  # switch to None to train on the whole image
 
         self.shortcut = shortcut  # If True, the architecture will be using shortcuts
-        self.training_centers = training_centers
+        self.training_centers = training_centers # List of the centers used for training.
         self.source_center = source_center
         self.target_center = target_center
 
-        self.number_of_threads = 64
+        self.number_of_threads = 64 # Number of threads used when loading the data
         self.load_all_data = True  # Parameter to load all the data directly in memory. Set it to false if you don't have much ram available.
 
         self.labels=(1)
@@ -99,8 +86,9 @@ class Config:
         self.save_image = False
 
         self.overwrite_data = True # If True, will previous files. If False, will use previously written files.
-        self.change_validation = True
-        self.force_training_list = force_training_list
+        self.change_validation = True # If true, a new validation split will be created with the force list passed in the parameters. Otherwise if an already saved validation split exists, it will be loaded
+        self.split_list = split_list # Tuple of tuples, first level is for source/target, second level is for training/validation
+
         self.overwrite_model = True
         self.load_base_model = load_model
 

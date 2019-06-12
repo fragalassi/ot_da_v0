@@ -90,6 +90,16 @@ class JDOT():
         self.source_truth = K.zeros(shape=(self.batch_size, 1, self.config.patch_shape[0],self.config.patch_shape[1],self.config.patch_shape[2]))
 
         def deep_jdot_loss_euclidean(y_true, y_pred):
+            '''
+            Segmentation alignment loss function for the squared euclidean distance.
+            Source loss is the dice coefficient loss for the source samples and their labels. It avoids a too big degradation of the results in the source domain.
+            Target loss is the pairwise squared euclidean distance between source labels and prediction on the target domain.
+
+            :param y_true:
+            :param y_pred:
+            :return: Source_loss + \beta * \gamma * target_loss
+            The more two samples are connected by \gamma the more we wish they have similar predictions.
+            '''
             truth_source = y_true[:self.batch_size, :]  # source true labels
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :] # target prediction
@@ -103,6 +113,12 @@ class JDOT():
         self.deep_jdot_loss_euclidean = deep_jdot_loss_euclidean
 
         def deep_jdot_loss_dice(y_true, y_pred):
+            '''
+            Same for the dice "distance".
+            :param y_true:
+            :param y_pred:
+            :return:
+            '''
             truth_source = y_true[:self.batch_size, :]  # source true labels
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :] # target prediction
@@ -123,38 +139,76 @@ class JDOT():
         print("Using ", self.config.jdot_distance, "distance to compute gamma")
 
 
-
-        def jdot_image_loss(y_true, y_pred):
+        def distance_loss(y_true, y_pred):
             '''
-            Custom jdot_loss function.
+            Representation alignement loss function.
+            Dif is the pairwise euclidean distance between the source samples and the target samples.
+
             :param y_true:
             :param y_pred:
-            :return: A sum of the source_loss and the OT loss.
+            :return: \alpha * sum(\gamma*dif)
+            The more two samples are connected by gamma (source and target) the more the representation should be similar.
             '''
-            truth_source = y_true[:self.batch_size, :]  # source true labels
             prediction_source = y_pred[:self.batch_size, :]  # source prediction
             prediction_target = y_pred[self.batch_size:, :]  # target prediction
+            dif = euclidean_dist(K.batch_flatten(prediction_source), K.batch_flatten(prediction_target))
+            return self.jdot_alpha * K.sum(self.gamma*dif)
 
-            '''
-            Compute the loss function of the source samples.
-            '''
-            source_loss = dice_coefficient_loss(truth_source, prediction_source)
+        self.distance_loss = distance_loss
 
-            '''
-            Compute the euclidean distance between each of the source samples and each of the target samples.
-            It returns a matrix (batch_size, batch_size).
-            This euclidean distance is computed both in the image space and in the truth/prediction space.
-            '''
-            # cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
-            # cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+        # def jdot_image_loss(y_true, y_pred):
+        #     '''
+        #     Custom jdot_loss function.
+        #     :param y_true:
+        #     :param y_pred:
+        #     :return: A sum of the source_loss and the OT loss.
+        #     '''
+        #     truth_source = y_true[:self.batch_size, :]  # source true labels
+        #     prediction_source = y_pred[:self.batch_size, :]  # source prediction
+        #     prediction_target = y_pred[self.batch_size:, :]  # target prediction
+        #
+        #     '''
+        #     Compute the loss function of the source samples.
+        #     '''
+        #     source_loss = dice_coefficient_loss(truth_source, prediction_source)
+        #
+        #     '''
+        #     Compute the euclidean distance between each of the source samples and each of the target samples.
+        #     It returns a matrix (batch_size, batch_size).
+        #     This euclidean distance is computed both in the image space and in the truth/prediction space.
+        #     '''
+        #     # cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
+        #     # cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+        #
+        #     euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
+        #     euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+        #     return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+        #
+        # self.jdot_image_loss = jdot_image_loss
 
-            euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
-            euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-            return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+        def euclidean_dist(x,y):
+            """
+            Pairwise euclidean distance.
+            :param x:
+            :param y:
+            :return: A matrix of size n_batch*n_batch where each entry represent the euclidean distance between one source sample and one target sample.
+            """
+            dist = K.reshape(K.sum(K.square(x), 1), (-1, 1))
+            dist += K.reshape(K.sum(K.square(y), 1), (1, -1))
+            dist -= 2.0*K.dot(x, K.transpose(y))
 
-        self.jdot_image_loss = jdot_image_loss
+            return K.sqrt(dist)
+
 
         def dice_coefficient(y_true, y_pred, smooth=1.):
+            '''
+            Dice coefficient score.
+            :param y_true:
+            :param y_pred:
+            :param smooth:
+            :return: The Dice Coefficient between the vector of prediction for all the batch and the vector of true for all the batch. It's equivalent to a mean on each unique
+            vector.
+            '''
             y_true_f = K.flatten(y_true)
             y_pred_f = K.flatten(y_pred)
             intersection = K.sum(y_true_f * y_pred_f)
@@ -162,6 +216,13 @@ class JDOT():
         self.dice_coefficient = dice_coefficient
 
         def parwise_dice_coefficient(y_true, y_pred, smooth=1.):
+            '''
+            Pairwise dice coefficient.
+            :param y_true:
+            :param y_pred:
+            :param smooth:
+            :return: A matrix of size n_batch*n_batch where each entry represent the Dice Score between one source sample and one target sample.
+            '''
             x = K.expand_dims(y_true, axis=-1)
             y = y_pred
             intersection = x * K.transpose(y)
@@ -172,6 +233,14 @@ class JDOT():
         self.pairwise_dice_coefficient = parwise_dice_coefficient
 
         def dice_coefficient_target(y_true, y_pred, smooth=1.):
+            '''
+            Dice coefficient on the sample for the target domain. Useful when some labels are available in the target domain to monitor the improvement due to the adaptation.
+            However in the full unsupervised domain adaptation problem, we don't have access to this information.
+            :param y_true:
+            :param y_pred:
+            :param smooth:
+            :return:
+            '''
             y_true_f = K.flatten(y_true[self.batch_size:, :])
             y_pred_f = K.flatten(y_pred[self.batch_size:, :])
             intersection = K.sum(y_true_f * y_pred_f)
@@ -179,6 +248,15 @@ class JDOT():
         self.dice_coefficient_target = dice_coefficient_target
 
         def dice_coefficient_source(y_true, y_pred, smooth=1.):
+            '''
+            Dice coefficient on the sample for the source domain. Useful when some labels are available in the target domain to monitor the improvement due to the adaptation.
+            However in the full unsupervised domain adaptation problem, we don't have access to this information.
+            :param y_true:
+            :param y_pred:
+            :param smooth:
+            :return:
+            '''
+
             y_true_f = K.flatten(y_true[:self.batch_size, :])
             y_pred_f = K.flatten(y_pred[:self.batch_size, :])
             intersection = K.sum(y_true_f * y_pred_f)
@@ -187,34 +265,21 @@ class JDOT():
 
 
         def dice_coefficient_loss(y_true, y_pred):
+            '''
+            Dice coefficient loss function.
+            :param y_true:
+            :param y_pred:
+            :return:
+            '''
             return 1-dice_coefficient(y_true, y_pred)
         self.dice_coefficient_loss = dice_coefficient_loss
+
+
+
+
         '''
-        Uncomment to check if cos_distance/euclidean_dist is computing the right values.
+        Uncomment to check if these functions are computing the right values.
         '''
-
-        def jaccard_distance_loss(y_true, y_pred, smooth=100):
-            """
-            Jaccard = (|X & Y|)/ (|X|+ |Y| - |X & Y|)
-                    = sum(|A*B|)/(sum(|A|)+sum(|B|)-sum(|A*B|))
-
-            The jaccard distance loss is usefull for unbalanced datasets. This has been
-            shifted so it converges on 0 and is smoothed to avoid exploding or disapearing
-            gradient.
-
-            Ref: https://en.wikipedia.org/wiki/Jaccard_index
-
-            @url: https://gist.github.com/wassname/f1452b748efcbeb4cb9b1d059dce6f96
-            @author: wassname
-            """
-            # y_true = K.expand_dims(y_true, axis=-1)
-            # y_pred = K.expand_dims(y_pred, axis=-1)
-            x = K.reshape(y_true, (-1, 1))
-            y = K.reshape(y_pred, (-1, 1))
-            intersection = K.sum(K.abs(y_true * y_pred), axis=-1)
-            sum_ = K.sum(K.abs(y_true) + K.abs(y_pred), axis=-1)
-            jac = (intersection + smooth) / (sum_ - intersection + smooth)
-            return (1 - jac) * smooth
 
         # x = np.array([[0, 1, 0], [200, 0, 1], [1, 1, 0]])
         # y = np.array([[0, 1, 0], [0, 0, 1], [0, 1, 1]])
@@ -224,58 +289,6 @@ class JDOT():
         # print(1-dice(x[2],y[2]))
         # print("Evaluation: \n", K.eval(dice_coefficient(K.constant(x), K.constant(y))))
         # print("Evaluation pairwise: \n", K.eval(parwise_dice_coefficient(K.constant(x), K.constant(y))))
-
-        def cos_distance(x,y):
-            """
-            Function to compute the cosine distance between two tensors.
-            :param x:
-            :param y:
-            :return:
-            """
-            x = K.l2_normalize(x, axis=-1)
-            y = K.l2_normalize(y, axis=-1)
-            return 1 - K.dot(x,K.transpose(y))
-
-        def euclidean_dist(x,y):
-            """
-            The euclidean distance between x and y is the length of the displacement vector x - y:
-            ||x-y||² = <x-y,x-y> (we take the square of the euclidean distance).
-            <x-y,x-y> = <x,x> - <x,y> - <y,x> + <y,y>
-            As both x and y lie in R, the dot product <.,.> is symmetric. Therefore: <x,y> = <y,x>.
-            We can write:
-            <x-y,x-y> = <x,x> - 2*<x,y> + <y,y>
-            <x-y,x-y> = x'x - 2x'y + y'y
-            :param x:
-            :param y:
-            :return:
-            """
-            dist = K.reshape(K.sum(K.square(x), 1), (-1, 1))
-            dist += K.reshape(K.sum(K.square(y), 1), (1, -1))
-            dist -= 2.0*K.dot(x, K.transpose(y))
-
-            return K.sqrt(dist)
-
-        def distance_loss(y_true, y_pred):
-            prediction_source = y_pred[:self.batch_size, :]  # source prediction
-            prediction_target = y_pred[self.batch_size:, :]  # target prediction
-            dif = euclidean_dist(K.batch_flatten(prediction_source), K.batch_flatten(prediction_target))
-            return self.jdot_alpha * K.sum(self.gamma*dif)
-
-        self.distance_loss = distance_loss
-
-
-
-
-        '''
-        Uncomment to check if cos_distance/euclidean_dist is computing the right values.
-        '''
-        # x = np.array([[[[[10]]], [[[20]]], [[[0]]]], [[[[4]]], [[[7]]], [[[2]]]]])
-        # y = np.array([[[[[2]]], [[[9]]], [[[3]]]], [[[[100]]], [[[10]]], [[[1]]]]])
-        # # x = np.array([[1,9,3], [1,2,5]])
-        # # y = np.array([[1,2,10], [1,4,3]])
-        # print(euclidean(x[0],y[0]))
-        # print(euclidean(x[0], y[1]))
-        # print("Evaluation: \n", K.eval(euclidean_dist(K.constant(x), K.constant(y))))
 
 
     def compile_model(self):
@@ -301,9 +314,8 @@ class JDOT():
 
     def train_model(self, n_iteration):
         '''
-        For every iteration we first load a batch and compute a prediction on this batch.
-        From this prediction we compute the OT gamma.
-        We then train the newtork given the OT and the batch.
+        Compute all the patch_indexes, load in the memory the corresponding patches.
+        We start by loading all the data into the memory.
         :param n_iteration:
         :return:
         '''
@@ -499,7 +511,11 @@ class JDOT():
         return batch, affine_list_source, affine_list_target
 
     def get_patch_indexes(self, target = True):
-
+        '''
+        Compute the list of patches we wan't to use for the training.
+        :param target:
+        :return:
+        '''
         self.complete_source_training_list, self.complete_source_validation_list, self.complete_target_training_list, \
         self.complete_target_validation_list = get_patches_index_list(
                                self.source_data, self.target_data,
@@ -516,7 +532,7 @@ class JDOT():
                                training_patch_overlap=self.config.training_patch_overlap,
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset,
-                               force_training_list = self.config.force_training_list)
+                               split_list = self.config.split_list)
 
         self.source_training_list = copy(self.complete_source_training_list)
         self.source_validation_list = copy(self.complete_source_validation_list)
