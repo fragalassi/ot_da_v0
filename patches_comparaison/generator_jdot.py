@@ -223,7 +223,7 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
     if change_validation or not os.path.exists(training_file):
         nb_samples = data_file.root.data.shape[0]
         sample_list = list(range(nb_samples))
-        training_list, validation_list = split_list(sample_list, split=data_split)
+        training_list, validation_list = split_a_list(sample_list, split=data_split)
         training_list = split_list[0]
         validation_list = split_list[1]
         pickle_dump(training_list, training_file)
@@ -233,7 +233,7 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
         return pickle_load(training_file), pickle_load(validation_file)
 
 
-def split_list(input_list, split=0.8, shuffle_list=True):
+def split_a_list(input_list, split=0.8, shuffle_list=True):
     if shuffle_list:
         shuffle(input_list)
     n_training = int(len(input_list) * split)

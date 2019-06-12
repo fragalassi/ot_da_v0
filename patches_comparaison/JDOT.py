@@ -156,35 +156,35 @@ class JDOT():
 
         self.distance_loss = distance_loss
 
-        # def jdot_image_loss(y_true, y_pred):
-        #     '''
-        #     Custom jdot_loss function.
-        #     :param y_true:
-        #     :param y_pred:
-        #     :return: A sum of the source_loss and the OT loss.
-        #     '''
-        #     truth_source = y_true[:self.batch_size, :]  # source true labels
-        #     prediction_source = y_pred[:self.batch_size, :]  # source prediction
-        #     prediction_target = y_pred[self.batch_size:, :]  # target prediction
-        #
-        #     '''
-        #     Compute the loss function of the source samples.
-        #     '''
-        #     source_loss = dice_coefficient_loss(truth_source, prediction_source)
-        #
-        #     '''
-        #     Compute the euclidean distance between each of the source samples and each of the target samples.
-        #     It returns a matrix (batch_size, batch_size).
-        #     This euclidean distance is computed both in the image space and in the truth/prediction space.
-        #     '''
-        #     # cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
-        #     # cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-        #
-        #     euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
-        #     euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
-        #     return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
-        #
-        # self.jdot_image_loss = jdot_image_loss
+        def jdot_image_loss(y_true, y_pred):
+            '''
+            Custom jdot_loss function.
+            :param y_true:
+            :param y_pred:
+            :return: A sum of the source_loss and the OT loss.
+            '''
+            truth_source = y_true[:self.batch_size, :]  # source true labels
+            prediction_source = y_pred[:self.batch_size, :]  # source prediction
+            prediction_target = y_pred[self.batch_size:, :]  # target prediction
+
+            '''
+            Compute the loss function of the source samples.
+            '''
+            source_loss = dice_coefficient_loss(truth_source, prediction_source)
+
+            '''
+            Compute the euclidean distance between each of the source samples and each of the target samples.
+            It returns a matrix (batch_size, batch_size).
+            This euclidean distance is computed both in the image space and in the truth/prediction space.
+            '''
+            # cos_distance_samples = cos_distance(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
+            # cos_distance_pred = cos_distance(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+
+            euc_distance_samples = euclidean_dist(K.batch_flatten(self.batch_source),K.batch_flatten(self.batch_target))
+            euc_distance_pred = euclidean_dist(K.batch_flatten(truth_source), K.batch_flatten(prediction_target))
+            return source_loss + self.jdot_alpha*K.sum(self.gamma*(K.abs(euc_distance_samples - euc_distance_pred)))
+
+        self.jdot_image_loss = jdot_image_loss
 
         def euclidean_dist(x,y):
             """
@@ -315,7 +315,18 @@ class JDOT():
     def train_model(self, n_iteration):
         '''
         Compute all the patch_indexes, load in the memory the corresponding patches.
-        We start by loading all the data into the memory.
+        For each of the n_iteration (epochs):
+            - Compute the callbacks
+            - Multiply the value of alpha by alpha-factor (not used in practice)
+            While all the training set was not used for training:
+                - Select a batch of source and target patches that were not seen before and load them
+                - Get the predictions (deep-layer activation + output) of the network with the selected batch
+                - Compute and change gamma with the predictions
+                 - Train the network
+            End While
+            While all the validation set was not used:
+                - Select random validation batches
+                - Test the network with this validation batch
         :param n_iteration:
         :return:
         '''
@@ -394,6 +405,11 @@ class JDOT():
 
 
     def train_model_on_source(self, n_iteration):
+        '''
+        Same idea as train_model but we don't need to compute gamma.
+        :param n_iteration:
+        :return:
+        '''
         len_history = len(self.model.metrics_names)  # Print self.model.metric_names to know the correspondance
         hist_l = np.empty((0, len_history))
         val_l = np.empty((0, len_history))
@@ -454,11 +470,21 @@ class JDOT():
                 # We save the model if it's the best one existing.
                 self.save_hist_and_model(hist_l, val_l)
 
-    def callback(self, val_l):
+    def callback(self, val_l, min_delta_lr = 0.0001, min_delta_stop = 0.00001):
+        '''
+        Two callbacks:
+            - Reduce lr on plateau
+            - Early stopping
+        They both mimic the callbacks implemented in keras.
+        :param val_l:
+        :param min_delta_lr: threshold of significant changes for reduce lr on plateau
+        :param min_delta_stop: threshold of significant changes for early stop
+        :return:
+        '''
         if val_l.shape[0] > self.config.patience + 2 and all(
-                [val_l[-(x+2)][0] <= val_l[-(x+1)][0]+0.01*val_l[-(x+1)][0] for x in range(self.config.patience)]) and self.count == 0:
-            # We let 25 epochs run before starting to monitor the loss
-            # We monitor the loss and halve the learning rate if it didn't improve for 5 epochs
+                [val_l[-(x+2)][0] <= val_l[-(x+1)][0]+min_delta_lr*val_l[-(x+1)][0] for x in range(self.config.patience)]) and self.count == 0:
+            # We let #patience# epochs run before starting to monitor the loss
+            # We monitor the loss and multiply the learnig rate by #learning rate drop# if it didn't improve for #patience# epochs
             K.set_value(self.model.optimizer.lr, K.get_value(self.model.optimizer.lr) * self.config.learning_rate_drop)
             print("Reducing learning rate on plateau: ", K.get_value(self.model.optimizer.lr))
             self.count = self.config.patience
@@ -466,8 +492,8 @@ class JDOT():
             self.count = self.count - 1
 
         if val_l.shape[0] > self.config.early_stop + 2 and all(
-                [val_l[-(x+2)][0] <= val_l[-(x+1)][0]+0.01*val_l[-(x+1)][0] for x in range(self.config.early_stop)]):
-            # We let 25 epochs run before starting to monitor the loss
+                [val_l[-(x+2)][0] <= val_l[-(x+1)][0]+min_delta_stop*val_l[-(x+1)][0] for x in range(self.config.early_stop)]):
+            # We let #early stop# epochs run before starting to monitor the loss
             print("Early stopping")
             return True
         else:
@@ -544,6 +570,12 @@ class JDOT():
         print("Target validation", len(self.complete_target_validation_list))
 
     def select_indices_training(self):
+        '''
+        Shuffle the source and target training list
+        Pop #batch_size# samples.
+        If there is not enough patches in source or target training list mark the epoch as complete and reset both of them with the complete lists
+        :return: The selected source and target samples
+        '''
         random.shuffle(self.source_training_list)
         random.shuffle(self.target_training_list)
         selected_source = []
@@ -560,6 +592,10 @@ class JDOT():
         return selected_source, selected_target
     
     def select_indices_validation(self):
+        '''
+        Same as before for validation.
+        :return:
+        '''
         random.shuffle(self.source_validation_list)
         random.shuffle(self.target_validation_list)
         selected_source = []
@@ -575,6 +611,13 @@ class JDOT():
         return selected_source, selected_target
 
     def load_batch(self, selected_source, selected_target, target = True):
+        '''
+        Load the batch of patches from their indices when self.config.load_all_data == False.
+        :param selected_source: List of selected patches for the source center
+        :param selected_target: List of selected patches for the target center
+        :param target:
+        :return:
+        '''
         start = time.time()
         self.train_batch, _, _ = self.get_batch(selected_source, selected_target, target=target)
         end = time.time()
@@ -599,6 +642,15 @@ class JDOT():
 
 
     def load_training_batch_from_all_data(self, selected_source, selected_target, target = True):
+        '''
+        Function to load the batch from the data loaded in memory.
+        We iterate through all the patches in self.complete_source_training_list and fetch the indices of the selected patches.
+        Based on these indices, we get the corresponding image patches from the previously loaded patches.
+        :param selected_source:
+        :param selected_target:
+        :param target:
+        :return:
+        '''
         index_source = []
         index_target = []
         start = time.time()
@@ -634,6 +686,13 @@ class JDOT():
         sys.stdout.flush()
 
     def load_validation_batch_from_all_data(self, selected_source, selected_target, target = True):
+        '''
+        Same as before for the validation data.
+        :param selected_source:
+        :param selected_target:
+        :param target:
+        :return:
+        '''
         index_source = []
         index_target = []
         start = time.time()
@@ -672,7 +731,15 @@ class JDOT():
 
 
     def load_all_data(self, training_source, training_target, validation_source, validation_target, target = True):
-
+        '''
+        Load all the data in the memory
+        :param training_source:
+        :param training_target:
+        :param validation_source:
+        :param validation_target:
+        :param target:
+        :return:
+        '''
         start = time.time()
         print("Loading training data: \n")
         self.training_data, self.affine_source_training, self.affine_target_training = self.get_batch(training_source, training_target, target=target, all = True)
@@ -714,7 +781,7 @@ class JDOT():
         :param validation: If true, a validation step is performed.
         :param hist_l: List of all the history step
         :param val_l:
-        :return:
+        :return: Updated hist_l
         '''
         output_list = []
         for name in self.context_output_name: #Creating a bunch of false outputs
@@ -734,10 +801,14 @@ class JDOT():
         sys.stdout.write(result)
         sys.stdout.flush()
 
-
         return hist_l
     
     def test_on_batch(self, val_l):
+        '''
+        Function to test the network on the loaded batch.
+        :param val_l:
+        :return:
+        '''
         output_list = []
         for name in self.context_output_name: #Creating a bunch of false outputs
             output_list += [np.zeros((self.val_batch[0].shape[0],) + self.model.get_layer(name).output_shape[1:])]
@@ -760,10 +831,17 @@ class JDOT():
         sys.stdout.write(result)
         sys.stdout.flush()
 
-
         return val_l
 
     def pretty_print(self, mean_epoch, mean_val, time_epoch, epoch_remaining):
+        '''
+        Function to print the results on an iteration and expected time of arrival.
+        :param mean_epoch:
+        :param mean_val:
+        :param time_epoch:
+        :param epoch_remaining:
+        :return:
+        '''
         delta = time_epoch*epoch_remaining
         hour, minute, seconds = self.compute_time(delta)
         if self.config.train_jdot:
@@ -795,8 +873,6 @@ class JDOT():
         time -= minute * 60
         seconds = time
         return hour, minute, seconds
-
-
 
 
     def save_hist_and_model(self, hist_l, val_l):
@@ -846,24 +922,18 @@ class JDOT():
         # Compute the distance between samples and between the source_truth and the target prediction.
         C0 = cdist(train_vec_source, train_vec_target, metric="sqeuclidean")
         C1 = cdist(truth_vec_source, pred_vec_target, metric=self.config.jdot_distance)
-        # C0 = self.dice_coefficient(train_vec_source, train_vec_target)
-        # C1 = self.dice_coefficient(truth_vec_source, pred_vec_target)
-        # print("Mean C0: ", np.mean(C0))
-        # print("Mean C1: ", np.mean(C1))
-        # Resulting cost metric
         C = K.get_value(self.jdot_alpha)*C0+K.get_value(self.jdot_beta)*C1
-        # C = C0 + C1
-        # C = C - np.min(C)
-        # C = C / np.max(C)
 
         # Computing gamma using the OT library
-
         gamma = ot.emd(ot.unif(self.batch_size), ot.unif(self.batch_size), C)
         return gamma
 
     def evaluate_model(self):
         """
         Function to evaluate the trained model.
+        We first begin by loading the old model and compile it (useful if you wan't to evaluate an old model).
+        We then create the test dataset
+        Finally we run the validation cases
         :return:
         """
         start = time.time()
@@ -891,6 +961,20 @@ class JDOT():
     def run_validation_cases(self, validation_keys_file, training_modalities, labels, hdf5_file,
                              output_label_map=False, output_dir=".", threshold=0.5, overlap=16, permute=False,
                              save_image = False):
+        '''
+        For each patient of the testing set we run a validation.
+        :param validation_keys_file:
+        :param training_modalities:
+        :param labels:
+        :param hdf5_file:
+        :param output_label_map:
+        :param output_dir:
+        :param threshold:
+        :param overlap:
+        :param permute:
+        :param save_image:
+        :return:
+        '''
         validation_indices = pickle_load(validation_keys_file)
         model = self.model
         data_file = tables.open_file(hdf5_file, "r")
@@ -907,6 +991,11 @@ class JDOT():
         data_file.close()
 
     def load_old_model(self, model_file):
+        '''
+        Function to load old model with our custom loss functions.
+        :param model_file:
+        :return:
+        '''
         print("Loading pre-trained model")
         custom_objects = {'jdot_loss': self.jdot_image_loss,
                           'jdot_image_loss': self.jdot_image_loss,

@@ -105,7 +105,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
         df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth",
                       "Number of filters", "Patch shape", "Training overlap", "Testing overlap", "Training centers",
                       "Image shape", "Augmentation", "JDOT Alpha", "Source center", "Target center",
-                      "Train JDOT", "Alpha factor", "Epochs", "Callback", "Distance", "OT Depth", "JDOT beta", "Load model", "Force split list"]
+                      "Train JDOT", "Alpha factor", "Epochs", "Callback", "Distance", "OT Depth", "JDOT beta", "Load model", "Split list"]
     save_path = os.path.abspath("Config/")
     if not os.path.exists(save_path):
         os.makedirs(save_path)
