@@ -32,21 +32,21 @@ Herebelow are the different parameters accessible via the terminal.
 '''
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-source", type=str, help="Set the source center")
-parser.add_argument("-target", type=str, help="Set the target center")
-parser.add_argument("-alpha", type=float, help="Set JDOT alpha")
-parser.add_argument("-beta", type=float, help="Set JDOT beta")
-parser.add_argument("-jdot", type=str, help="Bool to train on JDOT")
-parser.add_argument("-shape", type=str, help="Patch shape")
-parser.add_argument("-augment", type=str, help="Boolean for data augmentation")
 parser.add_argument("-rev", type=int, help="The id of the revision")
-parser.add_argument("-epochs", type=int, help="Number of epochs")
-parser.add_argument("-lr", type=float, help="Set the initial lr")
-parser.add_argument("-callback", type=str, help="Boolean for the usage of callback")
-parser.add_argument("-dist", type=str, help="Distance used to compute the Optimal Transport. Can be sqeuclidean or dice.")
-parser.add_argument("-OT_depth", type=int, help="Depth to compute the OT on. 5 is the most compact. 9 is the deepest.")
-parser.add_argument("-load_model", type=str, help="Wether to load the base model or not")
-parser.add_argument("-split_list", type=str, help="Tuple of tuples, first level is for source/target, second level is for training/validation")
+parser.add_argument("-source", default="08", type=str, help="Set the source center")
+parser.add_argument("-target", default="01", type=str, help="Set the target center")
+parser.add_argument("-alpha", default=10., type=float, help="Set JDOT alpha")
+parser.add_argument("-beta", default=5., type=float, help="Set JDOT beta")
+parser.add_argument("-jdot", default="True", type=str, help="Bool to train on JDOT")
+parser.add_argument("-shape", default=16, type=str, help="Patch shape")
+parser.add_argument("-augment", default="False", type=str, help="Boolean for data augmentation")
+parser.add_argument("-epochs", default=5, type=int, help="Number of epochs")
+parser.add_argument("-lr", default=5e-5, type=float, help="Set the initial lr")
+parser.add_argument("-callback", default="False", type=str, help="Boolean for the usage of callback")
+parser.add_argument("-dist", default="sqeuclidean", type=str, help="Distance used to compute the Optimal Transport. Can be sqeuclidean or dice.")
+parser.add_argument("-OT_depth", default=5, type=int, help="Depth to compute the OT on. 5 is the most compact. 9 is the deepest.")
+parser.add_argument("-load_model", default="True", type=str, help="Wether to load the base model or not")
+parser.add_argument("-split_list", default='(([0,1,2,3], [4]),([0,1,2,3], [4]))', type=str, help="Tuple of tuples, first level is for source/target, second level is for training/validation")
 
 
 args = parser.parse_args()
@@ -57,7 +57,7 @@ loss_funcs = ["dice_coefficient_loss"]
 depth = [5]
 n_filter = [16]
 patch_shape = [args.shape]
-training_overlap = [1/8]
+training_overlap = [0]
 testing_overlap = [1/2]
 image_shape = [(128,128,128)]
 split_list = [eval(args.split_list)]
@@ -72,10 +72,10 @@ epochs = [args.epochs]
 callback = [True if args.callback == "True" else False]
 alpha_factor = [1]
 distance = [args.dist]
-OT_depth = [args.OT_depth]
+OT_depth = [None if args.OT_depth == 0 else args.OT_depth]
 load_model = [args.load_model]
 
-df = create_config.create_conf_with_l(batch_size, initial_lr, loss_funcs,
+df = create_config.create_conf_with_l( args.rev, batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, training_overlap, testing_overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
                                       bool_train_jdot, alpha_factor, epochs, callback, distance, OT_depth,

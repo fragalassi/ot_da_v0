@@ -70,7 +70,7 @@ def create_conf(batch_size_l = [1, 8], initial_lr_l = [1e-4, 1e-7],
 
 
 
-def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[],
+def create_conf_with_l(rev, batch_size=[], initial_lr = [], loss_funcs = [], depth=[],
                        n_filter=[], patch_shape = [], training_overlap = [], testing_overlap = [], training_center = [],
                        image_shape = [], augmentation = [], jdot_alpha = [],
                        source_center=[], target_center=[], train_jdot = [], alpha_factor = [], epochs = [], callback = [],
@@ -106,7 +106,7 @@ def create_conf_with_l(batch_size=[], initial_lr = [], loss_funcs = [], depth=[]
                       "Number of filters", "Patch shape", "Training overlap", "Testing overlap", "Training centers",
                       "Image shape", "Augmentation", "JDOT Alpha", "Source center", "Target center",
                       "Train JDOT", "Alpha factor", "Epochs", "Callback", "Distance", "OT Depth", "JDOT beta", "Load model", "Split list"]
-    save_path = os.path.abspath("Config/")
+    save_path = os.path.abspath("results/prediction/rev_"+str(rev))
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     file_name = os.path.join(save_path + "/Config.csv")
