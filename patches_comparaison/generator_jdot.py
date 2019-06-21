@@ -150,7 +150,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
         source_training_list = load_index_patches_with_gt(source_training_path)
 
-        save_patches_with_gt(source_validation_list, source_data_file, patch_shape, validation_patch_overlap,
+        save_patches_with_gt(source_validation_list, source_data_file, patch_shape, training_patch_overlap,
                              training_patch_start_offset, path=source_validation_path, overwrite = change_validation)
 
         source_validation_list = load_index_patches_with_gt(source_validation_path)
@@ -162,7 +162,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
         source_training_list = load_index_patches_with_ceil(source_training_path)
 
-        save_patches_with_ceil(source_validation_list, source_data_file, patch_shape, validation_patch_overlap,
+        save_patches_with_ceil(source_validation_list, source_data_file, patch_shape, training_patch_overlap,
                              training_patch_start_offset, path=source_validation_path, overwrite = change_validation,
                                ceil=ceil)
 
@@ -198,7 +198,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                              training_patch_start_offset, path=target_training_path, overwrite = change_validation)
         target_training_list = load_index_patches_with_gt(target_training_path)
 
-        save_patches_with_gt(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
+        save_patches_with_gt(target_validation_list, target_data_file, patch_shape, training_patch_overlap,
                              training_patch_start_offset, path=target_validation_path, overwrite = change_validation)
         target_validation_list = load_index_patches_with_gt(target_validation_path)
 
@@ -208,7 +208,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                                ceil=ceil)
         target_training_list = load_index_patches_with_ceil(target_training_path)
 
-        save_patches_with_ceil(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
+        save_patches_with_ceil(target_validation_list, target_data_file, patch_shape, training_patch_overlap,
                              training_patch_start_offset, path=target_validation_path, overwrite = change_validation,
                                ceil=ceil)
         target_validation_list = load_index_patches_with_ceil(target_validation_path)
