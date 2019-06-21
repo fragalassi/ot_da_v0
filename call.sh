@@ -1,6 +1,3 @@
-python3 -u main.py -source '01' -target '07' -alpha 40 -beta 10 -split_list '(([0,2,1,4], [3]),([0,3,2,4], [1]))' -epochs 60 -load_model 'True' -rev 0 > Logs/output_0.log
-python3 -u main.py -source '01' -target '08' -alpha 40 -beta 10 -split_list '(([0,2,1,4], [3]),([0,1,2,4], [3]))' -epochs 60 -load_model 'True' -rev 1 > Logs/output_1.log
-python3 -u main.py -source '07' -target '01' -alpha 40 -beta 10 -split_list '(([0,3,1,4], [1]),([0,1,2,4], [3]))' -epochs 60 -load_model 'True' -rev 2 > Logs/output_2.log
-python3 -u main.py -source '07' -target '08' -alpha 40 -beta 10 -split_list '(([0,3,1,4], [1]),([0,1,2,4], [3]))' -epochs 60 -load_model 'True' -rev 3 > Logs/output_3.log
-python3 -u main.py -source '08' -target '01' -alpha 40 -beta 10 -split_list '(([0,2,1,4], [3]),([0,1,2,4], [3]))' -epochs 60 -load_model 'True' -rev 4 > Logs/output_4.log
-python3 -u main.py -source '08' -target '07' -alpha 40 -beta 10 -split_list '(([0,2,1,4], [3]),([0,3,2,4], [1]))' -epochs 60 -load_model 'True' -rev 5 > Logs/output_5.log
+python3 -u main.py -source '01' -target '07' -alpha 0.01 -beta 0.001 -jdot 'False' -epochs 2000 -load_model 'False' -rev 0 > Logs/output_0.log
+python3 -u main.py -source '07' -target '08' -alpha 0.01 -beta 0.001 -jdot 'False' -epochs 2000 -load_model 'False' -rev 1 > Logs/output_1.log
+python3 -u main.py -source '08' -target '01' -alpha 0.01 -beta 0.001 -jdot 'False' -epochs 2000 -load_model 'False' -rev 2 > Logs/output_2.log
