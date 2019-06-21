@@ -558,7 +558,8 @@ class JDOT():
                                training_patch_overlap=self.config.training_patch_overlap,
                                validation_patch_overlap=self.config.validation_patch_overlap,
                                training_patch_start_offset=self.config.training_patch_start_offset,
-                               split_list = self.config.split_list)
+                               split_list = self.config.split_list,
+                               ceil=self.config.ceil)
 
         self.source_training_list = copy(self.complete_source_training_list)
         self.source_validation_list = copy(self.complete_source_validation_list)

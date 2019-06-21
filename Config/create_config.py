@@ -74,7 +74,7 @@ def create_conf_with_l(rev, batch_size=[], initial_lr = [], loss_funcs = [], dep
                        n_filter=[], patch_shape = [], training_overlap = [], testing_overlap = [], training_center = [],
                        image_shape = [], augmentation = [], jdot_alpha = [],
                        source_center=[], target_center=[], train_jdot = [], alpha_factor = [], epochs = [], callback = [],
-                       distance = [], OT_depth = [], jdot_beta=[], load_model = [], split_list = [],
+                       distance = [], OT_depth = [], jdot_beta=[], load_model = [], split_list = [], intensity_ceil = [],
                        n_repeat = 1):
     '''
     Create configuration from the list. Refer to main.py for more information on how to add a new parameter.
@@ -89,7 +89,7 @@ def create_conf_with_l(rev, batch_size=[], initial_lr = [], loss_funcs = [], dep
     '''
     lists = [batch_size, initial_lr, loss_funcs, depth, patch_shape, training_overlap, testing_overlap,
              training_center, image_shape, augmentation, jdot_alpha, source_center, target_center,
-             train_jdot, alpha_factor, epochs, distance, OT_depth, jdot_beta, load_model, split_list]
+             train_jdot, alpha_factor, epochs, distance, OT_depth, jdot_beta, load_model, split_list, intensity_ceil,]
     it = iter(lists)
     the_len = len(next(it))
     print(training_center*n_repeat)
@@ -101,11 +101,12 @@ def create_conf_with_l(rev, batch_size=[], initial_lr = [], loss_funcs = [], dep
                                     training_overlap*n_repeat, testing_overlap*n_repeat, training_center*n_repeat, image_shape*n_repeat,
                                     augmentation*n_repeat, jdot_alpha*n_repeat, source_center*n_repeat, target_center*n_repeat,
                                     train_jdot*n_repeat, alpha_factor*n_repeat, epochs*n_repeat, callback*n_repeat, distance*n_repeat,
-                                    OT_depth*n_repeat, jdot_beta*n_repeat, load_model*n_repeat, split_list*n_repeat], dtype=object)).T
+                                    OT_depth*n_repeat, jdot_beta*n_repeat, load_model*n_repeat, split_list*n_repeat, intensity_ceil*n_repeat], dtype=object)).T
         df.columns = ["Batch Size", "Initial Learning Rate", "Loss function", "Depth",
                       "Number of filters", "Patch shape", "Training overlap", "Testing overlap", "Training centers",
                       "Image shape", "Augmentation", "JDOT Alpha", "Source center", "Target center",
-                      "Train JDOT", "Alpha factor", "Epochs", "Callback", "Distance", "OT Depth", "JDOT beta", "Load model", "Split list"]
+                      "Train JDOT", "Alpha factor", "Epochs", "Callback", "Distance", "OT Depth", "JDOT beta", "Load model", "Split list",
+                      "Intensity Ceil"]
     save_path = os.path.abspath("results/prediction/rev_"+str(rev))
     if not os.path.exists(save_path):
         os.makedirs(save_path)

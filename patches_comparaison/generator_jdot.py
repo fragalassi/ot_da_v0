@@ -109,7 +109,7 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
                            training_keys_file_target, validation_keys_file_target, source_center,
                            target_center, data_split = 0.8, change_validation = True, patch_shape = 16, skip_blank = True,
                            training_patch_overlap = 0.5, validation_patch_overlap = 0.5, training_patch_start_offset = None,
-                           split_list = (([0,1,2,4], [3]),([0,1,2,4], [3]))):
+                           split_list = (([0,1,2,4], [3]),([0,1,2,4], [3])), ceil=None):
     '''
 
     :param source_data_file: Path to source images data file
@@ -155,6 +155,20 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
 
         source_validation_list = load_index_patches_with_gt(source_validation_path)
 
+    elif ceil != None:
+        save_patches_with_ceil(source_training_list, source_data_file, patch_shape, training_patch_overlap,
+                             training_patch_start_offset, path=source_training_path, overwrite = change_validation,
+                               ceil=ceil)
+
+        source_training_list = load_index_patches_with_ceil(source_training_path)
+
+        save_patches_with_ceil(source_validation_list, source_data_file, patch_shape, validation_patch_overlap,
+                             training_patch_start_offset, path=source_validation_path, overwrite = change_validation,
+                               ceil=ceil)
+
+        source_validation_list = load_index_patches_with_ceil(source_validation_path)
+
+
     else:
 
         source_training_list = create_patch_index_list(source_training_list, source_data_file.root.data.shape[-3:],
@@ -187,6 +201,18 @@ def get_patches_index_list(source_data_file, target_data_file, training_keys_fil
         save_patches_with_gt(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
                              training_patch_start_offset, path=target_validation_path, overwrite = change_validation)
         target_validation_list = load_index_patches_with_gt(target_validation_path)
+
+    elif ceil !=None:
+        save_patches_with_ceil(target_training_list, target_data_file, patch_shape, training_patch_overlap,
+                             training_patch_start_offset, path=target_training_path, overwrite = change_validation,
+                               ceil=ceil)
+        target_training_list = load_index_patches_with_ceil(target_training_path)
+
+        save_patches_with_ceil(target_validation_list, target_data_file, patch_shape, validation_patch_overlap,
+                             training_patch_start_offset, path=target_validation_path, overwrite = change_validation,
+                               ceil=ceil)
+        target_validation_list = load_index_patches_with_ceil(target_validation_path)
+
 
     else:
         target_training_list = create_patch_index_list(target_training_list, target_data_file.root.data.shape[-3:],
@@ -410,6 +436,34 @@ def load_index_patches_with_gt(file_name):
     '''
     return pickle_load(file_name)
 
+def save_patches_with_ceil(index_list, data_file, patch_shape, patch_overlap, patch_start_offset, path, overwrite, ceil):
+    '''
+    Save the indices computed in get_patches_with_intensity_ceil
+    :param index_list:
+    :param data_file:
+    :param patch_shape:
+    :param patch_overlap:
+    :param patch_start_offset:
+    :param path:
+    :param overwrite:
+    :return:
+    '''
+    if not os.path.exists(path) or overwrite:
+        print("Creating and saving a file containing the index of patches with GT. This may take a while...")
+        index_list = create_patch_index_list(index_list, data_file.root.data.shape[-3:], patch_shape,
+                                                      patch_overlap, patch_start_offset)
+        index_list = get_patches_with_intensity_ceil(index_list, data_file, patch_shape, ceil)
+        pickle_dump(index_list, path)
+
+def load_index_patches_with_ceil(file_name):
+    '''
+    Load the array indices with lesions (if it had already been computed)
+    :param file_name:
+    :return:
+    '''
+    return pickle_load(file_name)
+
+
 def get_patches_with_ground_truth(index_list, data_file, patch_shape):
     '''
     Load all patches from the data file and create a list from the indexes of the patches containing a lesion.
@@ -429,6 +483,20 @@ def get_patches_with_ground_truth(index_list, data_file, patch_shape):
         if np.mean(truth) != 0: # Check if the mean of the patch's truth is different from 0 (equivalent to check if at least one voxel represent a lesion)
             new_index_list += [index]
     return new_index_list
+
+def get_patches_with_intensity_ceil(index_list, data_file, patch_shape, ceil):
+    new_index_list = []
+    initial_length = len(index_list)
+    while len(index_list) > 0: #Go through all the patches
+        advance = "\r Writing indexes which intensity is more than "+str(ceil)+" :" + str((initial_length - len(index_list))/initial_length*100 )+ "%"
+        sys.stdout.write(advance)
+        sys.stdout.flush()
+        index = index_list.pop()
+        data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape) # Fetch the patch
+        if np.mean(data) > ceil: # Check if the mean of the patch's truth is different from 0 (equivalent to check if at least one voxel represent a lesion)
+            new_index_list += [index]
+    return new_index_list
+
 
 def get_number_of_patches(data_file, index_list, patch_shape=None, patch_overlap=0, patch_start_offset=None,
                           skip_blank=True):

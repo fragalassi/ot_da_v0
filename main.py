@@ -47,7 +47,7 @@ parser.add_argument("-dist", default="sqeuclidean", type=str, help="Distance use
 parser.add_argument("-OT_depth", default=5, type=int, help="Depth to compute the OT on. 5 is the most compact. 9 is the deepest.")
 parser.add_argument("-load_model", default="True", type=str, help="Wether to load the base model or not")
 parser.add_argument("-split_list", default='(([0,1,2,3], [4]),([0,1,2,3], [4]))', type=str, help="Tuple of tuples, first level is for source/target, second level is for training/validation")
-
+parser.add_argument("-intensity_ceil", default=None, type=float, help="Intensity ceil to select the patches between [-1;1]")
 
 args = parser.parse_args()
 
@@ -74,12 +74,13 @@ alpha_factor = [1]
 distance = [args.dist]
 OT_depth = [None if args.OT_depth == 0 else args.OT_depth]
 load_model = [True if args.load_model == "True" else False]
+intensity_ceil = [args.intensity_ceil]
 
 df = create_config.create_conf_with_l( args.rev, batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, training_overlap, testing_overlap, training_center,
                                       image_shape, augmentation, jdot_alpha, source_center, target_center,
                                       bool_train_jdot, alpha_factor, epochs, callback, distance, OT_depth,
-                                      jdot_beta, load_model, split_list,
+                                      jdot_beta, load_model, split_list, intensity_ceil,
                                       n_repeat=1)
 
 with pd.option_context("display.max_rows", None, "display.max_columns", None):
@@ -116,6 +117,7 @@ for i in range(df.shape[0]): #df.shape[0]
                          jdot_beta = df["JDOT beta"].iloc[i],
                          load_model = df["Load model"].iloc[i],
                          split_list = df["Split list"].iloc[i],
+                         intensity_ceil = df["Intensity Ceil"].iloc[i],
                          niseko=True, shortcut=True)
 
 
