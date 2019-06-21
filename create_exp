@@ -9,7 +9,7 @@ bound_alpha = [1, 50]
 bound_beta = [1, 50]
 bound_epochs = [1, 100]
 
-al = pyDOE.lhs(3, criterion="maximin", samples=500)
+al = pyDOE.lhs(3, criterion="maximin", samples=200)
 means = [0.1, 0.0001]
 stds = [0.2, 0.1]
 
@@ -34,8 +34,8 @@ for i in range(len(al)):
 file = open("call.sh", "w")
 file.truncate(0)
 
-for i in range(len(alpha)):
-    file.write("python3 -u main.py -source '08' -target '01' -dist 'sqeuclidean' -OT_depth 5 -alpha "+str(round(alpha[i],2))+" -beta "+str(round(beta[i],2))+" -epochs "+str(int(epochs[i]))+" -lr 5e-5 -callback 'False' -jdot 'True' -augment 'False' -load_model 'True' -shape 16 -rev "+str(i)+" > Logs/output_"+str(i)+".log \n")
+for i in range(len(epochs)):
+    file.write("python3 -u main.py -source '01' -target '07' -alpha "+str(alpha[i])+" -beta "+str(beta[i])+" -split_list '(([0,2,1,4], [3]),([0,3,2,4], [1]))' -epochs "+str(int(epochs[i]))+" -load_model 'True' -rev "+str(i)+" > Logs/output_"+str(i)+".log \n")
 
 file.close()
 

@@ -73,7 +73,7 @@ callback = [True if args.callback == "True" else False]
 alpha_factor = [1]
 distance = [args.dist]
 OT_depth = [None if args.OT_depth == 0 else args.OT_depth]
-load_model = [args.load_model]
+load_model = [True if args.load_model == "True" else False]
 
 df = create_config.create_conf_with_l( args.rev, batch_size, initial_lr, loss_funcs,
                                       depth, n_filter, patch_shape, training_overlap, testing_overlap, training_center,
@@ -117,7 +117,6 @@ for i in range(df.shape[0]): #df.shape[0]
                          load_model = df["Load model"].iloc[i],
                          split_list = df["Split list"].iloc[i],
                          niseko=True, shortcut=True)
-
 
 
     train_jd = train_jdot.Train_JDOT(conf)
