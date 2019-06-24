@@ -487,6 +487,8 @@ def get_patches_with_ground_truth(index_list, data_file, patch_shape):
 def get_patches_with_intensity_ceil(index_list, data_file, patch_shape, ceil):
     new_index_list = []
     initial_length = len(index_list)
+    tp = 0
+    fn = 0
     while len(index_list) > 0: #Go through all the patches
         advance = "\r Writing indexes which intensity is more than "+str(ceil)+" :" + str((initial_length - len(index_list))/initial_length*100 )+ "%"
         sys.stdout.write(advance)
@@ -495,6 +497,14 @@ def get_patches_with_intensity_ceil(index_list, data_file, patch_shape, ceil):
         data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape) # Fetch the patch
         if np.mean(data) > ceil: # Check if the mean of the patch's truth is different from 0 (equivalent to check if at least one voxel represent a lesion)
             new_index_list += [index]
+            if np.mean(truth) > 0:
+                tp += 1
+        else:
+            if np.mean(truth) > 0:
+                fn += 1
+    print("\n Number of patches with lesions retained: ", tp)
+    print("\n Number of patches with lesions not retained: ", fn)
+    print("\n Percentage: ", tp/(tp+fn)*100, '%')
     return new_index_list
 
 
