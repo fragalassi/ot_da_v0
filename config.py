@@ -13,7 +13,7 @@ class Config:
                  image_shape = (128,128,128) , niseko=True, shortcut=True, augmentation=False,
                  jdot_alpha = 0.001, jdot_beta = 0.0001, source_center = ["01"], bool_train_jdot = True, target_center = ["07"],
                  alpha_factor = 1, epochs = 1000, callback = False, distance="sqeuclidean", OT_depth = 5, load_model=False,
-                 split_list = (([0,1,2,4], [3]),([0,1,2,4], [3])), intensity_ceil = None):
+                 split_list = (([0,1,2,4], [3]),([0,1,2,4], [3])), intensity_ceil = None, skip_blank = False):
 
         if test == True:
             self.data_set="test"
@@ -83,7 +83,7 @@ class Config:
         self.validation_patch_overlap = int(float(testing_overlap)*float(patch_shape))  # if > 0, during training, validation patches will be overlapping
         self.training_patch_overlap = int(float(training_overlap)*float(patch_shape))  # Overlap could be the number of overlapping pixels.
         self.training_patch_start_offset = None #(16,16,16)  # randomly offset the first patch index by up to this offset
-        self.skip_blank = False  # if True, then patches without any target will be skipped
+        self.skip_blank = skip_blank  # if True, then patches without any target will be skipped
         self.ceil = intensity_ceil #Intensity ceil to select the patches
         print(self.ceil)
         self.save_image = False
