@@ -23,6 +23,7 @@ class Config:
             self.data_set="miccai16_no_norm" # data_self.data_set is the name of the directory in which the patients are
             self.epochs = epochs  # cutoff the training after this many epochs
             self.all_modalities = ["FLAIR-include", "T1-include"] # Modalities to use during training
+            #The first modality will be the one on which the intensity ceil will be applied
 
         self.niseko = niseko
 

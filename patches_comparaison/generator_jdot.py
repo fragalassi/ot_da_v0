@@ -250,6 +250,8 @@ def get_validation_split(data_file, training_file, validation_file, data_split=0
         nb_samples = data_file.root.data.shape[0]
         sample_list = list(range(nb_samples))
         training_list, validation_list = split_a_list(sample_list, split=data_split)
+        print("Training list: ", training_list)
+        print("Validation list: ", validation_list)
         training_list = split_list[0]
         validation_list = split_list[1]
         pickle_dump(training_list, training_file)
@@ -495,7 +497,7 @@ def get_patches_with_intensity_ceil(index_list, data_file, patch_shape, ceil):
         sys.stdout.flush()
         index = index_list.pop()
         data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape) # Fetch the patch
-        if np.mean(data) > ceil: # Check if the mean of the patch's truth is different from 0 (equivalent to check if at least one voxel represent a lesion)
+        if np.mean(data[0]) > ceil: # Compute the ceil on the first modality in the modality list of config.py
             new_index_list += [index]
             if np.mean(truth) > 0:
                 tp += 1
