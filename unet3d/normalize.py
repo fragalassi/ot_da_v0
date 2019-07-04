@@ -66,6 +66,9 @@ def get_foreground_from_set_of_files(set_of_files, background_value=0, tolerance
 def normalize_data(data, mean, std):
     data -= mean[:, np.newaxis, np.newaxis, np.newaxis]
     data /= std[:, np.newaxis, np.newaxis, np.newaxis]
+    # Normalize data between 0 and 1.
+    data = (data - data.min())/(data.max() - data.min())
+
     return data
 
 

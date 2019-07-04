@@ -4,6 +4,7 @@ from random import shuffle
 import itertools
 
 import numpy as np
+import csv
 import sys
 from unet3d.utils import pickle_dump, pickle_load
 from unet3d.utils.patches import compute_patch_indices, get_random_nd_index, get_patch_from_3d_data
@@ -489,6 +490,10 @@ def get_patches_with_ground_truth(index_list, data_file, patch_shape):
 def get_patches_with_intensity_ceil(index_list, data_file, patch_shape, ceil):
     new_index_list = []
     initial_length = len(index_list)
+    patches_lesion = []
+    patches_no_lesion = []
+    n_patches_lesion = 0
+    n_patches_no_lesion = 0
     tp = 0
     fn = 0
     while len(index_list) > 0: #Go through all the patches
@@ -497,13 +502,33 @@ def get_patches_with_intensity_ceil(index_list, data_file, patch_shape, ceil):
         sys.stdout.flush()
         index = index_list.pop()
         data, truth = get_data_from_file(data_file, index, patch_shape=patch_shape) # Fetch the patch
-        if np.mean(data[0]) > ceil: # Compute the ceil on the first modality in the modality list of config.py
+        if np.max(data[0]) > ceil: # Compute the ceil on the first modality in the modality list of config.py
             new_index_list += [index]
             if np.mean(truth) > 0:
                 tp += 1
         else:
             if np.mean(truth) > 0:
                 fn += 1
+        # data_no_zero = data[0].flatten().tolist()
+        # if 0.0 in data_no_zero:
+        #     data_no_zero=data_no_zero.remove(0.0)
+    #     if  np.mean(truth) == 0:
+    #         patches_no_lesion += [data[0].max()]
+    #         n_patches_no_lesion += 1
+    #     if  np.mean(truth) > 0:
+    #         patches_lesion += [data[0].max()]
+    #         n_patches_lesion += 1
+    #
+    # path = os.path.abspath("./Data/patch_no_lesions.csv")
+    # with open(path, 'a') as myfile:
+    #     wr = csv.writer(myfile)
+    #     wr.writerow(patches_no_lesion)
+    #
+    # path = os.path.abspath("./Data/patch_lesions.csv")
+    # with open(path, 'a') as myfile:
+    #     wr = csv.writer(myfile)
+    #     wr.writerow(patches_lesion)
+
     print("\n Number of patches with lesions retained: ", tp)
     print("\n Number of patches with lesions not retained: ", fn)
     print("\n Percentage: ", tp/(tp+fn)*100, '%')
